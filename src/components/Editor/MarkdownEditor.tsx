@@ -279,7 +279,11 @@ export function MarkdownEditor({
       <div className={classcat(cls)} ref={elRef}></div>
       {Platform.isMobile && (
         <button
-          onPointerDown={() => onSubmit(internalRef.current)}
+          // Don't move focus on press: a blur closes the mobile keyboard and shifts the layout
+          // before the tap lands, so the first tap would miss. (mousedown, not pointerdown:
+          // suppressing pointerdown also cancels mousedown, which click-outside handlers need.)
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => onSubmit(internalRef.current)}
           className={classcat([c('item-submit-button'), 'mod-cta'])}
         >
           {t('Submit')}

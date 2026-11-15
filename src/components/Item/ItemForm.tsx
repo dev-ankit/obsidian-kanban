@@ -72,6 +72,10 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
     <div className={c('item-button-wrapper')}>
       <button
         className={c('new-item-button')}
+        // Don't move focus on press: a blur closes the mobile keyboard and shifts the layout
+        // before the tap lands, so the first tap would miss. (mousedown, not pointerdown:
+        // suppressing pointerdown also cancels mousedown, which click-outside handlers need.)
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => setEditState({ x: 0, y: 0 })}
         onDragOver={(e) => {
           if (getDropAction(stateManager, e.dataTransfer)) {
