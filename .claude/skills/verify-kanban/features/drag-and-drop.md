@@ -1,0 +1,77 @@
+# Drag and drop
+
+Users reorder cards by dragging them within a lane and move cards between lanes, including into an
+empty lane or one that's off screen. Holding a dragged card at the board's edge scrolls the board.
+Lanes can be dragged by their grip. The board file is rewritten in the new order.
+
+## Sub-features
+
+- `dnd-within-before` moves a card above another card in the same lane.
+- `dnd-within-after` moves a card below another card in the same lane.
+- `dnd-cross-lane` moves a card next to a card in another lane.
+- `dnd-empty-lane` drops a card into a lane with no cards.
+- `dnd-autoscroll` scrolls a wide board while a card is held at its edge (upstream PR #1179 changed
+  the speed), then drops it in a lane that was off screen.
+- `dnd-lane-reorder` moves a whole lane left or right by its grip.
+
+## How to get to it (user POV)
+
+- Press on a card and drag it with the mouse; release over the target slot.
+- Hold the dragged card near the left or right edge of the board to scroll it.
+- Drag a lane by the `⠿` grip at the left of its header.
+- `Move to list` in the card's `More options` menu is the non-drag alternative for cross-lane moves.
+
+## Driving it with kv.mjs
+
+Preconditions:
+
+- `dnd-within-*`, `dnd-cross-lane`, `dnd-empty-lane`: baseline `basic` board, nothing open in a
+  split; `$K doctor` all PASS.
+- `dnd-autoscroll`, `dnd-lane-reorder`: `$K launch --fixture wide` (8 lanes: Backlog, 待办事项,
+  Ready, 進行中, Review, QA, Staging, Shipped; wider than the window).
+
+- **Within, after.** `$K drag '.kanban-plugin__item::Buy milk' '.kanban-plugin__lane::Todo >> .kanban-plugin__item::Review PR' --after`.
+  `outline` shows Todo as Write release notes, Plan sprint, Review PR, Buy milk; on disk,
+  `$K file --expect $'[[Notes/Spec]]\n- [ ] Buy milk'` succeeds.
+- **Within, before.** `$K drag '.kanban-plugin__item::Buy milk' '.kanban-plugin__lane::Todo >> .kanban-plugin__item::Review PR' --before`.
+  `$K file --expect $'- [ ] Buy milk @{2026-01-15} today\n- [ ] Review PR'` succeeds.
+- **Cross-lane.** `$K drag '.kanban-plugin__item::Fix drag scroll' '.kanban-plugin__lane::Done >> .kanban-plugin__item::Ship 2.0.52' --after`.
+  Doing shows `(0)`; `$K file --expect $'- [x] Ship 2.0.52\n- [ ] Fix drag scroll'` succeeds.
+- **Empty lane.** `$K drag '.kanban-plugin__item::Fix drag scroll' '.kanban-plugin__lane::Doing'`.
+  `$K file --expect $'## Doing\n\n- [ ] Fix drag scroll'` succeeds.
+- **Autoscroll to an off-screen lane** (`wide`).
+  `$K drag '.kanban-plugin__item::Bravo task' '.kanban-plugin__lane::Shipped >> .kanban-plugin__item::Hotel task' --edge right --after`.
+  The command prints how far and how fast the board scrolled (e.g. `scrolled 953px in 2.0s (476 px/s;
+  scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel task, Bravo task;
+  `$K file --expect $'- [ ] Hotel task\n- [ ] Bravo task'` succeeds.
+- **Autoscroll, look mid-scroll.** `$K drag '.kanban-plugin__item::Alpha task' --edge right --hold`,
+  `$K snap autoscroll-held`, `$K release`. The snap shows the board scrolled to the last lanes with
+  the card under the pointer.
+- **Lane reorder** (`wide`, scrolled so Shipped and QA are both on screen, e.g. after the autoscroll
+  step). `$K drag '.kanban-plugin__lane::Shipped >> .kanban-plugin__lane-grip' '.kanban-plugin__lane::QA' --axis x --before`.
+  `outline` lane order ends with Review, Shipped, QA, Staging. On disk the Shipped heading now comes
+  before QA: `$K file --expect $'- [ ] Hotel task\n- [ ] Bravo task\n\n\n## QA'` (adjust the card lines
+  to what Shipped holds).
+- **Proof.** `snap` before and after each step, then `$K errors`.
+
+## Gotchas
+
+- Release too early and nothing drops: the slot animates in. `drag` waits 1000 ms over the target
+  (`--settle`); don't lower it.
+- `--before`/`--after` put the dragged entity's center 10 px past the target's edge. `drag` corrects
+  for where you grabbed (a lane is grabbed by its grip, far from its center). For lanes add
+  `--axis x` so before and after mean left and right.
+- Drop zones are re-measured only on pointer movement. After an autoscroll, a release with no
+  movement in between drops into whatever lane was under the pointer *before* the scroll.
+  Real hands always jitter, so this isn't a user bug; `drag --edge` moves 1 px before releasing.
+  A bare `release` after `--edge --hold` doesn't. Move first if you need a correct drop there.
+- Autoscroll speed is open. On this machine (120 fps display) the right edge measured ~476 px/s at
+  5 px from the edge. Left-edge readings hit the end of the board within 0.8 s (≈1200 px/s), and
+  speed went *up* as the inset grew (5→33 px), the opposite of what `ScrollManager.ts` suggests.
+  The scroll step is per animation frame, so speed scales with refresh rate. Treat these as raw
+  observations to explain, not as a pass/fail threshold.
+- `file --expect` with text that's already in the file passes instantly. For reorders, expect a
+  string that spans the new boundary (end of one section plus the next heading).
+- Source and target must both be on screen unless you use `--edge`. Close any note split first;
+  lanes outside the viewport don't render their cards.
+- Text matching is substring-based: `::Ship` would also match "Shipped". Use full, distinct titles.
