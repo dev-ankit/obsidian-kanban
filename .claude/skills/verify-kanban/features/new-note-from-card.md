@@ -65,7 +65,8 @@ Preconditions:
 
 - 2.0.52 failed `nnfc-date-middle` (card never linked) and leaked daily-note dates into filenames;
   fixed in bda0c2f. Keep both journeys in every run; they regress easily.
-- The `basic` fixture's `review`-style cards differ; the date-form cards live in the `review` fixture.
+- The date-form cards (`Pay rent`, `Call mom`, `Pay taxes`, `Standup`) exist only in the `review`
+  fixture; `basic` has just `Buy milk`.
 - Obsidian writes the shortest unambiguous link, so a note in `Notes/` still links as
   `[[Into notes folder]]`. Check the folder with `ls`, not with the link text.
 - The note opens in a split and makes the board narrow; close the note tab before driving more
