@@ -55,34 +55,31 @@ export function useItemMenu({
           i.setIcon('lucide-file-plus-2')
             .setTitle(t('New note from card'))
             .onClick(async () => {
-              const prevTitle = item.data.titleRaw.split('\n')[0].trim();
-              const dateTrigger = stateManager.getSetting('date-trigger') as string;
-              const timeTrigger = stateManager.getSetting('time-trigger') as string;
-              const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
-              const dateContentMatch = shouldLinkDates
-                ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
-                : '{[^}]+}';
-              const noteDateRegEx = new RegExp(
-                `(^|\\s)${escapeRegExpStr(dateTrigger)}${dateContentMatch}`,
+              const [firstLine, ...restLines] = item.data.titleRaw.split('\n');
+              const dateTrigger = escapeRegExpStr(
+                stateManager.getSetting('date-trigger') as string
+              );
+              const timeTrigger = escapeRegExpStr(
+                stateManager.getSetting('time-trigger') as string
+              );
+              // Every form the board renders as a date or time: @{…}, @[[…]], @[…](…) and @@{…}.
+              // Matched before links are stripped, so daily-note dates can't leak into the name.
+              const dateTimeRegEx = new RegExp(
+                `(?:^|\\s)(?:${timeTrigger}\\{[^}]+\\}|${dateTrigger}(?:\\{[^}]+\\}|\\[\\[[^\\]]+\\]\\]|\\[[^\\]]+\\]\\([^)]+\\)))`,
                 'g'
               );
-              const noteTimeRegEx = new RegExp(
-                `(^|\\s)${escapeRegExpStr(timeTrigger)}{[^}]+}`,
-                'g'
-              );
-
-              const sanitizedTitle = prevTitle
+              // Dates and times stay on the card; the rest of the first line names the note.
+              const dateTimes = (firstLine.match(dateTimeRegEx) ?? []).map((m) => m.trim());
+              const sanitizedTitle = firstLine
+                .replace(dateTimeRegEx, ' ')
                 .replace(embedRegEx, '$1')
                 .replace(wikilinkRegEx, '$1')
                 .replace(mdLinkRegEx, '$1')
                 .replace(tagRegEx, '$1')
-                .replace(noteDateRegEx, '$1')
-                .replace(noteTimeRegEx, '$1')
                 .replace(illegalCharsRegEx, ' ')
                 .trim()
                 .replace(condenceWhiteSpaceRE, ' ');
 
-              const newNoteFolder = stateManager.getSetting('new-note-folder');
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
               const getNoteFolder = (path?: string | null) => {
@@ -90,10 +87,15 @@ export function useItemMenu({
 
                 return file instanceof TFolder ? file : null;
               };
+              const boardFolder = stateManager.getSetting('new-note-folder') as string | null;
+              const globalFolder = stateManager.getGlobalSetting('new-note-folder') as
+                | string
+                | null;
               const targetFolder =
-                getNoteFolder(newNoteFolder) ??
-                getNoteFolder(stateManager.getGlobalSetting('new-note-folder')) ??
+                getNoteFolder(boardFolder) ??
+                getNoteFolder(globalFolder) ??
                 stateManager.app.fileManager.getNewFileParent(stateManager.file.path);
+              const missingFolder = [boardFolder, globalFolder].find((f) => f && !getNoteFolder(f));
 
               let newFile: TFile;
 
@@ -103,14 +105,28 @@ export function useItemMenu({
                   sanitizedTitle
                 )) as TFile;
               } catch (e) {
+                console.error('Kanban: could not create a note from the card', e);
                 new Notice(
-                  t(
-                    'The note could not be created. Try reducing the length of the text before creating a note.'
-                  ),
-                  5000
+                  e?.code === 'ENAMETOOLONG'
+                    ? t(
+                        'The note could not be created. Try reducing the length of the text before creating a note.'
+                      )
+                    : `${t('The note could not be created.')} ${e?.message ?? e}`,
+                  8000
                 );
 
                 return;
+              }
+
+              if (missingFolder) {
+                new Notice(
+                  t(
+                    'Note folder "{{folder}}" was not found, so the note was created in "{{used}}".'
+                  )
+                    .replace('{{folder}}', missingFolder)
+                    .replace('{{used}}', targetFolder.path === '/' ? '/' : targetFolder.path),
+                  8000
+                );
               }
 
               const newLeaf = stateManager.app.workspace.splitActiveLeaf();
@@ -121,17 +137,11 @@ export function useItemMenu({
 
               await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
-              const matchTarget =
-                prevTitle
-                  .replace(noteDateRegEx, '$1')
-                  .replace(noteTimeRegEx, '$1')
-                  .trim()
-                  .replace(condenceWhiteSpaceRE, ' ') || prevTitle;
-
-              const newTitleRaw = item.data.titleRaw.replace(
-                matchTarget,
-                stateManager.app.fileManager.generateMarkdownLink(newFile, stateManager.file.path)
+              const link = stateManager.app.fileManager.generateMarkdownLink(
+                newFile,
+                stateManager.file.path
               );
+              const newTitleRaw = [[link, ...dateTimes].join(' '), ...restLines].join('\n');
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitleRaw));
             });

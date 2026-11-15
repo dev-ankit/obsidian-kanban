@@ -238,6 +238,9 @@ const en = {
   'Move to list': 'Move to list',
   'The note could not be created. Try reducing the length of the text before creating a note.':
     'The note could not be created. Try reducing the length of the text before creating a note.',
+  'The note could not be created.': 'The note could not be created.',
+  'Note folder "{{folder}}" was not found, so the note was created in "{{used}}".':
+    'Note folder "{{folder}}" was not found, so the note was created in "{{used}}".',
 
   // components/Lane/LaneForm.tsx
   'Enter list title...': 'Enter list title...',
