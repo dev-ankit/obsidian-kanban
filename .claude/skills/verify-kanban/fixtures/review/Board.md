@@ -8,6 +8,9 @@ kanban-plugin: board
 
 - [ ] Pay rent @{2026-02-01}
 - [ ] Buy milk @{2026-01-15} today
+- [ ] Call mom @[[2026-03-01]] about trip
+- [ ] Pay taxes @[2026-04-15](2026-04-15)
+- [ ] Standup @{2026-05-01} @@{09:30} notes
 - [ ] Long title filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler filler
 
 

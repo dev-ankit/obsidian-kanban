@@ -46,7 +46,7 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [Cards](./cards.md): add, edit in place, delete and archive cards.
 - [Drag and drop](./drag-and-drop.md): move cards within and between lanes (including empty and
   off-screen lanes), autoscroll at the board edge, and reorder lanes.
-- [New note from card](./new-note-from-card.md): turn a card into a linked note in the right folder.
-  **Known failing** for dates in the middle of a title (upstream PR #1222).
+- [New note from card](./new-note-from-card.md): turn a card into a linked note in the right folder,
+  keeping dates and times on the card.
 - [Lanes](./lanes.md): add a list, collapse it, and keep CJK titles upright when collapsed.
 - [View modes](./view-modes.md): board, table and list layouts, and switching between markdown and Kanban.

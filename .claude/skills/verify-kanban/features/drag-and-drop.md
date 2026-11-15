@@ -65,11 +65,11 @@ Preconditions:
   movement in between drops into whatever lane was under the pointer *before* the scroll.
   Real hands always jitter, so this isn't a user bug; `drag --edge` moves 1 px before releasing.
   A bare `release` after `--edge --hold` doesn't. Move first if you need a correct drop there.
-- Autoscroll speed is open. On this machine (120 fps display) the right edge measured ~476 px/s at
-  5 px from the edge. Left-edge readings hit the end of the board within 0.8 s (≈1200 px/s), and
-  speed went *up* as the inset grew (5→33 px), the opposite of what `ScrollManager.ts` suggests.
-  The scroll step is per animation frame, so speed scales with refresh rate. Treat these as raw
-  observations to explain, not as a pass/fail threshold.
+- Autoscroll speed is time-based since c67f797: the `--edge` report should read about 600 px/s
+  whenever the dragged card's edge is past the zone (any normal card at the board edge), on any
+  refresh rate. Much faster means stacked scroll loops or unclamped strength have come back
+  (2.0.51 measured ~10,200 px/s, 2.0.52 ~4,400 px/s). To see per-frame steps, wrap the board
+  scroller's `scrollBy` via `eval` and count calls (one loop = one call per frame).
 - `file --expect` with text that's already in the file passes instantly. For reorders, expect a
   string that spans the new boundary (end of one section plus the next heading).
 - Source and target must both be on screen unless you use `--edge`. Close any note split first;
