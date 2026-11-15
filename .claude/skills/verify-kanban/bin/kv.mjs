@@ -475,7 +475,7 @@ async function snap() {
     clip = await cdp.run(`
       const { el } = (${LOCATE_FN})(${JSON.stringify(flags.clip)}, 0);
       const r = el.getBoundingClientRect();
-      return { x: r.left, y: r.top, width: r.width, height: r.height, scale: 1 };
+      return { x: r.left, y: r.top, width: r.width, height: r.height, scale: devicePixelRatio };
     `);
   }
   const shot = await cdp.send('Page.captureScreenshot', { format: 'png', ...(clip && { clip }) });
