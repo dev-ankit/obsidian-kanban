@@ -1,0 +1,9 @@
+{
+  "file-explorer": true,
+  "global-search": true,
+  "switcher": true,
+  "command-palette": true,
+  "editor-status": true,
+  "page-preview": true,
+  "webviewer": true
+}

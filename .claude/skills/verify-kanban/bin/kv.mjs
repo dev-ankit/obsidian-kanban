@@ -208,6 +208,8 @@ const KEYS = {
   ArrowLeft: { code: 'ArrowLeft', keyCode: 37 },
   ArrowRight: { code: 'ArrowRight', keyCode: 39 },
   Space: { code: 'Space', keyCode: 32, text: ' ', key: ' ' },
+  Home: { code: 'Home', keyCode: 36 },
+  End: { code: 'End', keyCode: 35 },
 };
 
 async function pressKey(cdp, combo) {
@@ -274,15 +276,18 @@ async function launch() {
   const fixtureDir = path.join(SKILL_DIR, 'fixtures', fixture);
   if (!fs.existsSync(fixtureDir)) die(`no fixture "${fixture}" in ${path.join(SKILL_DIR, 'fixtures')}`);
 
+  // The checkout to build and run: this repo by default, or another worktree (e.g. an older
+  // release) to compare behavior before and after a change.
+  const buildDir = flags['build-dir'] ? path.resolve(flags['build-dir']) : REPO;
   if (!flags['no-build']) {
-    if (!fs.existsSync(path.join(REPO, 'node_modules')))
-      die('node_modules missing. Run: yarn install --registry https://registry.npmjs.org/');
-    console.log('building plugin (yarn build)...');
-    execFileSync('yarn', ['-s', 'build'], { cwd: REPO, stdio: 'inherit' });
+    if (!fs.existsSync(path.join(buildDir, 'node_modules')))
+      die(`node_modules missing in ${buildDir}. Run there: yarn install --registry https://registry.npmjs.org/ (or symlink this repo's node_modules)`);
+    console.log(`building plugin in ${buildDir} (yarn build)...`);
+    execFileSync('yarn', ['-s', 'build'], { cwd: buildDir, stdio: 'inherit' });
   }
-  for (const f of BUILD_FILES) if (!fs.existsSync(path.join(REPO, f))) die(`build output ${f} missing`);
+  for (const f of BUILD_FILES) if (!fs.existsSync(path.join(buildDir, f))) die(`build output ${f} missing in ${buildDir}`);
 
-  const git = (...a) => execFileSync('git', a, { cwd: REPO }).toString().trim();
+  const git = (...a) => execFileSync('git', a, { cwd: buildDir }).toString().trim();
   const commit = git('rev-parse', '--short', 'HEAD');
   const dirty = git('status', '--porcelain', '--untracked-files=no', '--', 'src').length > 0;
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
@@ -293,8 +298,25 @@ async function launch() {
   fs.mkdirSync(path.join(dir, 'evidence'), { recursive: true });
   fs.mkdirSync(profile, { recursive: true });
   fs.cpSync(fixtureDir, vault, { recursive: true });
+  // Fixtures may say {{today}}, {{today+3}} or {{today-20}} (days) for dates relative to the run.
+  const fill = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const f = path.join(dir, e.name);
+      if (e.isDirectory()) fill(f);
+      else if (e.name.endsWith('.md')) {
+        const text = fs.readFileSync(f, 'utf8');
+        const out = text.replace(/\{\{today([+-]\d+)?\}\}/g, (_, n) => {
+          const d = new Date();
+          d.setDate(d.getDate() + Number(n || 0));
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        });
+        if (out !== text) fs.writeFileSync(f, out);
+      }
+    }
+  };
+  fill(vault);
   fs.mkdirSync(pluginDir, { recursive: true });
-  for (const f of BUILD_FILES) fs.copyFileSync(path.join(REPO, f), path.join(pluginDir, f));
+  for (const f of BUILD_FILES) fs.copyFileSync(path.join(buildDir, f), path.join(pluginDir, f));
   fs.writeFileSync(path.join(vault, '.obsidian', 'community-plugins.json'), JSON.stringify([PLUGIN_ID]));
   // macOS defaults to native OS menus, which CDP cannot see or click. Use DOM menus.
   const appJson = path.join(vault, '.obsidian', 'app.json');
@@ -329,6 +351,7 @@ async function launch() {
     commit,
     dirty,
     fixture,
+    buildDir,
     mainJsSha256: sha256(path.join(pluginDir, 'main.js')),
     snaps: 0,
     startedAt: new Date().toISOString(),
@@ -414,9 +437,9 @@ async function doctor() {
   check('CDP port owned by our process', owner.split('\n').includes(String(s.pid)), `port ${s.port} -> ${owner || 'nobody'}`);
   const ws = alive(s.pid) ? await pageWsUrl(s.port, 2000) : null;
   check('Obsidian window open', !!ws, ws ? '' : 'window closed or app still starting');
-  const builtNow = path.join(REPO, 'main.js');
+  const builtNow = path.join(s.buildDir || REPO, 'main.js');
   if (fs.existsSync(builtNow))
-    check('repo build matches running build', sha256(builtNow) === s.mainJsSha256, 'rebuild + relaunch if you changed src/');
+    check('build on disk matches running build', sha256(builtNow) === s.mainJsSha256, `${s.buildDir || REPO}; rebuild + relaunch if you changed src/`);
   if (ws) {
     const cdp = await Cdp.connect(ws);
     const info = await cdp.eval(`({
@@ -492,8 +515,9 @@ async function stop() {
 
 const HELP = `kv.mjs - drive an isolated Obsidian running this repo's Kanban build
 
-  launch [--fixture basic] [--open Board.md] [--no-build] [--port N]
-                      build, create .verify-runs/<id>/, start Obsidian, accept trust, open board
+  launch [--fixture basic] [--open Board.md] [--no-build] [--build-dir DIR] [--port N]
+                      build, create .verify-runs/<id>/, start Obsidian, accept trust, open board.
+                      --build-dir runs another checkout's build (e.g. a worktree of an older tag)
   doctor              read-only health check of the current run (exit 1 on any FAIL)
   outline             print the visible board: lanes, card titles, checkbox state
   file [path] [--expect T] [--absent T] [--timeout ms]
@@ -513,7 +537,7 @@ const HELP = `kv.mjs - drive an isolated Obsidian running this repo's Kanban bui
                       --hold stops before releasing so you can snap mid-drag
   release             release the mouse button (ends a drag --hold)
   type <text>         insert text at the focused element (like typing / IME commit)
-  key <combo>         e.g. Enter, Escape, Mod+P, Shift+Enter, Mod+Enter, a
+  key <combo>         e.g. Enter, Escape, Home, End, Mod+P, Shift+Enter, Mod+Enter, a
   wait <loc> [--gone] [--timeout ms]
   count <loc>         number of visible matches
   eval <expr>         evaluate a JS expression in the page (await allowed), print JSON.
