@@ -55,6 +55,9 @@ function LaneButtons({
             <a
               aria-label={t('Add a card')}
               className={`${c('lane-settings-button')} clickable-icon`}
+              // Don't move focus on press: a blur closes the mobile keyboard and shifts the
+              // layout before the tap lands, so the first tap would miss.
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => setIsItemInputVisible({ x: 0, y: 0 })}
               onDragOver={(e) => {
                 if (getDropAction(stateManager, e.dataTransfer)) {
