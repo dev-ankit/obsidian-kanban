@@ -104,8 +104,10 @@ export function useItemMenu({
                 )) as TFile;
               } catch (e) {
                 new Notice(
-                  t('The note could not be created. Try reducing the length of the text before creating a note.'),
-                  5000,
+                  t(
+                    'The note could not be created. Try reducing the length of the text before creating a note.'
+                  ),
+                  5000
                 );
 
                 return;
@@ -119,11 +121,12 @@ export function useItemMenu({
 
               await applyTemplate(stateManager, newNoteTemplatePath as string | undefined);
 
-              const matchTarget = prevTitle
-                .replace(noteDateRegEx, '$1')
-                .replace(noteTimeRegEx, '$1')
-                .trim()
-                .replace(condenceWhiteSpaceRE, ' ') || prevTitle;
+              const matchTarget =
+                prevTitle
+                  .replace(noteDateRegEx, '$1')
+                  .replace(noteTimeRegEx, '$1')
+                  .trim()
+                  .replace(condenceWhiteSpaceRE, ' ') || prevTitle;
 
               const newTitleRaw = item.data.titleRaw.replace(
                 matchTarget,
