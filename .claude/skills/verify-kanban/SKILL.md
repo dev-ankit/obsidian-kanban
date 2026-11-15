@@ -152,6 +152,15 @@ Run it after every attempt, including failed ones. Old runs can be deleted with
 `features/README.md` indexes the user-facing features with step-by-step journeys. Use the
 matching file as the recipe and cover every entry point it lists, not just the convenient one.
 
+## Mobile emulation
+
+`$K eval 'app.emulateMobile(true)'` reloads the UI in Obsidian's phone mode (the `is-mobile` body
+class, mobile Submit buttons, `Platform.isMobile`). The workspace comes back empty; reopen the board
+with `$K eval '(async () => { await app.workspace.openLinkText("Board", "", false) })()'` (setup,
+not the behavior under test). Emulation has no on-screen keyboard and no iOS focus or touch rules,
+so it can show that focus stays put or a button fires once, but only a real phone proves a mobile
+fix. Install a test build there with BRAT from a pre-release tag, in a vault outside iCloud.
+
 ## Gotchas
 
 - Right-click (`click --right`) does not open the card context menu over CDP. Use the card's
