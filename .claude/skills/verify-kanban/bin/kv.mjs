@@ -287,9 +287,16 @@ async function launch() {
   }
   for (const f of BUILD_FILES) if (!fs.existsSync(path.join(buildDir, f))) die(`build output ${f} missing in ${buildDir}`);
 
-  const git = (...a) => execFileSync('git', a, { cwd: buildDir }).toString().trim();
-  const commit = git('rev-parse', '--short', 'HEAD');
-  const dirty = git('status', '--porcelain', '--untracked-files=no', '--', 'src').length > 0;
+  // A build folder that isn't a git checkout (e.g. downloaded release assets) is labelled by name.
+  const git = (...a) => {
+    try {
+      return execFileSync('git', a, { cwd: buildDir, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    } catch {
+      return null;
+    }
+  };
+  const commit = git('rev-parse', '--short', 'HEAD') ?? path.basename(buildDir);
+  const dirty = (git('status', '--porcelain', '--untracked-files=no', '--', 'src') ?? '').length > 0;
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
   const dir = path.join(RUNS, `${stamp}-${commit}${dirty ? '-dirty' : ''}`);
   const profile = path.join(dir, 'profile');

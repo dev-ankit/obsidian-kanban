@@ -12,6 +12,8 @@ frontmatter (`kanban-plugin: board|table|list`).
 - `view-markdown` opens the board as markdown.
 - `view-mode-memory` returns a note to the mode (editing or reading) it had before it was shown as a
   board; a board opened in a pane that showed another note uses Obsidian's default.
+- `view-reopen-same-file` keeps the board when the open board is opened again (quick switcher, a
+  card's link to its own board).
 - `view-kanban-again` returns from markdown to Kanban. This is where upstream reports of a black or
   blank board live (#662, PR #1221).
 
@@ -42,6 +44,9 @@ Preconditions:
   Kanban and back with the palette command; `$K eval 'app.workspace.activeLeaf.view.getMode()'` is `preview`
   (2.0.54 and earlier: `source`). Same through the pane menu's `Open as kanban board` and the header's
   `Open as markdown`.
+- **Re-open the open board.** `$K key Mod+o`, `$K type 'Board'`, `$K key Enter`: the board still has its
+  lanes (2.0.54 and earlier: blank, 0 lanes). Same for a card whose text links `[[Board]]` when you click
+  that link, and for `$K eval '(async () => { await app.workspace.openLinkText("Board", "", false) })()'`.
 - **Proof.** `snap` after each switch, then `$K errors`.
 
 ## Gotchas
