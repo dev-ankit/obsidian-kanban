@@ -1,10 +1,10 @@
-import { TFile } from 'obsidian';
+import { Stat } from 'obsidian';
 import { Item } from 'src/components/types';
 
 export interface FileAccessor {
   isEmbed: boolean;
   target: string;
-  stats?: TFile['stat'];
+  stats?: Stat;
 }
 
 export function markRangeForDeletion(str: string, range: { start: number; end: number }): string {

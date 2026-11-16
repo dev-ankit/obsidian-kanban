@@ -9,6 +9,10 @@ browser rendering can cost more than JavaScript hit testing.
 - `perf-typing` measures real keys in a note created from a card beside a 600-card board (#670, #779).
 - `perf-sidebar-drag` measures a real file-explorer drag across that board (#1201).
 - `metadata-refresh` preserves wikilink, Markdown-link, embed, mixed-link and archive metadata.
+- `metadata-settle` leaves the board alone when a vault change doesn't concern its cards, also
+  after a linked note lost one of several shown properties.
+- `metadata-matches-parse` keeps the refreshed board equal to a from-scratch parse of the file.
+- `metadata-error-recovery` clears a board error caused by a linked note once that note is fixed.
 
 ## How to get to it (user POV)
 
@@ -60,8 +64,34 @@ Preconditions:
    back, then repeat a note-property edit. This checks metadata dependencies after reparsing.
    Run the basic card-add and drag journeys as well. Finish every run with errors and stop.
 
+10. `--fixture performance-metadata --open Keys.md` shows `status`, `owner` and `project.status`
+    from linked notes. Linked notes are edited from outside here (write the file in the run's
+    vault, as sync or another editor would), then wait 2.5 s for the debounced refresh. Observe
+    with `$K eval`: the cards' text, `stateManager.state.data.errors`, and whether
+    `stateManager.state` is still the object seen at the previous check.
+    - Append a line to Unrelated.md twice: the state object stays the same.
+    - Rewrite Pair.md without `owner`: both Pair cards lose Owner and keep Status. Append to
+      Unrelated.md three more times: the state object stays the same each time. Before the fix
+      it was replaced on every vault change from then on.
+    - Change only the case of a value (`open` → `OPEN`): the cards follow.
+    - Set Nested.md's frontmatter to `project: null`: the Nested card loses Project and the board
+      does not error. Restore `project:\n  status: active`: Project returns. Before the fix the
+      board showed `Cannot use 'in' operator…` and stayed that way.
+    - Give Pair.md `status:\n  - ` (a list with an empty item): the board shows an error (a
+      separate, still open defect). Fix the note: the board comes back by itself, with the new
+      values.
+    - After each step compare the board with a from-scratch parse of the same file: in one
+      `eval`, keep `stateManager.state`, set it to `null`, call
+      `stateManager.getParsedBoard(view.data)`, and put the state back. For every card in the
+      lanes and the archive, `titleSearch`, `metadata.file`, `fileMetadata` and
+      `fileMetadataOrder` must be equal (an unresolved link has `file` undefined; archived cards
+      have no `file` and an unhydrated `titleSearch`). Repeat on Board.md after rewriting
+      Details.md and after creating Missing.md. The board files' bytes must not change.
+
 ## Gotchas
 
+- Deleting a linked note sends no metadata notification, so its cards keep their metadata until
+  the next change elsewhere in the vault. Existing behavior; don't assert on it.
 - Keep the measurement window focused on the intended editor. Each helper run calls doctor and
   rejects typing if `.cm-content` is not focused. `KV_RUN` chooses an explicit scratch instance.
 - The helper uses Profiler.start/stop and a long-task PerformanceObserver. A 50 ms sleep follows

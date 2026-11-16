@@ -349,9 +349,13 @@ export class StateManager {
   }
 
   onFileMetadataChange() {
-    if (!this.state || this.hasError()) return;
+    if (!this.state) return;
     try {
-      const board = this.parser.refreshFileMetadata();
+      // An errored board holds no cards to refresh. It's parsed again instead, so an error
+      // caused by a linked note clears once that note is fixed.
+      const board = this.hasError()
+        ? this.getParsedBoard(this.getAView().data)
+        : this.parser.refreshFileMetadata();
       if (board !== this.state) this.setState(board, false);
     } catch (e) {
       this.setError(e);
