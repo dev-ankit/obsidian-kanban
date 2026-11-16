@@ -1,6 +1,6 @@
 import { moment } from 'obsidian';
 import { StateManager } from 'src/StateManager';
-import { c, escapeRegExpStr } from 'src/components/helpers';
+import { c, escapeRegExpStr, markdownLinkDestination } from 'src/components/helpers';
 import { Board, DataTypes, Item, Lane } from 'src/components/types';
 import { Path } from 'src/dnd/types';
 import { getEntityFromPath } from 'src/dnd/util/data';
@@ -19,8 +19,6 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
   const timeTrigger = stateManager.getSetting('time-trigger');
   const timeFormat = stateManager.getSetting('time-format');
 
-  const { app } = stateManager;
-
   const timeRegEx = new RegExp(`(^|\\s)${escapeRegExpStr(timeTrigger)}{([^}]+)}`, 'g');
   const atTime = (date: moment.Moment, time: moment.Moment) =>
     date.clone().hour(time.hour()).minute(time.minute()).second(time.second());
@@ -36,30 +34,30 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
 
   let date: moment.Moment;
 
+  // A linked date is a chip around the link itself, relabeled with the display format. Obsidian
+  // renders the link, so its target is read the way Obsidian reads any link.
+  const linkedDate = (date: moment.Moment, link: string) =>
+    `<span data-date="${dateAttr(date)}" class="${c('preview-date-wrapper')} ${c('date')} ${c('preview-date-link')}">${link}</span>`;
+
   title = title.replace(
     new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}\\[\\[([^\\]]+)\\]\\]`, 'g'),
     (match, space, content) => {
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
       date = parsed;
-      const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
-      return `${space}<span data-date="${dateAttr(date)}" class="${c('preview-date-wrapper')} ${c('date')} ${c('preview-date-link')}"><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+      return `${space}${linkedDate(date, `[[${content.split('|')[0]}|${parsed.format(dateDisplayFormat)}]]`)}`;
     }
   );
   title = title.replace(
-    new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}\\[([^\\]]+)\\]\\(([^)]+)\\)`, 'g'),
+    new RegExp(
+      `(^|\\s)${escapeRegExpStr(dateTrigger)}\\[([^\\]]+)\\](${markdownLinkDestination})`,
+      'g'
+    ),
     (match, space, content, destination) => {
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
-      let path: string;
-      try {
-        path = decodeURIComponent(destination);
-      } catch {
-        return match;
-      }
-      path = path.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
       date = parsed;
-      return `${space}<span data-date="${dateAttr(date)}" class="${c('preview-date-wrapper')} ${c('date')} ${c('preview-date-link')}"><a class="${c('preview-date')} internal-link" data-href="${path}" href="${path}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+      return `${space}${linkedDate(date, `[${parsed.format(dateDisplayFormat)}]${destination}`)}`;
     }
   );
   let dateIndex = 0;

@@ -200,6 +200,10 @@ export function escapeRegExpStr(str: string) {
   return str && reHasRegExChar.test(str) ? str.replace(reRegExChar, '\\$&') : str || '';
 }
 
+// The `(destination)` of a Markdown link, as a pattern: in angle brackets, or without spaces and
+// with balanced parentheses.
+export const markdownLinkDestination = '\\((?:<[^<>\\n]*>|(?:[^\\s()]|\\([^\\s()]*\\))+)\\)';
+
 export function getTemplatePlugins(app: App) {
   const templatesPlugin = (app as any).internalPlugins.plugins.templates;
   const templatesEnabled = templatesPlugin.enabled;

@@ -1,6 +1,8 @@
-import { Keymap, Menu, TFile, getLinkpath, moment, normalizePath } from 'obsidian';
-import { createDailyNote, getDailyNoteSettings } from 'obsidian-daily-notes-interface';
+import { Keymap, Menu, getLinkpath, moment } from 'obsidian';
+import { createDailyNote } from 'obsidian-daily-notes-interface';
 import { KanbanView } from 'src/KanbanView';
+import { c } from 'src/components/helpers';
+import { isLinkToDailyNote } from 'src/helpers';
 
 const noBreakSpace = /\u00A0/g;
 
@@ -51,6 +53,8 @@ export function bindMarkdownEvents(view: KanbanView) {
     };
   };
 
+  const creatingDailyNotes = new Set<string>();
+
   const onLinkClick = async (evt: MouseEvent, targetEl: HTMLElement) => {
     if (evt.button !== 0 && evt.button !== 1) return;
 
@@ -58,21 +62,29 @@ export function bindMarkdownEvents(view: KanbanView) {
     if (!link) return;
 
     evt.preventDefault();
-    const dateStr = targetEl.closest<HTMLElement>('.kanban-plugin__date')?.dataset.date;
+
+    const newLeaf = Keymap.isModEvent(evt);
+    const date = targetEl.closest<HTMLElement>(`.${c('date')}`)?.dataset.date;
+
     if (
-      dateStr &&
-      !app.metadataCache.getFirstLinkpathDest(getLinkpath(link.href), view.file.path)
+      date &&
+      !app.metadataCache.getFirstLinkpathDest(getLinkpath(link.href), view.file.path) &&
+      isLinkToDailyNote(link.href, moment(date))
     ) {
-      const date = moment(dateStr);
-      const { folder, format } = getDailyNoteSettings();
-      const path = normalizePath(`${folder ?? ''}/${date.format(format)}.md`);
-      const file = app.vault.getAbstractFileByPath(path) ?? (await createDailyNote(date));
-      if (file instanceof TFile) {
-        await app.workspace.getLeaf(Keymap.isModEvent(evt)).openFile(file);
+      // A second click lands before the first one's note exists.
+      if (creatingDailyNotes.has(date)) return;
+      creatingDailyNotes.add(date);
+
+      try {
+        const file = await createDailyNote(moment(date));
+        if (file) await app.workspace.getLeaf(newLeaf).openFile(file);
+      } finally {
+        creatingDailyNotes.delete(date);
       }
       return;
     }
-    app.workspace.openLinkText(link.href, view.file.path, Keymap.isModEvent(evt));
+
+    app.workspace.openLinkText(link.href, view.file.path, newLeaf);
   };
 
   contentEl.on('click', 'a.internal-link', onLinkClick);

@@ -3,7 +3,7 @@ import { extractInlineFields } from 'src/parsers/helpers/inlineMetadata';
 import { parseFragment } from 'src/parsers/parseMarkdown';
 import { SKIP, visit } from 'unist-util-visit';
 
-import { escapeRegExpStr } from '../helpers';
+import { escapeRegExpStr, markdownLinkDestination } from '../helpers';
 
 // Characters a filename can't hold or a [[link]] to it can't contain.
 const illegalCharsRegEx = /[\\/:"*?<>|[\]#^]+/g;
@@ -17,7 +17,7 @@ export function getNoteFromCardTitle(firstLine: string, stateManager: StateManag
   const dateTrigger = escapeRegExpStr(stateManager.getSetting('date-trigger'));
   const timeTrigger = escapeRegExpStr(stateManager.getSetting('time-trigger'));
   const dateTimeRegEx = new RegExp(
-    `(?:^|\\s)(?:${timeTrigger}\\{[^}]+\\}|${dateTrigger}(?:\\{[^}]+\\}|\\[\\[[^\\]]+\\]\\]|\\[[^\\]]+\\]\\([^)]+\\)))`,
+    `(?:^|\\s)(?:${timeTrigger}\\{[^}]+\\}|${dateTrigger}(?:\\{[^}]+\\}|\\[\\[[^\\]]+\\]\\]|\\[[^\\]]+\\]${markdownLinkDestination}))`,
     'g'
   );
   // Keep the existing filename rules independent of which tokens stay on the card.

@@ -11,6 +11,7 @@ import {
   applyTemplate,
   escapeRegExpStr,
   generateInstanceId,
+  markdownLinkDestination,
   maybeCompleteForMove,
 } from '../helpers';
 import { EditState, Item } from '../types';
@@ -249,7 +250,7 @@ export function useItemMenu({
               const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
               const dateTrigger = stateManager.getSetting('date-trigger');
               const contentMatch = shouldLinkDates
-                ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
+                ? `(?:\\[[^\\]]+\\]${markdownLinkDestination}|\\[\\[[^\\]]+\\]\\])`
                 : '{[^}]+}';
               const dateRegEx = new RegExp(
                 `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`

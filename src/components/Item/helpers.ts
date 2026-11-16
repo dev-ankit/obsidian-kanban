@@ -11,7 +11,7 @@ import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
 import flatpickr from '../Editor/flatpickr';
 import { Instance } from '../Editor/flatpickr/types/instance';
-import { c, escapeRegExpStr } from '../helpers';
+import { c, escapeRegExpStr, markdownLinkDestination } from '../helpers';
 import { Item } from '../types';
 
 export function constructDatePicker(
@@ -121,7 +121,7 @@ export function constructMenuDatePickerOnChange({
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
   const dateTrigger = stateManager.getSetting('date-trigger');
   const contentMatch = shouldLinkDates
-    ? '(?:\\[[^\\]]+\\]\\([^)]+\\)|\\[\\[[^\\]]+\\]\\])'
+    ? `(?:\\[[^\\]]+\\]${markdownLinkDestination}|\\[\\[[^\\]]+\\]\\])`
     : '{[^}]+}';
   const dateRegEx = new RegExp(
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`,

@@ -1,5 +1,9 @@
-import { App, TFile } from 'obsidian';
-import { getDailyNoteSettings, getDateFromFile } from 'obsidian-daily-notes-interface';
+import { App, TFile, getLinkpath, moment, normalizePath } from 'obsidian';
+import {
+  appHasDailyNotesPluginLoaded,
+  getDailyNoteSettings,
+  getDateFromFile,
+} from 'obsidian-daily-notes-interface';
 
 import { frontmatterKey } from './parsers/common';
 
@@ -43,6 +47,20 @@ export function buildLinkToDailyNote(app: App, dateStr: string) {
   }
 
   return `[[${dateStr}]]`;
+}
+
+// Whether a link names the note Daily Notes would create for a date. Only then is a missing note
+// Daily Notes' to create, with its folder, name and template; any other link is an ordinary link.
+export function isLinkToDailyNote(linktext: string, date: moment.Moment) {
+  const settings = appHasDailyNotesPluginLoaded() && getDailyNoteSettings();
+  if (!settings) return false;
+
+  const withoutExtension = (path: string) => normalizePath(path).replace(/\.md$/, '');
+  const dailyNote = withoutExtension(`${settings.folder}/${date.format(settings.format)}`);
+  const target = withoutExtension(getLinkpath(linktext));
+
+  // A link can name a note by the end of its path, down to its name alone.
+  return dailyNote === target || dailyNote.endsWith(`/${target}`);
 }
 
 export function hasFrontmatterKeyRaw(data: string) {
