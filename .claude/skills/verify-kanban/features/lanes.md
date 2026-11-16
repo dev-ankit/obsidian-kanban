@@ -15,6 +15,8 @@ saved in the board's settings block. Reordering lanes by dragging is in
 - `lane-collapse-cjk` keeps CJK titles in collapsed lanes reading bottom to top with glyphs turned
   sideways like Latin text, never upside down (PR #1244).
 - `lane-move-complete` applies completion when moving through the card menu as well as dragging (#1070).
+- `lane-move-unsorts` treats a list as no longer sorted after a card is moved into it, by menu
+  as by drag.
 - `lane-menu` opens the lane's `More options` menu. Not yet driven.
 
 ## How to get to it (user POV)
@@ -52,6 +54,13 @@ Preconditions:
   Switch to markdown and back through `Kanban: Toggle between Kanban and markdown mode`;
   reopen `Edit list` and confirm the setting remains enabled. Capture the final board and run
   `$K errors`.
+- **Move into a sorted list** (`lane-move-unsorts`). On `basic`, Todo's list menu → Sort by →
+  Sort by card text: Buy milk, Plan sprint, Review PR, Write release notes. Move
+  `Fix drag scroll` there with its card menu → Move to list → Todo; it lands on top. Sort by
+  card text again: the list must come out ascending, with `Fix drag scroll` second. Before the
+  fix it came out descending (Write, Review, Plan, Fix, Buy): the menu left the list marked as
+  sorted, so the next sort reversed it, while a drag into the list cleared the mark. Repeat
+  with a drag instead of the menu; the result is the same.
 - **Move to a completed list (#1070).** On `basic`, open the Done lane menu, choose
   `Edit list`, enable `Mark cards in this list as complete`, focus the title editor,
   and press Enter. Assert `file --expect '**Complete**'`. Capture `snap` before moving.

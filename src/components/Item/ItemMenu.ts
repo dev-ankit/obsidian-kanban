@@ -3,7 +3,6 @@ import { Menu, Notice, Platform, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
@@ -12,7 +11,7 @@ import {
   escapeRegExpStr,
   generateInstanceId,
   markdownLinkDestination,
-  maybeCompleteForMove,
+  moveItem,
 } from '../helpers';
 import { EditState, Item } from '../types';
 import {
@@ -312,25 +311,9 @@ export function useItemMenu({
               .setTitle(lanes[i].data.title)
               .onClick(() => {
                 if (path[0] === i) return;
-                stateManager.setState((boardData) => {
-                  const destination = [i, 0];
-                  const { next, replacement } = maybeCompleteForMove(
-                    stateManager,
-                    boardData,
-                    path,
-                    stateManager,
-                    boardData,
-                    destination,
-                    boardData.children[path[0]].children[path[1]]
-                  );
-                  return moveEntity(
-                    boardData,
-                    path,
-                    destination,
-                    () => next,
-                    () => replacement
-                  );
-                });
+                stateManager.setState((boardData) =>
+                  moveItem(stateManager, boardData, path, [i, 0])
+                );
               })
           );
         }

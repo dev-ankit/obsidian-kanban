@@ -7,18 +7,12 @@ import { CurrentTimeProvider } from './components/CurrentTime';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
-import { c, maybeCompleteForMove } from './components/helpers';
+import { c, maybeCompleteForMove, moveItem } from './components/helpers';
 import { Board, DataTypes, Item, Lane } from './components/types';
 import { DndContext } from './dnd/components/DndContext';
 import { DragOverlay } from './dnd/components/DragOverlay';
 import { Entity, Nestable } from './dnd/types';
-import {
-  getEntityFromPath,
-  insertEntity,
-  moveEntity,
-  removeEntity,
-  updateEntity,
-} from './dnd/util/data';
+import { getEntityFromPath, insertEntity, moveEntity, removeEntity } from './dnd/util/data';
 import { getBoardModifiers } from './helpers/boardModifiers';
 import KanbanPlugin from './main';
 import { frontmatterKey } from './parsers/common';
@@ -111,75 +105,28 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
         }
 
         return stateManager.setState((board) => {
-          const entity = getEntityFromPath(board, dragPath);
-          const newBoard: Board = moveEntity(
-            board,
-            dragPath,
-            dropPath,
-            (entity) => {
-              if (entity.type === DataTypes.Item) {
-                const { next } = maybeCompleteForMove(
-                  stateManager,
-                  board,
-                  dragPath,
-                  stateManager,
-                  board,
-                  dropPath,
-                  entity
-                );
-                return next;
-              }
-              return entity;
-            },
-            (entity) => {
-              if (entity.type === DataTypes.Item) {
-                const { replacement } = maybeCompleteForMove(
-                  stateManager,
-                  board,
-                  dragPath,
-                  stateManager,
-                  board,
-                  dropPath,
-                  entity
-                );
-                return replacement;
-              }
-            }
-          );
-
-          if (entity.type === DataTypes.Lane) {
-            const from = dragPath.last();
-            let to = dropPath.last();
-
-            if (from < to) to -= 1;
-
-            const collapsedState = view.getViewState('list-collapse');
-            const op = (collapsedState: boolean[]) => {
-              const newState = [...collapsedState];
-              newState.splice(to, 0, newState.splice(from, 1)[0]);
-              return newState;
-            };
-
-            view.setViewState('list-collapse', undefined, op);
-
-            return update<Board>(newBoard, {
-              data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
-            });
+          if (getEntityFromPath(board, dragPath).type === DataTypes.Item) {
+            return moveItem(stateManager, board, dragPath, dropPath);
           }
 
-          // Remove sorting in the destination lane
-          const destinationParentPath = dropPath.slice(0, -1);
-          const destinationParent = getEntityFromPath(board, destinationParentPath);
+          // A list takes its collapsed state along.
+          const from = dragPath.last();
+          let to = dropPath.last();
 
-          if (destinationParent?.data?.sorted !== undefined) {
-            return updateEntity(newBoard, destinationParentPath, {
-              data: {
-                $unset: ['sorted'],
-              },
-            });
-          }
+          if (from < to) to -= 1;
 
-          return newBoard;
+          const collapsedState = view.getViewState('list-collapse');
+          const op = (collapsedState: boolean[]) => {
+            const newState = [...collapsedState];
+            newState.splice(to, 0, newState.splice(from, 1)[0]);
+            return newState;
+          };
+
+          view.setViewState('list-collapse', undefined, op);
+
+          return update<Board>(moveEntity(board, dragPath, dropPath), {
+            data: { settings: { 'list-collapse': { $set: op(collapsedState) } } },
+          });
         });
       }
 
