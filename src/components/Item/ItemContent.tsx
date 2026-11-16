@@ -217,6 +217,22 @@ export const ItemContent = memo(function ItemContent({
     }
   }, [setEditState]);
 
+  // One card is edited at a time: starting an edit finishes any other card's edit the same way a
+  // click outside it would. Click-outside alone can't do this on desktop, because the drag
+  // handler stops mouse pointerdown on cards, so a click on another card never reaches it.
+  const isEditingCard = !isStatic && isEditing(editState);
+  useEffect(() => {
+    if (!isEditingCard || !view) return;
+    view.emitter.emit('cardEditStart', item.id);
+    const onCardEditStart = (id: string) => {
+      if (id !== item.id) handleClickOutside();
+    };
+    view.emitter.on('cardEditStart', onCardEditStart);
+    return () => {
+      view.emitter.off('cardEditStart', onCardEditStart);
+    };
+  }, [isEditingCard, item.id, view, handleClickOutside]);
+
   // Listen for global save event (triggered when view closes, tab changes, etc)
   // Must be synchronous to ensure data is saved before view is unloaded
   useEffect(() => {
@@ -235,6 +251,9 @@ export const ItemContent = memo(function ItemContent({
   }, [view, stateManager, boardModifiers, item, path]);
 
   const clickOutsideRef = useOnclickOutside(handleClickOutside, {
+    // Only while editing: once the editor unmounts the hook has no element left, and it then
+    // treats every click anywhere as outside.
+    disabled: !isEditing(editState),
     ignoreClass: [
       c('ignore-click-outside'),
       'mobile-toolbar',

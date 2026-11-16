@@ -74,6 +74,9 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
   }, [view]);
 
   const clickOutsideRef = useOnclickOutside(handleClickOutside, {
+    // Only while editing: once the editor unmounts the hook has no element left, and it then
+    // treats every click anywhere as outside.
+    disabled: !isEditing(editState),
     ignoreClass: [
       c('ignore-click-outside'),
       'mobile-toolbar',
