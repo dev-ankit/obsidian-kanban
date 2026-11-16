@@ -51,8 +51,6 @@ export default class KanbanPlugin extends Plugin {
 
   // leafid => view mode
   kanbanFileModes: Record<string, string> = {};
-  // leaf id => the markdown mode (editing or reading) the leaf had before it became a board
-  markdownModes: Record<string, string> = {};
   stateManagers: Map<TFile, StateManager> = new Map();
 
   windowRegistry: Map<Window, WindowRegistry> = new Map();
@@ -100,7 +98,6 @@ export default class KanbanPlugin extends Plugin {
     this.stateManagers.clear();
     this.windowRegistry.clear();
     this.kanbanFileModes = {};
-    this.markdownModes = {};
 
     (this.app.workspace as any).unregisterHoverLinkSource(frontmatterKey);
   }
@@ -330,12 +327,10 @@ export default class KanbanPlugin extends Plugin {
   }
 
   async setMarkdownView(leaf: WorkspaceLeaf, focus: boolean = true) {
-    // Return to the mode (editing or reading) the leaf had before it became a board.
-    const mode = this.markdownModes[(leaf as any).id];
     await leaf.setViewState(
       {
         type: 'markdown',
-        state: { ...leaf.view.getState(), ...(mode && { mode }) },
+        state: leaf.view.getState(),
         popstate: true,
       } as ViewState,
       { focus }
@@ -786,7 +781,6 @@ export default class KanbanPlugin extends Plugin {
             if (state?.file && self.kanbanFileModes[this.id || state.file]) {
               delete self.kanbanFileModes[this.id || state.file];
             }
-            delete self.markdownModes[this.id];
 
             return next.apply(this);
           };
@@ -794,18 +788,12 @@ export default class KanbanPlugin extends Plugin {
 
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
-            // Every switch from a note to a board passes through here (toggle command, pane
-            // menu, automatic redirect); remember the note's mode so it can be restored.
-            if (
-              this.view instanceof MarkdownView &&
-              state.type === kanbanViewType &&
-              this.view.file?.path === (state.state as any)?.file
-            ) {
-              self.markdownModes[this.id] = this.view.getMode();
-            }
-
             // Check if we're leaving a Kanban view to switch to another type
-            if (self._loaded && this.view instanceof KanbanView && state.type !== kanbanViewType) {
+            if (
+              self._loaded &&
+              this.view instanceof KanbanView &&
+              state.type !== kanbanViewType
+            ) {
               // Force save all editing items before switching views
               const event = new CustomEvent('save-all-editing-items');
               (this.view as KanbanView).containerEl.dispatchEvent(event);

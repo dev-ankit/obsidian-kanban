@@ -39,6 +39,10 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   activeEditor: any;
   viewSettings: KanbanViewSettings = {};
+  // The markdown view's mode (editing/reading, raw source) from before this leaf became a board.
+  // Kept in this view's state so switching back to markdown, or restoring the workspace, returns
+  // the note to the same mode.
+  markdownViewState: { mode?: string; source?: boolean } = {};
 
   get isPrimary(): boolean {
     return this.plugin.getStateManager(this.file)?.getAView() === this;
@@ -253,12 +257,16 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   async setState(state: any, result: ViewStateResult): Promise<void> {
     this.viewSettings = { ...state.kanbanViewState };
+    this.markdownViewState = { mode: state.mode, source: state.source };
     await super.setState(state, result);
   }
 
   getState() {
     const state = super.getState();
     state.kanbanViewState = { ...this.viewSettings };
+    const { mode, source } = this.markdownViewState;
+    if (mode !== undefined) state.mode = mode;
+    if (source !== undefined) state.source = source;
     return state;
   }
 
