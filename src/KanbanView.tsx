@@ -218,6 +218,11 @@ export class KanbanView extends TextFileView implements HoverParent {
     return this.data;
   }
 
+  openAsMarkdown() {
+    this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
+    this.plugin.setMarkdownView(this.leaf);
+  }
+
   setViewData(data: string, clear?: boolean) {
     if (!hasFrontmatterKeyRaw(data)) {
       this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
@@ -325,10 +330,7 @@ export class KanbanView extends TextFileView implements HoverParent {
           .setTitle(t('Open as markdown'))
           .setIcon('lucide-file-text')
           .setSection('pane')
-          .onClick(() => {
-            this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
-            this.plugin.setMarkdownView(this.leaf);
-          });
+          .onClick(() => this.openAsMarkdown());
       })
       .addItem((item) => {
         item
@@ -434,10 +436,7 @@ export class KanbanView extends TextFileView implements HoverParent {
       this.actionButtons['show-view-as-markdown'] = this.addAction(
         'lucide-file-text',
         t('Open as markdown'),
-        () => {
-          this.plugin.kanbanFileModes[(this.leaf as any).id || this.file.path] = 'markdown';
-          this.plugin.setMarkdownView(this.leaf);
-        }
+        () => this.openAsMarkdown()
       );
     } else if (
       !stateManager.getSetting('show-view-as-markdown') &&

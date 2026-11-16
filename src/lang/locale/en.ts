@@ -30,6 +30,10 @@ const en = {
 
   // parser.ts
   Complete: 'Complete',
+  'unmodeled-content-explanation':
+    "This file has content Kanban can't show as part of the board, so Kanban won't edit it: saving would delete that content. Your file hasn't been changed.",
+  'unmodeled-content-fix':
+    'To fix it, open the file as markdown and turn these lines into "## " lane headings or "- " cards, move them to another note, or delete them.',
   Archive: 'Archive',
   'Invalid Kanban file: problems parsing frontmatter':
     'Invalid Kanban file: problems parsing frontmatter',

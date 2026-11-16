@@ -53,6 +53,13 @@ const localeMap: { [k: string]: Partial<Lang> } = {
 const lang = window.localStorage.getItem('language');
 const locale = localeMap[lang || 'en'];
 
+// A string in every shipped language, for reading files written while another language was active.
+export function tAll(str: keyof typeof en): string[] {
+  return Array.from(new Set([en[str], ...Object.values(localeMap).map((l) => l[str])])).filter(
+    Boolean
+  ) as string[];
+}
+
 export function t(str: keyof typeof en): string {
   if (!locale) {
     console.error('Error: kanban locale not found', lang);

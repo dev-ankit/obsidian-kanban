@@ -36,30 +36,22 @@ function extractFrontmatter(md: string) {
   }
 }
 
-function extractSettingsFooter(md: string) {
-  let hasEntered = false;
-  let openTickCount = 0;
-  let settingsEnd = -1;
+// The settings footer exactly as settingsToCodeblock writes it, at the very end of the file.
+// Returns where it starts so the board parser can tell it apart from content it would drop.
+function extractSettingsFooter(md: string): {
+  settings: Record<string, any>;
+  start: number | null;
+} {
+  const start = md.lastIndexOf('%% kanban:settings');
+  if (start < 0 || (start > 0 && !/[\r\n]/.test(md[start - 1])))
+    return { settings: {}, start: null };
 
-  for (let i = md.length - 1; i >= 0; i--) {
-    if (!hasEntered && /[`%\n\r]/.test(md[i])) {
-      if (md[i] === '`') {
-        openTickCount++;
+  const match = md
+    .slice(start)
+    .match(/^%% kanban:settings[ \t]*\r?\n```[^\r\n]*\r?\n([\s\S]*?)\r?\n```[ \t]*\r?\n%%\s*$/);
+  if (!match) return { settings: {}, start: null };
 
-        if (openTickCount === 3) {
-          hasEntered = true;
-          settingsEnd = i - 1;
-        }
-      }
-      continue;
-    } else if (!hasEntered) {
-      return {};
-    }
-
-    if (md[i] === '`' && md[i - 1] === '`' && md[i - 2] === '`' && /[\r\n]/.test(md[i - 3])) {
-      return JSON.parse(md.slice(i + 1, settingsEnd).trim());
-    }
-  }
+  return { settings: JSON.parse(match[1].trim()), start };
 }
 
 function getExtensions(stateManager: StateManager) {
@@ -166,7 +158,7 @@ function getMdastExtensions(stateManager: StateManager) {
 
 export function parseMarkdown(stateManager: StateManager, md: string) {
   const mdFrontmatter = extractFrontmatter(md);
-  const mdSettings = extractSettingsFooter(md);
+  const { settings: mdSettings, start: settingsStart } = extractSettingsFooter(md);
   const settings = { ...mdSettings };
   const fileFrontmatter: Record<string, any> = {};
 
@@ -186,6 +178,7 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
 
   return {
     settings,
+    settingsStart,
     frontmatter: fileFrontmatter,
     ast: fromMarkdown(md, {
       extensions: [frontmatter(['yaml']), ...getExtensions(stateManager)],

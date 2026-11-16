@@ -186,17 +186,18 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     );
 
   if (boardData.data.errors.length > 0) {
+    // Saving is blocked while there are errors (StateManager.saveToDisk). The stack trace is in
+    // the console; show the message and the way out.
     return (
-      <div>
-        <div>Error:</div>
-        {boardData.data.errors.map((e, i) => {
-          return (
-            <div key={i}>
-              <div>{e.description}</div>
-              <pre>{e.stack}</pre>
-            </div>
-          );
-        })}
+      <div className={c('board-error')}>
+        {boardData.data.errors.map((e, i) => (
+          <p key={i} className={c('board-error-message')}>
+            {e.description}
+          </p>
+        ))}
+        <button className="mod-cta" onClick={() => view.openAsMarkdown()}>
+          {t('Open as markdown')}
+        </button>
       </div>
     );
   }

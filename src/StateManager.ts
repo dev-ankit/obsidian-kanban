@@ -23,6 +23,7 @@ export class StateManager {
 
   app: App;
   state: Board;
+  boardGeneration = 0;
   file: TFile;
 
   parser: BaseFormat;
@@ -87,9 +88,16 @@ export class StateManager {
   }
 
   async newBoard(view: KanbanView, md: string) {
+    const generation = ++this.boardGeneration;
     try {
       const board = this.getParsedBoard(md);
+      if (board.data.errors.length) {
+        this.setState(board, false);
+        return;
+      }
       await view.prerender(board);
+      // A newer parse finished while this one was rendering; don't replace it with older content.
+      if (generation !== this.boardGeneration) return;
       this.setState(board, false);
     } catch (e) {
       this.setError(e);
@@ -141,7 +149,16 @@ export class StateManager {
       const newState = typeof state === 'function' ? state(this.state) : state;
       const newSettings = newState?.data.settings;
 
-      if (oldSettings && newSettings && shouldRefreshBoard(oldSettings, newSettings)) {
+      // Keep the old cards and only refresh settings when both boards parsed cleanly. A board with
+      // errors must replace the state, so a new error blocks saving and a fixed file loads.
+      const bothParsed = !this.state?.data.errors.length && !newState?.data.errors.length;
+
+      if (
+        bothParsed &&
+        oldSettings &&
+        newSettings &&
+        shouldRefreshBoard(oldSettings, newSettings)
+      ) {
         this.state = update(this.state, {
           data: {
             settings: {
@@ -327,7 +344,7 @@ export class StateManager {
       board = update(board, {
         data: {
           errors: {
-            $push: [{ description: e.toString(), stack: e.stack }],
+            $push: [{ description: e.message ?? String(e), stack: e.stack }],
           },
         },
       });
@@ -341,7 +358,7 @@ export class StateManager {
       update(this.state, {
         data: {
           errors: {
-            $push: [{ description: e.toString(), stack: e.stack }],
+            $push: [{ description: e.message ?? String(e), stack: e.stack }],
           },
         },
       }),
