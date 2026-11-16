@@ -25,10 +25,9 @@ interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
 function colorizeTags(containerEl: HTMLElement, getTagColor: (tag: string) => TagColor) {
   containerEl.querySelectorAll<HTMLAnchorElement>('a.tag').forEach((a) => {
     const color = getTagColor(a.getAttr('href'));
-    if (!color) return;
     a.setCssProps({
-      '--tag-color': color.color,
-      '--tag-background': color.backgroundColor,
+      '--tag-color': color?.color ?? '',
+      '--tag-background': color?.backgroundColor ?? '',
     });
   });
 }

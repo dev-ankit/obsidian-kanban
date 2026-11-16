@@ -17,6 +17,7 @@ import { useDragHandle } from '../dnd/managers/DragManager';
 import { Entity } from '../dnd/types';
 import { getParentBodyElement, getParentWindow } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
+import { ResetButton } from './ResetButton';
 
 interface ItemProps {
   tagIndex: number;
@@ -30,6 +31,7 @@ interface TagSortSettingsProps {
   tags: TagSortSetting[];
   scrollEl: HTMLElement;
   onChange(tags: TagSortSetting[]): void;
+  onReset?: () => TagSortSetting[];
   portalContainer: HTMLElement;
 }
 
@@ -238,6 +240,7 @@ function TagSettings(props: TagSortSettingsProps) {
         <div className="setting-item-description">
           {t('Set an explicit sort order for the specified tags.')}
         </div>
+        {props.onReset && <ResetButton onClick={() => setTags(props.onReset())} />}
       </div>
       <div>
         <DndContext win={win} onDrop={moveTag}>
@@ -304,13 +307,15 @@ export function renderTagSortSettings(
   containerEl: HTMLElement,
   scrollEl: HTMLElement,
   tags: TagSortSetting[],
-  onChange: (key: TagSortSetting[]) => void
+  onChange: (key: TagSortSetting[]) => void,
+  onReset?: () => TagSortSetting[]
 ) {
   render(
     <TagSettings
       tags={tags}
       scrollEl={scrollEl}
       onChange={onChange}
+      onReset={onReset}
       portalContainer={getParentBodyElement(containerEl)}
     />,
     containerEl

@@ -540,20 +540,31 @@ export class SettingsManager {
     new Setting(contentEl).then((setting) => {
       const [value, globalValue] = this.getSetting('tag-sort', local);
 
-      const keys: TagSortSetting[] = ((value || globalValue || []) as TagSort[]).map((k) => {
-        return {
-          ...TagSortSettingTemplate,
-          id: generateInstanceId(),
-          data: k,
-        };
-      });
+      const toKeys = (tags: TagSort[]): TagSortSetting[] =>
+        (tags || []).map((k) => {
+          return {
+            ...TagSortSettingTemplate,
+            id: generateInstanceId(),
+            data: k,
+          };
+        });
 
-      renderTagSortSettings(setting.settingEl, contentEl, keys, (keys: TagSortSetting[]) =>
-        this.applySettingsUpdate({
-          'tag-sort': {
-            $set: keys.map((k) => k.data),
-          },
-        })
+      renderTagSortSettings(
+        setting.settingEl,
+        contentEl,
+        toKeys((value || globalValue) as TagSort[]),
+        (keys: TagSortSetting[]) =>
+          this.applySettingsUpdate({
+            'tag-sort': {
+              $set: keys.map((k) => k.data),
+            },
+          }),
+        local
+          ? () => {
+              this.applySettingsUpdate({ $unset: ['tag-sort'] });
+              return toKeys(globalValue as TagSort[]);
+            }
+          : undefined
       );
 
       this.cleanupFns.push(() => {
@@ -583,7 +594,12 @@ export class SettingsManager {
               $set: keys.map((k) => k.data),
             },
           }),
-        local ? () => this.applySettingsUpdate({ $unset: ['tag-colors'] }) : undefined
+        local
+          ? () => {
+              this.applySettingsUpdate({ $unset: ['tag-colors'] });
+              return [];
+            }
+          : undefined
       );
 
       this.cleanupFns.push(() => {
@@ -943,6 +959,12 @@ export class SettingsManager {
               $set: keys.map((k) => k.data),
             },
           }),
+        local
+          ? () => {
+              this.applySettingsUpdate({ $unset: ['date-colors'] });
+              return [];
+            }
+          : undefined,
         () => {
           const [value, globalValue] = this.getSetting('date-display-format', local);
           const defaultFormat = getDefaultDateFormat(this.app);

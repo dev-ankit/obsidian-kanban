@@ -5,7 +5,10 @@ set of eligible vault paths, including in large vaults, without freezing the set
 
 ## Sub-features
 
-- `settings-tag-reset` restores inherited tag colors, including from an empty local override (#1094).
+- `settings-tag-reset` restores inherited tag colors, including from an empty local override,
+  and takes the board's old colors off its tags at once (#1094).
+- `settings-list-reset` gives a board's date colors and tag sort order the same reset.
+- `settings-quick-changes` saves every setting changed in quick succession, not only the last.
 - `settings-locale-fallback` opens settings in regional or unsupported languages without console errors (#1248).
 - `settings-large-open` opens board and global settings in a large vault without building a DOM
   element for every file and folder.
@@ -87,6 +90,23 @@ Preconditions:
   reset clears the local editor rows, removes the key on disk and restores inheritance. Cancel
   the modal and reopen it to confirm the result survives. Global settings retain their color.
   Capture the local controls and the restored tag; finish with `errors`.
+- **Reset the board's lists** (`settings-list-reset`). Launch `--fixture settings-reset`: the
+  plugin's global settings color `#global` blue, color past dates blue and sort `#zeta` before
+  `#alpha`; Board.md colors `#work` red and overrides date colors and tag sort with empty lists.
+  Read the `--tag-background` of both tags and the `--date-color` of the date: red, none, none.
+  Open board settings and click `[aria-label="Reset to default"]` inside
+  `.kanban-plugin__tag-color-input-wrapper`, `.kanban-plugin__date-color-input-wrapper` and
+  `.kanban-plugin__tag-sort-input-wrapper`, one right after the other. The tag sort rows now
+  list `#zeta`, `#alpha`. Wait two seconds, close the modal, and
+  `$K file --absent 'tag-colors'`, `--absent 'date-colors'`, `--absent 'tag-sort'` all pass.
+  Without reloading, `#work` has no color, `#global` is blue and the date is blue; Todo's
+  Sort by → Sort by tags puts `Two #zeta` first. Before the fix only tag colors had a reset,
+  `#work` stayed red until the board was reopened, and of several resets made within a second
+  only the last was saved.
+- **Quick changes** (`settings-quick-changes`). In board settings click the toggles of
+  `Display card checkbox` and `Hide card counts in list titles` one right after the other, wait
+  two seconds and close. Both `"show-checkboxes":true` and `"hide-card-count":true` are on disk.
+  Before the fix only the second was.
 
 - **Regional language.** Use English (GB) as the scratch profile's language. If the native
   Language dropdown cannot be driven over CDP, configure the environment with

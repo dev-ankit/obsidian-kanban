@@ -16,6 +16,7 @@ import { c, generateInstanceId } from '../components/helpers';
 import { TagColor, TagColorSetting, TagColorSettingTemplate } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
+import { ResetButton } from './ResetButton';
 
 interface ItemProps {
   defaultColors: { color: string; backgroundColor: string };
@@ -167,7 +168,7 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
 interface TagSettingsProps {
   dataKeys: TagColorSetting[];
   onChange: (settings: TagColorSetting[]) => void;
-  onReset?: () => void;
+  onReset?: () => TagColorSetting[];
   portalContainer: HTMLElement;
 }
 
@@ -253,18 +254,7 @@ function TagSettings({ dataKeys, onChange, onReset }: TagSettingsProps) {
         <div className="setting-item-description">
           {t('Set colors for tags displayed in cards.')}
         </div>
-        {onReset && (
-          <button
-            aria-label={t('Reset to default')}
-            className="clickable-icon"
-            onClick={() => {
-              setKeys([]);
-              onReset();
-            }}
-          >
-            <Icon name="lucide-rotate-ccw" />
-          </button>
-        )}
+        {onReset && <ResetButton onClick={() => setKeys(onReset())} />}
       </div>
       <div>
         {keys.map((key, index) => (
@@ -293,7 +283,7 @@ export function renderTagSettings(
   containerEl: HTMLElement,
   keys: TagColorSetting[],
   onChange: (key: TagColorSetting[]) => void,
-  onReset?: () => void
+  onReset?: () => TagColorSetting[]
 ) {
   render(
     <TagSettings
