@@ -61,15 +61,17 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
       return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')} ${c('preview-date-link')}"${wrapperStyle}><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
     }
   );
+  let dateIndex = 0;
   title = title.replace(
     new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}{([^}]+)}`, 'g'),
     (match, space, content) => {
+      const index = dateIndex++;
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
       date = parsed;
       if (!dateColor) dateColor = getDateColor(parsed);
       const { wrapperClass, wrapperStyle } = getWrapperStyles(c('preview-date-wrapper'));
-      return `${space}<span data-date="${date.toISOString()}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
+      return `${space}<span data-date="${date.toISOString()}" data-date-index="${index}" class="${wrapperClass} ${c('date')}"${wrapperStyle}><span class="${c('preview-date')} ${c('item-metadata-date')}">${parsed.format(dateDisplayFormat)}</span></span>`;
     }
   );
 
