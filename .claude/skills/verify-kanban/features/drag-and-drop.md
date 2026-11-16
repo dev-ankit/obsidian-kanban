@@ -6,6 +6,7 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 
 ## Sub-features
 
+- `dnd-remount` keeps dragging functional across repeated board/markdown view changes.
 - `dnd-new-board` initializes dragging on a board created through the command palette, before reopening it (#902).
 - `dnd-within-before` moves a card above another card in the same lane.
 - `dnd-within-after` moves a card below another card in the same lane.
@@ -49,6 +50,11 @@ Preconditions:
   lane grip before Fresh todo, with `--axis x --before`, and check the saved heading order.
   Use the actual new filename if Obsidian appends a number. `file` defaults to `Board.md`,
   so always pass the new board's filename explicitly.
+- **Destroy and remount.** On `basic`, switch to markdown with the header button and back
+  with `Kanban: Toggle between` three times. Each time drag `Fix drag scroll` into Done and back
+  into Doing; assert the saved lane after each drop. Create a fresh board and run `dnd-new-board`
+  too. Finish with `errors`. This covers repeated manager setup and cleanup after
+  `EntityManager.destroy()` was corrected to clear its mounted state.
 - **Within, after.** `$K drag '.kanban-plugin__item::Buy milk' '.kanban-plugin__lane::Todo >> .kanban-plugin__item::Review PR' --after`.
   `outline` shows Todo as Write release notes, Plan sprint, Review PR, Buy milk; on disk,
   `$K file --expect $'[[Notes/Spec]]\n- [ ] Buy milk'` succeeds.

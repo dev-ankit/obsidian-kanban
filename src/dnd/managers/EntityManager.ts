@@ -123,7 +123,7 @@ export class EntityManager {
 
   destroy() {
     if (!this.mounted) return;
-    this.mounted = true;
+    this.mounted = false;
     this.dndManager.unobserveResize(this.measureNode);
     this.sortManager?.unregisterSortable(this.entityId);
     this.scrollParent?.unregisterObserverHandler(this.entityId, this.measureNode);
