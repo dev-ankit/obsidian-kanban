@@ -44,7 +44,7 @@ const lang: Partial<Lang> = {
   'Prepend (compact)': '加到開頭（精簡）',
   Append: '加到結尾',
   'These settings will take precedence over the default Kanban board settings.':
-    '這些設定會覆寫預設的看板設定。',
+    '這些設定會優先於預設的看板設定。',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
     '設定看板的預設值；每個看板都可以各自覆寫。',
   'Note template': '筆記範本',
@@ -53,7 +53,7 @@ const lang: Partial<Lang> = {
   'No template': '無範本',
   'Note folder': '筆記資料夾',
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
-    '從看板卡片建立的筆記會放在這個資料夾；留空則放在此儲存庫的預設位置。',
+    '從看板卡片建立的筆記會放在這個資料夾；留空則放在此保管庫的預設位置。',
   'Default folder': '預設資料夾',
   'List width': '清單寬度',
   'Expand lists to full width in list view': '在清單檢視中將清單展開為全寬',
@@ -100,9 +100,9 @@ const lang: Partial<Lang> = {
   'Merge with linked page metadata': '與連結頁面的中繼資料合併',
   'Hide card counts in list titles': '在清單標題隱藏卡片數量',
   'When toggled, card counts are hidden from the list title': '開啟時，清單標題不顯示卡片數量',
-  'Link dates to daily notes': '將日期連結到每日筆記',
+  'Link dates to daily notes': '將日期連結到日記',
   'When toggled, dates will link to daily notes. Eg. [[2021-04-26]]':
-    '開啟時，日期會連結到每日筆記，例如 [[2021-04-26]]',
+    '開啟時，日期會連結到日記，例如 [[2021-04-26]]',
   'Add date and time to archived cards': '為封存的卡片加上日期與時間',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
     '開啟時，卡片封存時會在標題加上目前的日期與時間，例如 - [ ] 2021-05-14 10:00am 我的卡片標題',
@@ -116,7 +116,7 @@ const lang: Partial<Lang> = {
   'Kanban Plugin': '看板外掛',
   'Tag click action': '點擊標籤的動作',
   'Search Kanban Board': '搜尋看板',
-  'Search Obsidian Vault': '搜尋 Obsidian 儲存庫',
+  'Search Obsidian Vault': '搜尋 Obsidian 保管庫',
   'This setting controls whether clicking the tags displayed below the card title opens the Obsidian search or the Kanban board search.':
     '這個設定控制點擊卡片標題下方的標籤時，要開啟 Obsidian 搜尋還是看板搜尋。',
   'Tag colors': '標籤顏色',
@@ -164,12 +164,12 @@ const lang: Partial<Lang> = {
   Tags: '標籤',
   Priority: '優先順序',
   Start: '開始',
-  Created: '建立',
+  Created: '建立日期',
   Scheduled: '排程',
   Due: '到期',
   Cancelled: '已取消',
   Recurrence: '重複',
-  'Depends on': '取決於',
+  'Depends on': '前置任務',
   'More options': '更多選項',
   Cancel: '取消',
   Done: '完成',
@@ -192,7 +192,7 @@ const lang: Partial<Lang> = {
   'Edit time': '編輯時間',
   'Add time': '新增時間',
   'Remove time': '移除時間',
-  'Duplicate card': '複製卡片',
+  'Duplicate card': '建立卡片副本',
   'Split card': '拆分卡片',
   'Copy link to card': '複製卡片連結',
   'Insert card before': '在前面插入卡片',

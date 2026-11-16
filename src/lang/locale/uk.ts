@@ -11,7 +11,7 @@ const lang: Partial<Lang> = {
   'Error: cannot create Kanban, the current note is not empty':
     'Помилка: неможливо створити Kanban, поточна нотатка не порожня',
   'New kanban board': 'Нова дошка Kanban',
-  'Untitled Kanban': 'Без назви Kanban',
+  'Untitled Kanban': 'Kanban без назви',
   'Toggle between Kanban and markdown mode': 'Перемкнути між режимами Kanban і Markdown',
 
   'View as board': 'Переглянути як дошку',
@@ -39,7 +39,7 @@ const lang: Partial<Lang> = {
 
   // settingHelpers.ts
   'Note: No template plugins are currently enabled.':
-    'Примітка: наразі не увімкнено жодного плагіна шаблонів.',
+    'Примітка: наразі не увімкнено жодного додатка шаблонів.',
   default: 'за замовчуванням',
   'Search...': 'Пошук...',
 
@@ -63,10 +63,10 @@ const lang: Partial<Lang> = {
   'This template will be used when creating new notes from Kanban cards.':
     'Цей шаблон використовуватиметься під час створення нових нотаток з карток Kanban.',
   'No template': 'Без шаблону',
-  'Note folder': 'Папка нотаток',
+  'Note folder': 'Тека нотаток',
   'Notes created from Kanban cards will be placed in this folder. If blank, they will be placed in the default location for this vault.':
     'Нотатки, створені з карток Kanban, зберігатимуться в цій папці. Якщо поле порожнє, вони потраплятимуть у типове розташування сховища.',
-  'Default folder': 'Типова папка',
+  'Default folder': 'Типова тека',
   'List width': 'Ширина списку',
   'Expand lists to full width in list view': 'Розгортати списки на всю ширину у режимі списку',
   'Enter a number to set the list width in pixels.':
@@ -74,17 +74,17 @@ const lang: Partial<Lang> = {
   'Maximum number of archived cards': 'Максимальна кількість архівованих карток',
   "Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
     'Архівовані картки можна переглядати в режимі Markdown. Старі картки видалятимуться після досягнення ліміту. Значення -1 дозволяє архіву зростати без обмежень.',
-  'Display card checkbox': 'Відображати чекбокс картки',
+  'Display card checkbox': 'Відображати прапорець картки',
   'When toggled, a checkbox will be displayed with each card':
-    'Якщо увімкнено, біля кожної картки показуватиметься чекбокс',
+    'Якщо увімкнено, біля кожної картки показуватиметься прапорець',
   'Reset to default': 'Скинути до типових',
   'Date & Time': 'Дата й час',
   'Date trigger': 'Тригер дати',
   'When this is typed, it will trigger the date selector':
-    'Введення цього символу викличе меню вибору дати',
+    'Введення цього тексту відкриє вибір дати',
   'Time trigger': 'Тригер часу',
   'When this is typed, it will trigger the time selector':
-    'Введення цього символу викличе меню вибору часу',
+    'Введення цього тексту відкриє вибір часу',
   'Date format': 'Формат дати',
   'This format will be used when saving dates in markdown.':
     'Цей формат використовуватиметься під час збереження дат у Markdown.',
@@ -97,22 +97,22 @@ const lang: Partial<Lang> = {
     'Цей формат застосовуватиметься під час відображення дат на картках Kanban.',
   'Show relative date': 'Показувати відносну дату',
   "When toggled, cards will display the distance between today and the card's date. eg. 'In 3 days', 'A month ago'. Relative dates will not be shown for dates from the Tasks and Dataview plugins.":
-    'Якщо увімкнено, картки показуватимуть часову відстань до дати картки (наприклад, "Через 3 дні", "Місяць тому"). Не діє на дати з плагінів Tasks та Dataview.',
+    'Якщо увімкнено, картки показуватимуть часову відстань до дати картки (наприклад, "Через 3 дні", "Місяць тому"). Не діє на дати з додатків Tasks та Dataview.',
 
-  'Move dates to card footer': 'Перемістити дати у підвал картки',
+  'Move dates to card footer': 'Перемістити дати у нижню частину картки',
   "When toggled, dates will be displayed in the card's footer instead of the card's body.":
-    'Якщо увімкнено, дати показуватимуться у підвалі картки, а не в її тілі.',
-  'Move tags to card footer': 'Перемістити теги у підвал картки',
+    'Якщо увімкнено, дати показуватимуться у нижній частині картки, а не в її тілі.',
+  'Move tags to card footer': 'Перемістити теги у нижню частину картки',
   "When toggled, tags will be displayed in the card's footer instead of the card's body.":
-    'Якщо увімкнено, теги показуватимуться у підвалі картки, а не в її тілі.',
-  'Move task data to card footer': 'Перемістити дані завдань у підвал картки',
+    'Якщо увімкнено, теги показуватимуться у нижній частині картки, а не в її тілі.',
+  'Move task data to card footer': 'Перемістити дані завдань у нижню частину картки',
   "When toggled, task data (from the Tasks plugin) will be displayed in the card's footer instead of the card's body.":
-    'Якщо увімкнено, дані завдань (з плагіна Tasks) показуватимуться у підвалі картки.',
+    'Якщо увімкнено, дані завдань (з додатка Tasks) показуватимуться в нижній частині картки, а не в її тілі.',
   'Inline metadata position': 'Розташування вбудованих метаданих',
   'Controls where the inline metadata (from the Dataview plugin) will be displayed.':
-    'Керує тим, де саме відображаються рядкові метадані з плагіна Dataview.',
+    'Керує тим, де саме відображаються рядкові метадані з додатка Dataview.',
   'Card body': 'Тіло картки',
-  'Card footer': 'Підвал картки',
+  'Card footer': 'Нижня частина картки',
   'Merge with linked page metadata': "Об'єднати з метаданими зв'язаної сторінки",
 
   'Hide card counts in list titles': 'Приховати кількість карток у назвах списків',
@@ -123,10 +123,10 @@ const lang: Partial<Lang> = {
     'Якщо увімкнено, дати стануть вікілінками на щоденні нотатки: [[2021-04-26]]',
   'Add date and time to archived cards': 'Додавати дату й час до архівованих карток',
   'When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title':
-    'Якщо увімкнено, поточні дата й час додаватимуться до назви картки під час архівації (наприклад: - [ ] 14.05.2021 10:00 Заголовок картки)',
+    'Якщо увімкнено, поточні дата й час додаватимуться до назви картки під час архівації (наприклад: - [ ] 2021-05-14 10:00am Заголовок картки)',
   'Add archive date/time after card title': 'Додавати дату/час архівації після назви картки',
   'When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.':
-    'Якщо увімкнено, дата/час архівації додаватиметься в кінці назви картки. За замовчуванням вона ставиться попереду.',
+    'Якщо увімкнено, дата/час архівації додаватиметься після назви картки, наприклад: - [ ] Назва картки 2021-05-14 10:00am. За замовчуванням додається перед назвою.',
   'Archive date/time separator': 'Роздільник дати/часу архівації',
   'This will be used to separate the archived date/time from the title':
     'Використовується для відокремлення мітки дати/часу від тексту картки',
@@ -142,7 +142,7 @@ const lang: Partial<Lang> = {
   'Linked Page Metadata': "Метадані зв'язаної сторінки",
   'Inline Metadata': 'Вбудовані метадані',
   'Display metadata for the first note linked within a card. Specify which metadata keys to display below. An optional label can be provided, and labels can be hidden altogether.':
-    'Відображати метадані першої нотатки, на яку є посилання в картці. Нижче вкажіть потрібні ключі.',
+    'Відображати метадані першої нотатки, на яку є посилання в картці. Нижче вкажіть ключі метаданих для показу. Можна задати необов’язковий підпис або повністю сховати підписи.',
   'Board Header Buttons': 'Кнопки у верхній панелі дошки',
   'Calendar: first day of week': 'Календар: перший день тижня',
   'Override which day is used as the start of the week':
@@ -159,9 +159,9 @@ const lang: Partial<Lang> = {
   'Text color': 'Колір тексту',
   'Date is': 'Дата:',
   Today: 'Сьогодні',
-  'After now': 'Пізніше за поточний момент',
-  'Before now': 'Раніше за поточний момент',
-  'Between now and': 'У проміжку між зараз та',
+  'After now': 'після поточного моменту',
+  'Before now': 'до поточного моменту',
+  'Between now and': 'Між поточним моментом і',
   'Display date colors': 'Колірне виділення дат',
   'Set colors for dates displayed in cards based on the rules below.':
     'Задайте правила підсвічування дат на картках.',
@@ -258,7 +258,7 @@ const lang: Partial<Lang> = {
   'Are you sure you want to archive all cards in this list?':
     'Справді архівувати всі картки в цьому списку?',
   'Yes, archive cards': 'Так, архівувати картки',
-  'Edit list': 'Редагувати назву списку',
+  'Edit list': 'Редагувати список',
   'Archive cards': 'Архівувати картки',
   'Archive list': 'Архівувати список',
   'Delete list': 'Видалити список',
@@ -271,10 +271,10 @@ const lang: Partial<Lang> = {
 
   // components/helpers/renderMarkdown.ts
   'Unable to find': 'Не знайдено',
-  'Open in default app': 'Відкрити в системній програмі за замовчуванням',
+  'Open in default app': 'Відкрити в застосунку за замовчуванням',
 
   // components/Editor/MarkdownEditor.tsx
-  Submit: 'Зберегти',
+  Submit: 'Готово',
 };
 
 export default lang;

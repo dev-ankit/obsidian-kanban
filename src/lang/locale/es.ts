@@ -8,7 +8,7 @@ const lang: Partial<Lang> = {
 		"Archivar tarjetas completadas en el tablero activo",
 	"Error: current file is not a Kanban board":
 		"Error: el archivo actual no es un tablero Kanban",
-	"Convert empty note to Kanban": "Convertir nota vacia en un Kanban",
+	"Convert empty note to Kanban": "Convertir nota vacía en Kanban",
 	"Error: cannot create Kanban, the current note is not empty":
 		"Error: No se puede crear el Kanban, la nota actual no está vacía",
 	"New kanban board": "Nuevo tablero Kanban",
@@ -33,7 +33,7 @@ const lang: Partial<Lang> = {
 
 	// parser.ts
 	Complete: "Completado",
-	Archive: "Archivado",
+	Archive: "Archivo",
 	"Invalid Kanban file: problems parsing frontmatter":
 		"Archivo Kanban no válido: problemas al analizar el frontmatter",
 	"I don't know how to interpret this line:":
@@ -47,9 +47,9 @@ const lang: Partial<Lang> = {
 	"Search...": "Buscar...",
 
 	// Settings.ts
-	"New line trigger": "Nueva linea",
+	"New line trigger": "Activador de nueva línea",
 	"Select whether Enter or Shift+Enter creates a new line. The opposite of what you choose will create and complete editing of cards and lists.":
-		"Presionar Enter o Shift+Enter creara una nueva línea. Lo opuesto que elija creará y completará la edición en tarjetas y listas.",
+		"Selecciona si Enter o Shift+Enter crea una nueva línea. La opción opuesta creará y completará la edición de tarjetas y listas.",
 	"Shift + Enter": "Shift + Enter",
 	Enter: "Enter",
 	"Prepend / append new cards": "Anteponer / añadir nuevas tarjetas",
@@ -57,7 +57,7 @@ const lang: Partial<Lang> = {
 		"Controla si las nuevas tarjetas se agregan al principio o al final de la lista.",
 	Prepend: "Anteponer",
 	"Prepend (compact)": "Anteponer (compacto)",
-	Append: "Añadir",
+	Append: "Añadir al final",
 	"These settings will take precedence over the default Kanban board settings.":
 		"Estas configuraciones tendrán prioridad sobre las configuraciones predeterminadas del tablero Kanban.",
 	"Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.":
@@ -77,26 +77,26 @@ const lang: Partial<Lang> = {
 		"Introduzca un número para establecer el ancho de la lista en píxeles.",
 	"Maximum number of archived cards": "Número máximo de tarjetas archivadas",
 	"Archived cards can be viewed in markdown mode. This setting will begin removing old cards once the limit is reached. Setting this value to -1 will allow a board's archive to grow infinitely.":
-		"Las tarjetas archivadas pueden verse en el modo markdown. Esta configuración eliminara las tarjetas antiguas una vez que se alcance el límite. Si se establece este valor en -1, el archivador de un tablero podrá aumentar infinitamente.",
-	"Display card checkbox": "Mostar caja de verificación",
+		"Las tarjetas archivadas pueden verse en el modo Markdown. Este ajuste empezará a eliminar las tarjetas antiguas una vez que se alcance el límite. Establecer este valor en -1 permitirá que el archivo del tablero crezca infinitamente.",
+	"Display card checkbox": "Mostrar casilla de verificación en tarjetas",
 	"When toggled, a checkbox will be displayed with each card":
-		"Cuando se activa, se mostrará una caja de verificación en cada tarjeta.",
+		"Cuando se activa, se mostrará una casilla de verificación en cada tarjeta.",
 	"Reset to default": "Restablecer a valores predeterminados",
 	"Date & Time": "Fecha y hora",
-	"Date trigger": "Disparador de fecha",
+	"Date trigger": "Activador de fecha",
 	"When this is typed, it will trigger the date selector":
 		"Cuando se escribe esto, se activará el selector de fecha.",
-	"Time trigger": "Disparador de tiempo",
+	"Time trigger": "Activador de hora",
 	"When this is typed, it will trigger the time selector":
-		"Cuando se escribe esto, se activará el selector de tiempo.",
+		"Cuando se escriba esto, se activará el selector de hora.",
 	"Date format": "Formato de fecha",
 	"This format will be used when saving dates in markdown.":
 		"Este formato se utilizará al guardar fechas en markdown.",
 	"For more syntax, refer to": "Para más sintaxis, consulte",
-	"format reference": "formato de referencia",
+	"format reference": "la referencia de formato",
 	"Your current syntax looks like this": "Su sintaxis actual se ve así",
 	"Time format": "Formato de hora",
-	"Date display format": "Formato de fecha",
+	"Date display format": "Formato de visualización de fecha",
 	"This format will be used when displaying dates in Kanban cards.":
 		"Este formato se utilizará al mostrar fechas en tarjetas Kanban",
 	"Show relative date": "Mostrar fecha relativa",
@@ -124,19 +124,19 @@ const lang: Partial<Lang> = {
 	"Hide card counts in list titles":
 		"Ocultar el número de tarjetas en los títulos de lista",
 	"When toggled, card counts are hidden from the list title":
-		"Si se activa, el contador de tarjetas se ocultara del título de la lista.",
+		"Si se activa, el número de tarjetas se ocultará del título de la lista.",
 	"Link dates to daily notes": "Vincular fechas a notas diarias",
 	"When toggled, dates will link to daily notes. Eg. [[2021-04-26]]":
 		"Si se activa, las fechas se vincularán a las notas diarias. Por ejemplo: [[2021-04-26]]",
 	"Add date and time to archived cards":
 		"Añadir fecha y hora a las tarjetas archivadas",
 	"When toggled, the current date and time will be added to the card title when it is archived. Eg. - [ ] 2021-05-14 10:00am My card title":
-		"Si se activa, la fecha y la hora actuales se agregarán al título de la tarjeta cuando se archive. Por ejemplo: - [ ] 2021-05-14 10:00 a. m. Título de mi tarjeta",
+		"Si se activa, la fecha y la hora actuales se agregarán al título de la tarjeta cuando se archive. Por ejemplo: - [ ] 2021-05-14 10:00am Título de mi tarjeta",
 
 	"Add archive date/time after card title":
 		"Añadir fecha y hora de archivación después del título de la tarjeta",
 	"When toggled, the archived date/time will be added after the card title, e.g.- [ ] My card title 2021-05-14 10:00am. By default, it is inserted before the title.":
-		"Si se activa, la fecha/hora de archivación se agregarán después del título de la tarjeta, por ejemplo: [ ] Título de mi tarjeta 2021-05-14 10:00 a. m. De manera predeterminada, se inserta antes del título.",
+		"Si se activa, la fecha/hora de archivación se agregarán después del título de la tarjeta, por ejemplo: - [ ] Título de mi tarjeta 2021-05-14 10:00am De manera predeterminada, se inserta antes del título.",
 	"Archive date/time separator": "Separador de fecha/hora de archivación",
 	"This will be used to separate the archived date/time from the title":
 		"Esto se utilizará para separar la fecha/hora archivada del título.",
@@ -170,9 +170,9 @@ const lang: Partial<Lang> = {
 	"Text color": "Color del texto",
 	"Date is": "La fecha es",
 	Today: "Hoy",
-	"After now": "Despues de hoy",
-	"Before now": "Antes de hoy",
-	"Between now and": "Entre hoy y",
+	"After now": "Después de ahora",
+	"Before now": "Antes de ahora",
+	"Between now and": "Entre ahora y",
 	"Display date colors": "Mostrar colores de fecha",
 	"Set colors for dates displayed in cards based on the rules below.":
 		"Establezca colores para las fechas que se muestran en las tarjetas según las reglas siguientes.",
@@ -201,10 +201,10 @@ const lang: Partial<Lang> = {
 	Tags: "Etiquetas",
 
 	Priority: "Prioridad",
-	Start: "Inició",
+	Start: "Inicio",
 	Created: "Creado",
 	Scheduled: "Programado",
-	Due: "Pendiente",
+	Due: "Vencimiento",
 	Cancelled: "Cancelado",
 	Recurrence: "Recurrencia",
 	"Depends on": "Depende de",
@@ -235,18 +235,18 @@ const lang: Partial<Lang> = {
 	"Delete card": "Eliminar tarjeta",
 	"Edit date": "Editar fecha",
 	"Add date": "Añadir fecha",
-	"Remove date": "Remover fecha",
+	"Remove date": "Quitar fecha",
 	"Edit time": "Editar hora",
 	"Add time": "Añadir hora",
-	"Remove time": "Remover hora",
+	"Remove time": "Quitar hora",
 	"Duplicate card": "Duplicar tarjeta",
 	"Split card": "Dividir tarjeta",
 	"Copy link to card": "Copiar enlace a la tarjeta",
 	"Insert card before": "Insertar tarjeta antes",
 	"Insert card after": "Insertar tarjeta después",
 	"Add label": "Añadir etiqueta",
-	"Move to top": "Mover hacia arriba",
-	"Move to bottom": "Mover hacia abajo",
+	"Move to top": "Mover al principio",
+	"Move to bottom": "Mover al final",
 	"Move to list": "Mover a la lista",
 
 	// components/Lane/LaneForm.tsx
@@ -263,22 +263,22 @@ const lang: Partial<Lang> = {
 	// components/Lane/LaneMenu.tsx
 	"Are you sure you want to delete this list and all its cards?":
 		"¿Seguro que deseas eliminar esta lista junto a todas sus tarjetas?",
-	"Yes, delete list": "Sí, elimina la lista",
+	"Yes, delete list": "Sí, eliminar lista",
 	"Are you sure you want to archive this list and all its cards?":
 		"¿Seguro que deseas archivar esta lista y todas sus tarjetas?",
-	"Yes, archive list": "Sí. archiva la lista",
+	"Yes, archive list": "Sí, archivar lista",
 	"Are you sure you want to archive all cards in this list?":
 		"¿Seguro que deseas archivar todas las tarjetas de esta lista?",
-	"Yes, archive cards": "Sí, archiva las tarjetas",
+	"Yes, archive cards": "Sí, archivar tarjetas",
 	"Edit list": "Editar lista",
 	"Archive cards": "Archivar tarjetas",
 	"Archive list": "Archivar lista",
 	"Delete list": "Eliminar lista",
 	"Insert list before": "Insertar lista antes",
 	"Insert list after": "Insertar lista después",
-	"Sort by card text": "Texto",
-	"Sort by date": "Fecha",
-	"Sort by tags": "Etiquetas",
+	"Sort by card text": "Ordenar por texto de la tarjeta",
+	"Sort by date": "Ordenar por fecha",
+	"Sort by tags": "Ordenar por etiquetas",
 	"Sort by": "Ordenar por",
 
 	// components/helpers/renderMarkdown.ts
