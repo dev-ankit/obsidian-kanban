@@ -239,8 +239,8 @@ export function MarkdownEditor({
     }
 
     // Keep the whole input in view on phones: the editor and, below it, the Submit button. The
-    // keyboard and editing toolbar keep resizing the board after keyboardDidShow, so also follow
-    // every resize of the scroll area around the input while editing.
+    // keyboard and editing toolbar keep resizing the board after keyboardDidShow, and the input
+    // itself grows as lines are measured or typed, so follow both while editing.
     const input = elRef.current.closest(`.${c('item-input-wrapper')}`) ?? elRef.current;
     const onShow = () => input.scrollIntoView({ block: 'nearest' });
     let scrollArea = input.parentElement;
@@ -252,6 +252,7 @@ export function MarkdownEditor({
     if (Platform.isMobile) {
       cm.dom.win.addEventListener('keyboardDidShow', onShow);
       resizeObserver?.observe(scrollArea);
+      resizeObserver?.observe(input);
     }
 
     return () => {
