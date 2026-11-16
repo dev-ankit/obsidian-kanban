@@ -22,7 +22,7 @@ import {
   MarkdownRenderer,
 } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
-import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
+import { c, useGetTagColorFn } from '../helpers';
 import { EditState, EditingState, Item, isEditing } from '../types';
 import { DateAndTime, RelativeDate } from './DateAndTime';
 import { InlineMetadata } from './InlineMetadata';
@@ -195,7 +195,6 @@ export const ItemContent = memo(function ItemContent({
   isStatic,
 }: ItemContentProps) {
   const { stateManager, filePath, boardModifiers, view } = useContext(KanbanContext);
-  const getDateColor = useGetDateColorFn(stateManager);
   const titleRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -359,12 +358,7 @@ export const ItemContent = memo(function ItemContent({
       {showMetadata && (
         <div className={c('item-metadata')}>
           <RelativeDate item={item} stateManager={stateManager} />
-          <DateAndTime
-            item={item}
-            stateManager={stateManager}
-            filePath={filePath}
-            getDateColor={getDateColor}
-          />
+          <DateAndTime item={item} stateManager={stateManager} filePath={filePath} />
           <InlineMetadata item={item} stateManager={stateManager} />
           <Tags tags={item.data.metadata.tags} searchQuery={searchQuery} />
         </div>

@@ -36,12 +36,8 @@ export function getDefaultLocale(stateManager?: StateManager) {
   const firstDayOfWeek = stateManager?.getSetting('date-picker-week-start');
   const curLocale = locale || localeMap.en;
 
-  if (firstDayOfWeek) {
-    return {
-      ...curLocale,
-      firstDayOfWeek,
-    };
-  }
+  // 0 is Sunday, so only a missing setting falls back to the locale's week start.
+  if (typeof firstDayOfWeek !== 'number') return curLocale;
 
-  return curLocale;
+  return { ...curLocale, firstDayOfWeek };
 }

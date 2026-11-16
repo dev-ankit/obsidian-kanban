@@ -32,9 +32,14 @@ export function buildLinkToDailyNote(app: App, dateStr: string) {
   const shouldUseMarkdownLinks = !!(app.vault as any).getConfig('useMarkdownLinks');
 
   if (shouldUseMarkdownLinks) {
-    return `[${dateStr}](${
-      dailyNoteSettings.folder ? `${encodeURIComponent(dailyNoteSettings.folder)}/` : ''
-    }${encodeURIComponent(dateStr)}.md)`;
+    // The folder and the date format can both hold folders, so the path is escaped per segment.
+    const path = `${dailyNoteSettings.folder ?? ''}/${dateStr}`
+      .split('/')
+      .filter(Boolean)
+      .map(encodeURIComponent)
+      .join('/');
+
+    return `[${dateStr}](${path}.md)`;
   }
 
   return `[[${dateStr}]]`;

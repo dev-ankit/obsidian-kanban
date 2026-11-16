@@ -278,7 +278,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     if (globalUpdater) {
       const stateManager = this.plugin.getStateManager(this.file);
       stateManager.viewSet.forEach((view) => {
-        view.viewSettings[key] = globalUpdater(view.viewSettings[key]);
+        view.viewSettings[key] = globalUpdater(view.getViewState(key));
       });
     } else if (val) {
       this.viewSettings[key] = val;
@@ -408,7 +408,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         'lucide-view',
         t('Board view'),
         (evt) => {
-          const view = this.viewSettings[frontmatterKey] || stateManager.getSetting(frontmatterKey);
+          const view = this.getViewState(frontmatterKey);
           new Menu()
             .addItem((item) =>
               item

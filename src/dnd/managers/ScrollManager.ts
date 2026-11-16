@@ -187,21 +187,24 @@ export class ScrollManager {
   bindScrollHandlers() {
     sides.forEach((side) => {
       const id = this.getId(side);
-      this.dndManager.dragManager.emitter.on('beginDragScroll', this.handleBeginDragScroll, id);
-      this.dndManager.dragManager.emitter.on('updateDragScroll', this.handleUpdateDragScroll, id);
-      this.dndManager.dragManager.emitter.on('endDragScroll', this.handleEndDragScroll, id);
-      this.dndManager.dragManager.emitter.on('dragEnd', this.onDragEnd);
+      this.dndManager.dragManager.emitter.on(`beginDragScroll:${id}`, this.handleBeginDragScroll);
+      this.dndManager.dragManager.emitter.on(`updateDragScroll:${id}`, this.handleUpdateDragScroll);
+      this.dndManager.dragManager.emitter.on(`endDragScroll:${id}`, this.handleEndDragScroll);
     });
+    this.dndManager.dragManager.emitter.on('dragEnd', this.onDragEnd);
   }
 
   unbindScrollHandlers() {
     sides.forEach((side) => {
       const id = this.getId(side);
-      this.dndManager.dragManager.emitter.off('beginDragScroll', this.handleBeginDragScroll, id);
-      this.dndManager.dragManager.emitter.off('updateDragScroll', this.handleUpdateDragScroll, id);
-      this.dndManager.dragManager.emitter.off('endDragScroll', this.handleEndDragScroll, id);
-      this.dndManager.dragManager.emitter.off('dragEnd', this.onDragEnd);
+      this.dndManager.dragManager.emitter.off(`beginDragScroll:${id}`, this.handleBeginDragScroll);
+      this.dndManager.dragManager.emitter.off(
+        `updateDragScroll:${id}`,
+        this.handleUpdateDragScroll
+      );
+      this.dndManager.dragManager.emitter.off(`endDragScroll:${id}`, this.handleEndDragScroll);
     });
+    this.dndManager.dragManager.emitter.off('dragEnd', this.onDragEnd);
   }
 
   onScroll = () => {

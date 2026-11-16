@@ -538,6 +538,9 @@ const HELP = `kv.mjs - drive an isolated Obsidian running this repo's Kanban bui
                       drag with real pointer events. Target a card with --before/--after to land
                       next to it; target a lane (or its card area) to drop into it. Lanes: grab
                       the lane's grip and use --axis x so before/after mean left/right.
+  drag <fromLoc> --point X,Y [--dwell ms] [--hold]
+                      hold the dragged item with the pointer at viewport X,Y and report which
+                      scroll containers moved (index into document order of [data-scrollid])
   drag <fromLoc> [<toLoc>] --edge left|right [--dwell ms] [--inset px] [--before|--after] [--hold]
                       hold the dragged item at the board's edge and report how far/fast it
                       scrolled; then drop on <toLoc> (now on screen), or where the pointer is
@@ -620,7 +623,11 @@ async function main() {
       const { cdp } = await attach();
       const edge = typeof flags.edge === 'string' ? flags.edge : null;
       if (edge && !['left', 'right'].includes(edge)) die('--edge must be left or right');
-      if (!edge && !pos[1]) die('drag needs a target locator, or --edge left|right');
+      // --point X,Y: hold at exact viewport coordinates (measure them with eval first), e.g. just
+      // past a scroll container's edge. Reports how far every scroll container moved meanwhile.
+      const point = typeof flags.point === 'string' ? flags.point.split(',').map(Number) : null;
+      if (point && (point.length !== 2 || point.some(Number.isNaN))) die('--point must be X,Y');
+      if (!edge && !point && !pos[1]) die('drag needs a target locator, --edge left|right, or --point X,Y');
       // With --edge, mustLocate on the target would scroll the board; resolve it after scrolling.
       const axis = flags.axis === 'x' ? 'x' : 'y';
       const toNth = Number(flags['to-nth'] || 0);
@@ -643,7 +650,7 @@ async function main() {
         `);
 
       // Resolve both ends before pressing so a bad locator never leaves the button held.
-      if (!edge) await mustLocate(cdp, pos[1], toNth);
+      if (!edge && !point) await mustLocate(cdp, pos[1], toNth);
       const a = await mustLocate(cdp, pos[0], Number(flags.nth || 0));
       // Kanban places the dragged entity (a card, or a whole lane when you grab its grip) by its
       // center. Remember where that center sits relative to the grab point.
@@ -653,8 +660,8 @@ async function main() {
         const r = ent.getBoundingClientRect();
         return { dx: r.left + r.width / 2 - ${a.x}, dy: r.top + r.height / 2 - ${a.y} };
       `);
-      let t = edge ? null : await measure();
-      if (!edge && !t?.onScreen) die('source and target are not on screen together; drag toward the edge with --edge to scroll first');
+      let t = edge || point ? null : await measure();
+      if (!edge && !point && !t?.onScreen) die('source and target are not on screen together; drag toward the edge with --edge to scroll first');
       // Pointer position that puts the entity's center just past the target's edge (or on its center).
       const dropAt = (r) => {
         const cx = (r.left + r.right) / 2;
@@ -681,7 +688,18 @@ async function main() {
         await mouse(cdp, 'mousePressed', x, y, 'left', 1);
         await moveTo(x + 8, y + 8, 4); // start the drag; the source leaves the layout here
         await sleep(300);
-        if (edge) {
+        if (point) {
+          const offsets = () =>
+            cdp.run(`return [...document.querySelectorAll('[data-scrollid]')].map((el) => [el.scrollLeft, el.scrollTop]);`);
+          await moveTo(point[0], point[1], 15);
+          const before = await offsets();
+          await sleep(Number(flags.dwell || 2000));
+          const after = await offsets();
+          const moved = after
+            .map(([l, t], i) => [i, Math.round(l - before[i][0]), Math.round(t - before[i][1])])
+            .filter(([, dx, dy]) => dx || dy);
+          report = ` scrolled ${moved.length ? moved.map(([i, dx, dy]) => `#${i} by (${dx}, ${dy})`).join(', ') : 'nothing'}`;
+        } else if (edge) {
           // Hold the pointer inside the scroll zone at the board's edge and measure the scroll.
           const sc = await scroller();
           if (!sc) throw new Error('board does not scroll horizontally; use a wider fixture (e.g. --fixture wide)');
@@ -721,7 +739,7 @@ async function main() {
         await mouse(cdp, 'mouseReleased', x, y, 'left', 1);
         throw e;
       }
-      const where = edge ? `via the ${edge} edge${pos[1] ? ` ${flags.before ? 'before' : flags.after ? 'after' : 'onto'} ${pos[1]}` : ''}` : `${flags.before ? 'before' : flags.after ? 'after' : 'onto'} ${pos[1]}`;
+      const where = point ? `at (${point.join(', ')})` : edge ? `via the ${edge} edge${pos[1] ? ` ${flags.before ? 'before' : flags.after ? 'after' : 'onto'} ${pos[1]}` : ''}` : `${flags.before ? 'before' : flags.after ? 'after' : 'onto'} ${pos[1]}`;
       if (flags.hold) {
         console.log(`holding ${pos[0]} ${where}${report}; inspect with snap/outline, then run: kv.mjs release`);
         return cdp.close();

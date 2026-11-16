@@ -15,6 +15,10 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 - `dnd-autoscroll` scrolls a wide board while a card is held at its edge (upstream PR #1179 changed
   the speed), then drops it in a lane that was off screen.
 - `dnd-lane-reorder` moves a whole lane left or right by its grip.
+- `dnd-scroll-isolation` scrolls only the board or lane whose edge is active, including when
+  moving a card between two boards in a split (#1051).
+- `dnd-scroll-overshoot` keeps scrolling when the pointer goes a little past the edge it is
+  scrolling: below a lane's list, or off the board over the file explorer.
 
 ## How to get to it (user POV)
 
@@ -79,8 +83,46 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   to what Shipped holds).
 - **Proof.** `snap` before and after each step, then `$K errors`.
 
+- **Separate boards and lanes** (`dnd-scroll-isolation`). Launch `--fixture split-scroll`,
+  right-click `.workspace-tab-header::Board`, click `.menu-item::Split right`, then click
+  `.nav-file-title[data-path="Other.md"]`. The two boards each have eight long lanes.
+  Capture a snap and the scroll offsets with
+  `$K eval '[...document.querySelectorAll(".kanban-plugin__board")].map(b => ({x:b.scrollLeft, lanes:[...b.querySelectorAll(".kanban-plugin__lane-items")].map(l => l.scrollTop)}))'`.
+  Drag `Left 1 card 01` toward the left board's right edge and hold there with
+  `$K drag '.kanban-plugin__item::Left 1 card 01' --edge right --dwell 800 --hold`.
+  Capture offsets again and a snap before `release`: the left board must scroll and the right
+  board must stay at zero. Repeat from the right board, verifying the left board stays put.
+  After scrolling the right board, hold its card just inside that board's left edge at the split.
+  Only the right board may scroll back: the card overlapping the left board must not activate it.
+  In a fresh run with the same split, drag `Left 1 card 01` after `Right 1 card 02`.
+  Assert the adjacent cards in `Other.md` and the source card's absence from `Board.md`.
+  Also hold a card at the bottom edge of its lane using real pointer input. Record every lane's
+  `scrollTop` before and during the hold: only that lane may scroll, including lanes outside
+  the viewport. Move away from the edge while still holding, then release; scrolling must stop.
+  Finish with `errors`. Before the fix, one edge event scrolled every eligible container in
+  the same window because EventEmitter's listener context was mistaken for an event filter.
+  Scroll hit testing also considered neighboring containers overlapped by the card, regardless
+  of which container held the pointer.
+
+- **Past the edge** (`dnd-scroll-overshoot`, `split-scroll`, one board, no split). Read the first
+  lane's list box with
+  `$K eval '(() => { const r = document.querySelector(".kanban-plugin__lane-items").getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom] })()'`.
+  Hold a card 9 px below that list, over `+ Add a card`:
+  `$K drag '.kanban-plugin__item::Left 1 card 02' --point <mid x>,<bottom + 9> --dwell 1500 --hold`.
+  The report must name one container (`#1`, the first lane) and a positive vertical distance;
+  `snap`, then `release`. Then scroll the board right by dragging a card to its right edge, and
+  hold a card 8 px left of the board's left edge (over the file explorer) with `--point`: only
+  `#0` (the board) scrolls back. On the build before this fix both report `scrolled nothing`.
+  In the split from `dnd-scroll-isolation`, also hold a left-board card with the pointer 8 px
+  inside the right board: the left board must stay put (the pointer is in the other board), and
+  hold a card low in the second lane's column while it overlaps the first lane: only the second
+  lane's list scrolls.
+
 ## Gotchas
 
+- `drag --point` takes viewport pixels and numbers the scroll containers in document order
+  (`#0` is the first board, then its lanes). On its way to the point the pointer may cross
+  another edge zone and scroll it briefly; the report covers only the dwell.
 - Release too early and nothing drops: the slot animates in. `drag` waits 1000 ms over the target
   (`--settle`); don't lower it.
 - `--before`/`--after` put the dragged entity's center 10 px past the target's edge. `drag` corrects

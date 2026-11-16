@@ -33,6 +33,32 @@ export interface ScrollEventData extends DragEventData {
   scrollStrength: number;
 }
 
+// The innermost scroll container showing at a point. Hit testing can't answer this mid-drag:
+// boards ignore pointer events while something is dragged.
+function getScrollContainerAt(doc: Document, x: number, y: number) {
+  const showing = new Set<Element>();
+  let innermost: Element | undefined;
+
+  // Document order, so a container comes after the one that clips it.
+  doc.querySelectorAll('[data-scrollid]').forEach((el) => {
+    const clippedBy = el.parentElement?.closest('[data-scrollid]');
+    const rect = el.getBoundingClientRect();
+
+    if (
+      (!clippedBy || showing.has(clippedBy)) &&
+      x >= rect.left &&
+      x < rect.right &&
+      y >= rect.top &&
+      y < rect.bottom
+    ) {
+      showing.add(el);
+      innermost = el;
+    }
+  });
+
+  return innermost;
+}
+
 export class DragManager {
   win: Window;
   emitter: EventEmitter;
@@ -186,10 +212,27 @@ export class DragManager {
       }
     });
 
+    // The dragged card's hitbox decides which edge scrolls, and a wide card also reaches the edges
+    // of containers the pointer has nothing to do with: a sibling lane, the other board in a
+    // split. Those are the ones left out, so a pointer that overshoots its own container's edge
+    // (or is over no container at all) keeps scrolling it.
+    const pointerScrollEl = getScrollContainerAt(
+      win.document,
+      this.dragPosition.x - win.scrollX,
+      this.dragPosition.y - win.scrollY
+    );
+
     this.scrollEntities.forEach((entity) => {
       const data = entity.getData();
+      const scrollEl: HTMLElement = data.scrollContainer;
 
-      if (win === data.win && data.accepts.includes(type)) {
+      if (
+        win === data.win &&
+        data.accepts.includes(type) &&
+        (!pointerScrollEl ||
+          scrollEl.contains(pointerScrollEl) ||
+          pointerScrollEl.contains(scrollEl))
+      ) {
         scrollEntities.push(entity);
         scrollHitboxes.push(entity.getHitbox());
       }
@@ -238,17 +281,13 @@ export class DragManager {
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
-      this.emitter.emit(
-        'endDragScroll',
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
+      this.emitter.emit(`endDragScroll:${scrollEntityId}`, {
+        ...this.getDragEventData(),
+        scrollEntity,
+        scrollEntityId,
+        scrollEntitySide,
+        scrollStrength,
+      });
 
       this.scrollIntersection = undefined;
     }
@@ -262,17 +301,13 @@ export class DragManager {
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
-      this.emitter.emit(
-        'beginDragScroll',
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
+      this.emitter.emit(`beginDragScroll:${scrollEntityId}`, {
+        ...this.getDragEventData(),
+        scrollEntity,
+        scrollEntityId,
+        scrollEntitySide,
+        scrollStrength,
+      });
 
       this.scrollIntersection = scrollIntersection;
     } else if (
@@ -285,17 +320,13 @@ export class DragManager {
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
-      this.emitter.emit(
-        'updateDragScroll',
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
+      this.emitter.emit(`updateDragScroll:${scrollEntityId}`, {
+        ...this.getDragEventData(),
+        scrollEntity,
+        scrollEntityId,
+        scrollEntitySide,
+        scrollStrength,
+      });
 
       this.scrollIntersection = scrollIntersection;
     }

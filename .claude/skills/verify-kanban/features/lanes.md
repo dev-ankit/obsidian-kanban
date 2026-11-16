@@ -8,8 +8,10 @@ saved in the board's settings block. Reordering lanes by dragging is in
 ## Sub-features
 
 - `lane-add` adds a list from the board header.
+- `lane-add-complete` honors the new-list completion toggle for both button and keyboard submission (#984).
 - `lane-add-blank` ignores a whitespace-only list title (upstream PR #1226).
 - `lane-collapse` collapses a lane and saves that state.
+- `lane-reopen` adds and collapses lanes after the open board is re-opened, with or without saved collapse state.
 - `lane-collapse-cjk` keeps CJK titles in collapsed lanes reading bottom to top with glyphs turned
   sideways like Latin text, never upside down (PR #1244).
 - `lane-menu` opens the lane's `More options` menu. Not yet driven.
@@ -32,9 +34,33 @@ Preconditions:
   `outline` ends with `## Blocked (0)`, and `$K file --expect '## Blocked'` succeeds.
 - **Blank add.** Open the form again, `$K type '  '`, `$K key Enter`. No new lane appears in
   `outline`.
+- **Completion toggle (#984).** On a fresh `basic` board, open `Add a list`, type
+  `Completed button`, then click `.kanban-plugin__lane-form-wrapper .checkbox-container`.
+  Capture `snap` with the toggle enabled. Click `.kanban-plugin__lane-action-add` and assert
+  `$K file --expect $'## Completed button\n\n**Complete**'`. The form stays open and its toggle
+  resets to off. Click `.kanban-plugin__lane-input .cm-content`, type `Ordinary reset`, and press
+  Enter. Its saved heading must have no `**Complete**` marker. Without closing the form, type
+  `Completed enter`, enable the toggle again, click the editor, and press Enter. Assert
+  `$K file --expect $'## Completed enter\n\n**Complete**'`. Toggle on and back off before creating
+  another list; it must have no completion marker. These submissions must reuse the same form
+  so the journey catches callbacks retaining old toggle state.
+  Close with `.kanban-plugin__lane-action-cancel`. Open the new completed list's menu and choose
+  `Edit list`: `.kanban-plugin__lane-setting-wrapper .checkbox-container` has `is-enabled`.
+  Press Enter to finish editing the title. Add a card to that list through `+ Add a card` and
+  drag an unchecked card into it. Both must persist as `[x]` beneath its completion marker.
+  Switch to markdown and back through `Kanban: Toggle between Kanban and markdown mode`;
+  reopen `Edit list` and confirm the setting remains enabled. Capture the final board and run
+  `$K errors`.
 - **Collapse.** `$K click '.kanban-plugin__lane::Blocked >> .kanban-plugin__lane-collapse'`.
   `$K count '.kanban-plugin__lane-wrapper.collapse-horizontal'` is `1`, and
   `$K file --expect '"list-collapse":[false,false,false,true]'` succeeds.
+- **After re-opening the board.** Re-opening an open board through the quick switcher resets
+  the view's own settings. On a fresh `basic` board, drag `Fix drag scroll` after `Ship 2.0.52`
+  and back into `Doing`, then `$K key Mod+o`, `$K type 'Board'`, `$K key Enter`. Add a list with
+  the completion toggle on and collapse `Doing`: both save, and `$K errors` is empty. Repeat on
+  a board written without a settings footer (`---\nkanban-plugin: board\n---\n\n## A\n\n## B\n`):
+  after re-open, collapsing `B` saves `"list-collapse":[…,true]` and adding a list saves. Before
+  the fix, both threw `is not iterable` and replaced the board with the error view.
 - **CJK collapsed** (`wide`). `$K click '.kanban-plugin__lane::待办事项 >> .kanban-plugin__lane-collapse'`
   and the same for `進行中`. Then
   `$K snap cjk-todo --clip '.kanban-plugin__lane::待办事项 >> .kanban-plugin__lane-header-wrapper'`

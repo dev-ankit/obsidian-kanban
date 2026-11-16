@@ -255,6 +255,7 @@ export class StateManager {
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
       'tag-action': this.getSettingRaw('tag-action', suppliedSettings) ?? 'obsidian',
+      'list-collapse': this.getSettingRaw('list-collapse', suppliedSettings) ?? [],
     };
   }
 
@@ -348,12 +349,14 @@ export class StateManager {
   }
 
   onFileMetadataChange() {
-    this.reparseBoardFromMd();
-  }
-
-  async reparseBoardFromMd() {
+    if (!this.state) return;
     try {
-      this.setState(this.getParsedBoard(this.getAView().data), false);
+      // An errored board holds no cards to refresh. It's parsed again instead, so an error
+      // caused by a linked note clears once that note is fixed.
+      const board = this.hasError()
+        ? this.getParsedBoard(this.getAView().data)
+        : this.parser.refreshFileMetadata();
+      if (board !== this.state) this.setState(board, false);
     } catch (e) {
       this.setError(e);
     }

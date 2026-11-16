@@ -10,7 +10,7 @@ import { InlineField, taskFields } from 'src/parsers/helpers/inlineMetadata';
 
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext } from '../context';
-import { c, parseMetadataWithOptions, useGetDateColorFn } from '../helpers';
+import { c, parseMetadataWithOptions, useDateColor } from '../helpers';
 import { DataKey, FileMetadata, Item, PageData } from '../types';
 import { Tags } from './ItemContent';
 
@@ -147,9 +147,42 @@ export function pageDataToString(data: PageData, stateManager: StateManager): st
   return anyToString(data.value, stateManager);
 }
 
+function MetadataDate({
+  date,
+  str,
+  dateLabel,
+  isMatch,
+}: {
+  date: moment.Moment;
+  str: string;
+  dateLabel?: string;
+  isMatch: boolean;
+}) {
+  const { stateManager } = useContext(KanbanContext);
+  const dateColor = useDateColor(stateManager, date);
+
+  return (
+    <span
+      className={classcat({
+        [c('date')]: true,
+        'is-search-match': isMatch,
+        'has-background': dateColor?.backgroundColor,
+      })}
+      style={
+        dateColor && {
+          '--date-color': dateColor.color,
+          '--date-background-color': dateColor.backgroundColor,
+        }
+      }
+    >
+      {!!dateLabel && <span className={c('item-metadata-date-label')}>{dateLabel}</span>}
+      <span className={c('item-metadata-date')}>{str}</span>
+    </span>
+  );
+}
+
 export function MetadataValue({ data, dateLabel, searchQuery }: MetadataValueProps) {
   const { view, stateManager } = useContext(KanbanContext);
-  const getDateColor = useGetDateColorFn(stateManager);
 
   const renderChild = (v: any, sep?: string) => {
     const link = getLinkFromObj(v, view);
@@ -167,25 +200,7 @@ export function MetadataValue({ data, dateLabel, searchQuery }: MetadataValuePro
         />
       );
     } else if (date) {
-      const dateColor = getDateColor(date);
-      content = (
-        <span
-          className={classcat({
-            [c('date')]: true,
-            'is-search-match': isMatch,
-            'has-background': dateColor?.backgroundColor,
-          })}
-          style={
-            dateColor && {
-              '--date-color': dateColor.color,
-              '--date-background-color': dateColor.backgroundColor,
-            }
-          }
-        >
-          {!!dateLabel && <span className={c('item-metadata-date-label')}>{dateLabel}</span>}
-          <span className={c('item-metadata-date')}>{str}</span>
-        </span>
-      );
+      content = <MetadataDate date={date} str={str} dateLabel={dateLabel} isMatch={!!isMatch} />;
     } else if (isMatch) {
       content = <span className="is-search-match">{str}</span>;
     } else {

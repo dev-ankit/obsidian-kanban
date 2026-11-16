@@ -1,11 +1,12 @@
 import { isPlainObject } from 'is-plain-object';
 import { TFile } from 'obsidian';
 import { getAPI } from 'obsidian-dataview';
+import isEqual from 'react-fast-compare';
 import { StateManager } from 'src/StateManager';
-import { Board, Item } from 'src/components/types';
+import { Board, Item, ItemMetadata } from 'src/components/types';
 
 import { diff, diffApply } from '../helpers/patch';
-import { BaseFormat } from './common';
+import { BaseFormat, getLinkedPageMetadata, getSearchValue } from './common';
 import {
   astToUnhydratedBoard,
   boardToMd,
@@ -17,6 +18,12 @@ import { hydrateBoard, hydratePostOp } from './helpers/hydrateBoard';
 import { parseMarkdown } from './parseMarkdown';
 
 const generatedKeys: Array<string | number> = ['id', 'date', 'time', 'titleSearch', 'file'];
+
+// The list itself when mapping changes none of its values.
+function mapChanged<T>(list: T[], map: (value: T) => T): T[] {
+  const mapped = list.map(map);
+  return mapped.some((value, i) => value !== list[i]) ? mapped : list;
+}
 
 export class ListFormat implements BaseFormat {
   stateManager: StateManager;
@@ -65,6 +72,55 @@ export class ListFormat implements BaseFormat {
     }
 
     return hydrateBoard(this.stateManager, newBoard);
+  }
+
+  // What a parse derives from the notes cards link to, recomputed without parsing. Anything that
+  // comes out the same keeps its object, so a vault change that doesn't concern this board
+  // returns the board it was given.
+  refreshFileMetadata() {
+    const { stateManager } = this;
+    const { state, app, file: boardFile } = stateManager;
+    const resolve = (target?: string) =>
+      target === undefined
+        ? undefined
+        : app.metadataCache.getFirstLinkpathDest(target, boardFile.path) ?? undefined;
+    const withMetadata = (item: Item, metadata: Partial<ItemMetadata>): Item => ({
+      ...item,
+      data: { ...item.data, metadata: { ...item.data.metadata, ...metadata } },
+    });
+    const linkedMetadata = ({ fileMetadataTarget }: ItemMetadata) => {
+      const linked = getLinkedPageMetadata(stateManager, resolve(fileMetadataTarget));
+      return { fileMetadata: linked.fileMetadata, fileMetadataOrder: linked.fileMetadataOrder };
+    };
+    const refreshItem = (item: Item): Item => {
+      const { metadata } = item.data;
+      if (!metadata.fileAccessor) return item;
+
+      const refreshed = withMetadata(item, {
+        ...linkedMetadata(metadata),
+        file: resolve(metadata.fileAccessor.target),
+      });
+      refreshed.data.titleSearch = getSearchValue(refreshed, stateManager);
+      return isEqual(refreshed, item) ? item : refreshed;
+    };
+    // A parse gives archived cards their linked metadata but doesn't hydrate them.
+    const refreshArchivedItem = (item: Item): Item => {
+      const { metadata } = item.data;
+      if (metadata.fileMetadataTarget === undefined) return item;
+
+      const refreshed = withMetadata(item, linkedMetadata(metadata));
+      return isEqual(refreshed, item) ? item : refreshed;
+    };
+
+    const children = mapChanged(state.children, (lane) => {
+      const items = mapChanged(lane.children, refreshItem);
+      return items === lane.children ? lane : { ...lane, children: items };
+    });
+    const archive = mapChanged(state.data.archive, refreshArchivedItem);
+
+    return children === state.children && archive === state.data.archive
+      ? state
+      : { ...state, children, data: { ...state.data, archive } };
   }
 
   reparseBoard() {

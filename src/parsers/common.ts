@@ -18,6 +18,7 @@ export interface BaseFormat {
   boardToMd(board: Board): string;
   mdToBoard(md: string): Board;
   reparseBoard(): Board;
+  refreshFileMetadata(): Board;
 }
 
 export const completeString = `**${t('Complete')}**`;
@@ -88,7 +89,8 @@ function getPageData(obj: any, path: string) {
   let ctx = obj;
 
   for (const p of split) {
-    if (typeof ctx === 'object' && p in ctx) {
+    // A null along the way (`project: null` for `project.status`) means there's no value.
+    if (ctx && typeof ctx === 'object' && p in ctx) {
       ctx = ctx[p];
     } else {
       ctx = null;

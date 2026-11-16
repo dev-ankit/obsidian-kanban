@@ -457,8 +457,7 @@ export default class KanbanPlugin extends Plugin {
           if (Platform.isMobile) {
             const stateManager = this.stateManagers.get(file);
             const kanbanView = leaf.view as KanbanView;
-            const boardView =
-              kanbanView.viewSettings[frontmatterKey] || stateManager.getSetting(frontmatterKey);
+            const boardView = kanbanView.getViewState(frontmatterKey);
 
             menu
               .addItem((item) => {
@@ -789,11 +788,7 @@ export default class KanbanPlugin extends Plugin {
         setViewState(next) {
           return function (state: ViewState, ...rest: any[]) {
             // Check if we're leaving a Kanban view to switch to another type
-            if (
-              self._loaded &&
-              this.view instanceof KanbanView &&
-              state.type !== kanbanViewType
-            ) {
+            if (self._loaded && this.view instanceof KanbanView && state.type !== kanbanViewType) {
               // Force save all editing items before switching views
               const event = new CustomEvent('save-all-editing-items');
               (this.view as KanbanView).containerEl.dispatchEvent(event);
