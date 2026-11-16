@@ -212,10 +212,7 @@ export class DragManager {
       }
     });
 
-    // The dragged card's hitbox decides which edge scrolls, and a wide card also reaches the edges
-    // of containers the pointer has nothing to do with: a sibling lane, the other board in a
-    // split. Those are the ones left out, so a pointer that overshoots its own container's edge
-    // (or is over no container at all) keeps scrolling it.
+    // Exclude neighboring scroll containers, but allow the pointer to overshoot its own edge.
     const pointerScrollEl = getScrollContainerAt(
       win.document,
       this.dragPosition.x - win.scrollX,
@@ -225,16 +222,29 @@ export class DragManager {
     this.scrollEntities.forEach((entity) => {
       const data = entity.getData();
       const scrollEl: HTMLElement = data.scrollContainer;
+      const hitbox = entity.getHitbox();
+      const x = this.dragPosition.x - win.scrollX;
+      const y = this.dragPosition.y - win.scrollY;
+      // The pointer selects the edge; a card wider than its container overlaps both edges.
+      const isAtEdge =
+        data.side === 'left'
+          ? x <= hitbox[2]
+          : data.side === 'right'
+            ? x >= hitbox[0]
+            : data.side === 'top'
+              ? y <= hitbox[3]
+              : y >= hitbox[1];
 
       if (
         win === data.win &&
         data.accepts.includes(type) &&
+        isAtEdge &&
         (!pointerScrollEl ||
           scrollEl.contains(pointerScrollEl) ||
           pointerScrollEl.contains(scrollEl))
       ) {
         scrollEntities.push(entity);
-        scrollHitboxes.push(entity.getHitbox());
+        scrollHitboxes.push(hitbox);
       }
     });
 

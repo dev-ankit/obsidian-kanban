@@ -142,3 +142,52 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
 - Source and target must both be on screen unless you use `--edge`. Close any note split first;
   lanes outside the viewport don't render their cards.
 - Text matching is substring-based: `::Ship` would also match "Shipped". Use full, distinct titles.
+
+## Narrow list view (#1111)
+
+Switch `basic` to `View as list`, split the board twice to the right, and drag the last
+split divider until the active board is narrower than a lane. A 248 px board with the
+standard 272 px lanes reproduces the original failure. Move `Buy milk` into Doing before
+shrinking the board so Todo remains a nonempty target.
+
+Capture a snap before dragging. Drag `Buy milk` back into Todo with the pointer near the
+horizontal center of the visible board. When the lane extends beyond the window, use
+`drag --point` with a visible point near Todo's last card rather than the full lane bounds.
+Sample the board's `scrollLeft` and lane rectangles with `requestAnimationFrame` while
+moving. The board must not oscillate horizontally and the file must place the card in Todo.
+Repeat in both directions three times, checking the file after each drop, then capture a
+snap and run `errors`.
+
+Before the fix, the dragged card overlapped both horizontal scroll edges. Reaching one
+scroll limit enabled the opposite edge, reversing the board repeatedly and preventing the
+drop target from updating. The pointer now selects which edge can scroll. Also rerun
+`dnd-autoscroll`, `dnd-scroll-isolation`, and `dnd-scroll-overshoot` to check normal edge use.
+
+## Bottom of a scrolled list (#296)
+
+Launch `--fixture dnd-bottom`. Target has thirty cards of mixed heights and a vertical
+scrollbar. Run `doctor` and capture a snap. Read Target's `.kanban-plugin__lane-items`
+rectangle, then drag `Source short` to its bottom edge and hold for 3500 ms. At 1400×900,
+`drag '.kanban-plugin__item::Source short' --point 778,825 --dwell 3500 --hold` reaches
+that edge. Capture a snap and the list's `scrollTop`, `scrollHeight`, and `offsetHeight`.
+
+Move the held pointer slightly, remaining at the bottom edge, and release. A plain
+`release` without movement leaves the last pre-scroll drop target selected. Check that
+`Target 30<br>Extra line<br>More detail<br>Last line` is immediately followed by
+`- [ ] Source short` in the saved file. Move `Source tall` below the last card too,
+placing its upper edge below that card. At 1400×900, hold the pointer at `778,870` and
+move it slightly after scrolling settles, then release and check the adjacent order.
+Repeat on a fresh fixture, capture before/after snaps, and run
+`errors`. Also rerun basic card addition and dragging, horizontal autoscroll, split-board
+scroll isolation, and edge overshoot.
+
+Before the fix, the list stopped at `scrollTop = 1067.5` while its integer dimensions
+reported a maximum of `1770 - 703 = 1067`. Exact equality never marked the bottom edge
+finished. The drag manager kept treating it as an active scroll zone and skipped drop
+target updates, leaving the card beside Target 11 instead of after Target 30. Comparing
+rounded offsets against the limit lets drop targeting resume at the end of the list.
+
+When a taller card enters a lane already at its bottom, its placeholder enlarges the
+scrollable contents without resizing the lane's visible box. The resize observer must
+refresh the scroll range for content changes as well, so the new bottom space remains
+reachable. The tall-card step covers this case.
