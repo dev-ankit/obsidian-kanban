@@ -186,7 +186,7 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
     );
 
   if (boardData.data.errors.length > 0) {
-    // Saving is blocked while there are errors (StateManager.saveToDisk). The stack trace is in
+    // Saving is blocked while there are errors (StateManager.saveToDisk). Errors are logged to
     // the console; show the message and the way out.
     return (
       <div className={c('board-error')}>

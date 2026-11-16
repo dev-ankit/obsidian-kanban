@@ -55,7 +55,7 @@ const locale = localeMap[lang || 'en'];
 
 // A string in every shipped language, for reading files written while another language was active.
 export function tAll(str: keyof typeof en): string[] {
-  return Array.from(new Set([en[str], ...Object.values(localeMap).map((l) => l[str])])).filter(
+  return Array.from(new Set(Object.values(localeMap).map((l) => l[str]))).filter(
     Boolean
   ) as string[];
 }

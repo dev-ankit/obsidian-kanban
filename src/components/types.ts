@@ -91,7 +91,6 @@ export interface ItemData {
 
 export interface ErrorReport {
   description: string;
-  stack: string;
 }
 
 export interface BoardData {

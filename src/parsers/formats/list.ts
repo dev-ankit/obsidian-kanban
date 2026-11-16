@@ -1,7 +1,6 @@
 import update from 'immutability-helper';
 import { Content, List, Parent, Root } from 'mdast';
 import { ListItem } from 'mdast-util-from-markdown/lib';
-import { toString } from 'mdast-util-to-string';
 import { stringifyYaml } from 'obsidian';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
@@ -221,6 +220,10 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   return itemData;
 }
 
+// Markers are matched in every language so a board saved under another language still opens.
+const completeMarkers = tAll('Complete').map((s) => `**${s}**`);
+const archiveTitles = tAll('Archive');
+
 // Every edit rewrites the whole file from board state, so a block the board doesn't represent
 // would be deleted on the first edit. List up to five of them for the error message.
 function describeUnmodeledContent(md: string, nodes: Content[]) {
@@ -233,9 +236,27 @@ function describeUnmodeledContent(md: string, nodes: Content[]) {
   });
   if (nodes.length > 5) lines.push(`  …and ${nodes.length - 5} more`);
 
-  return [t('unmodeled-content-explanation'), '', ...lines, '', t('unmodeled-content-fix')].join(
-    '\n'
+  // A settings block that isn't the last thing in the file shows up here too. It needs moving,
+  // not deleting: deleting it would lose the board's settings.
+  const hasMisplacedFooter = nodes.some((node) =>
+    md.slice(node.position.start.offset).startsWith('%% kanban:settings')
   );
+
+  return [
+    t(
+      "This file has content Kanban can't show as part of the board, so Kanban won't edit it: saving would delete that content. Your file hasn't been changed."
+    ),
+    '',
+    ...lines,
+    '',
+    hasMisplacedFooter
+      ? t(
+          'Kanban\'s settings block (from "%% kanban:settings" to "%%") must be the last thing in the file. Open the file as markdown and move it to the end.'
+        )
+      : t(
+          'To fix it, open the file as markdown and turn these lines into "## " lane headings or "- " cards, move them to another note, or delete them.'
+        ),
+  ].join('\n');
 }
 
 export function astToUnhydratedBoard(
@@ -243,23 +264,17 @@ export function astToUnhydratedBoard(
   settings: KanbanSettings,
   frontmatter: Record<string, any>,
   root: Root,
-  md: string,
-  settingsStart: number | null
+  md: string
 ): Board {
   const lanes: Lane[] = [];
   const archive: Item[] = [];
-  // Markers are matched in every language so a board saved under another language still opens.
-  const completeMarkers = tAll('Complete').map((s) => `**${s}**`);
-  const archiveTitles = tAll('Archive');
   // Root nodes the board represents; anything else would be lost when the board is saved.
   const represented = new Set<Content>();
-  const isFooter = (node: Content) =>
-    settingsStart !== null && node.position.start.offset >= settingsStart;
   const source = (node: Content) =>
     md.slice(node.position.start.offset, node.position.end.offset).trim();
 
   root.children.forEach((child, index) => {
-    if ((child.type as string) === 'yaml') {
+    if (child.type === 'yaml') {
       represented.add(child);
       return;
     }
@@ -273,7 +288,7 @@ export function astToUnhydratedBoard(
     let completeMarker: Content | null = null;
     for (let i = index + 1; i < root.children.length; i++) {
       const next = root.children[i];
-      if (next.type === 'heading' || isFooter(next)) break;
+      if (next.type === 'heading') break;
       if (next.type === 'list') {
         list = next as List;
         break;
@@ -283,16 +298,21 @@ export function astToUnhydratedBoard(
       }
     }
 
+    // The archive is `***` then a heading that is exactly the Archive title (plain text: a link or
+    // image in it would be lost, since the archive heading is rewritten on save). It may be empty.
     const prev = index > 0 ? root.children[index - 1] : null;
+    const heading = (child as Parent).children;
     const isArchive =
-      list &&
       prev?.type === 'thematicBreak' &&
-      archiveTitles.includes(toString(child, { includeImageAlt: false }));
+      heading.length === 1 &&
+      heading[0].type === 'text' &&
+      archiveTitles.includes(heading[0].value.trim());
 
     if (isArchive) {
-      represented.add(prev).add(list);
+      represented.add(prev);
+      if (list) represented.add(list);
       archive.push(
-        ...list.children.map((listItem) => ({
+        ...(list?.children ?? []).map((listItem) => ({
           ...ItemTemplate,
           id: generateInstanceId(),
           data: listItemToItemData(stateManager, md, listItem),
@@ -319,7 +339,7 @@ export function astToUnhydratedBoard(
     });
   });
 
-  const unmodeled = root.children.filter((node) => !represented.has(node) && !isFooter(node));
+  const unmodeled = root.children.filter((node) => !represented.has(node));
   if (unmodeled.length) {
     throw new Error(describeUnmodeledContent(md, unmodeled));
   }

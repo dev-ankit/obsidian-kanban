@@ -9,13 +9,20 @@ are fixed, the board opens again. Kanban's own output always opens as a board.
 
 - `integrity-block` shows the error view for unrepresented blocks: flattened lane titles, a note
   under a lane heading, a second list under one lane, `[Complete](url)`, a footer that isn't at the
-  end, a plain trailing JSON code block.
+  end (with advice to move it, not delete it), a plain trailing JSON code block, `***` before an
+  archive-like heading that has a link in it.
 - `integrity-unchanged` leaves those files byte-for-byte unchanged.
 - `integrity-button` opens the file as markdown from the error view.
 - `integrity-recover` turns the error view back into a board when the file is fixed from outside
   (split pane, sync), including when a board setting changes in the same write.
 - `integrity-roundtrip` reopens Kanban's own saved output (lanes, `**Complete**`, archive, settings)
   as a board.
+- `integrity-footer-tolerance` opens boards whose footer has blank lines inside, no closing `%%`, or a
+  setting value containing `%% kanban:settings`; an empty archive (`***` + `## Archive`, no cards)
+  opens too.
+- `integrity-settings-modal` keeps a board blocked when a setting is changed in a settings window
+  that was opened before the file gained the problem.
+- `integrity-outside-settings` keeps cards added by an outside write that also changes a setting.
 - `integrity-locale` opens boards saved under another language (`**Fertiggestellt**`, `## Archiv`);
   editing rewrites the markers in the current language.
 
@@ -29,7 +36,8 @@ Preconditions:
 
 - `$K launch --fixture unmodeled`. Files: `Board.md` (healthy, with Complete marker and archive),
   `Flat.md`, `NoteUnderHeading.md`, `TwoLists.md`, `AfterFooter.md`, `CompleteLink.md`,
-  `TrailingJson.md` (each should be blocked), `German.md`, `Settings.md` (should open).
+  `TrailingJson.md`, `ArchiveLink.md` (each should be blocked), `German.md`, `Settings.md`,
+  `EmptyArchive.md`, `MarkerInSetting.md`, `FormattedFooter.md`, `NoClosingFooter.md` (should open).
 - `FX=.claude/skills/verify-kanban/fixtures/unmodeled`, `V=$(readlink .verify-runs/latest)/vault`.
 
 - **Blocked cases.** For each blocked file, `$K click '.nav-file-title[data-path="<file>"]'`. The pane
@@ -44,6 +52,12 @@ Preconditions:
 - **Setting change in the same write.** Open `Settings.md` (board). In one outside write, add a
   paragraph under `## Todo` and change `date-format`: the pane switches to the error view. Remove the
   paragraph (changing the setting back in the same write): the board returns, and adding a card saves.
+- **Settings window opened before the problem.** Open `Settings.md`, click
+  `.mod-root .view-action[aria-label="Open board settings"]`, then add a paragraph under `## Todo` in
+  `$V/Settings.md` from outside: the pane is blocked. Click `.modal-container .modal .checkbox-container`
+  to change a setting: still blocked, and the paragraph is still in the file.
+- **Setting and card in one outside write.** On a clean `Settings.md`, add a card line and change
+  `date-format` in one write: `$K outline` shows the new card, and after a local edit it's still in the file.
 - **Round trip.** Open `Board.md`, add a card, wait for `$K file Board.md --expect '<card>'`, copy
   `$V/Board.md` to `$V/Roundtrip.md`, open it: it's a board with lanes `Todo, Done`.
 - **Locale.** Open `German.md`: a board with lane `Erledigt` and one archived card. Add a card; the saved

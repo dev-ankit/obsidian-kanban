@@ -302,16 +302,17 @@ export class KanbanView extends TextFileView implements HoverParent {
       this,
       {
         onSettingsChange: (settings) => {
-          const updatedBoard = update(board, {
-            data: {
-              settings: {
-                $set: settings,
+          // Apply to the current board, not the one captured when the modal opened: the file may
+          // have changed since (and gained or lost a parse error).
+          stateManager.setState((current) =>
+            update(current, {
+              data: {
+                settings: {
+                  $set: settings,
+                },
               },
-            },
-          });
-
-          // Save to disk, compute text of new board
-          stateManager.setState(updatedBoard);
+            })
+          );
         },
       },
       board.data.settings
