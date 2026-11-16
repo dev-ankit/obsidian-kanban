@@ -39,6 +39,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   activeEditor: any;
   viewSettings: KanbanViewSettings = {};
+  private ephemeralState: { subpath?: string } = {};
   // The markdown view's mode (editing/reading, raw source) from before this leaf became a board.
   // Kept in this view's state so switching back to markdown, or restoring the workspace, returns
   // the note to the same mode.
@@ -244,6 +245,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
 
     if (clear) {
+      this.ephemeralState = {};
       this.activeEditor = null;
       this.previewQueue.clear();
       this.previewCache.clear();
@@ -268,6 +270,18 @@ export class KanbanView extends TextFileView implements HoverParent {
     if (mode !== undefined) state.mode = mode;
     if (source !== undefined) state.source = source;
     return state;
+  }
+
+  getEphemeralState() {
+    return this.ephemeralState;
+  }
+
+  setEphemeralState(state: unknown) {
+    this.ephemeralState =
+      state && typeof state === 'object' && 'subpath' in state && typeof state.subpath === 'string'
+        ? { subpath: state.subpath }
+        : {};
+    this.emitter.emit('navigateToBlock');
   }
 
   setViewState<K extends keyof KanbanViewSettings>(

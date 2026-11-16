@@ -6,6 +6,7 @@ lane's `##` heading.
 
 ## Sub-features
 
+- `card-link-navigation` reveals and outlines the card reached by a copied block link (#754).
 - `card-add` adds a card at the bottom of a lane from the lane's `+ Add a card` button.
 - `card-add-blank` ignores a submission that is only whitespace.
 - `card-edit` edits a card in place by double-clicking it.
@@ -78,6 +79,7 @@ Preconditions:
   in the file, then double-click the new card and verify its editor still contains the literal tag.
   Submit, switch to markdown with the header button and back with the Kanban palette command.
   Both tables still render with two cells in their data row, and a line break inside the second cell.
+
 ### Archive limit regression (#695)
 
 With a fresh basic fixture, open Obsidian settings (`key Mod+,`), click
@@ -93,6 +95,21 @@ under `## Archive` on disk despite the global limit of one. Reopen board setting
 `-1`: after archiving two cards only the newest remains. Capture the input and
 saved archive with `snap`; finish with `errors`. To replace an existing number, use
 `Home`, `Shift+End`, `Backspace`, then `type`.
+
+- **Copied link navigation** (`card-link-navigation`). Launch `--fixture batch3-dates-links`
+  and open Wide.md, with eight lanes of forty cards. Scroll horizontally to Lane 8 and vertically
+  to card 40 using the scrollbars or real wheel input. Its More options → Copy link to card
+  copies `[[Wide#^far-card]]`. Paste it into Links.md using the editor, switch that note to reading
+  mode, and click the link. The card is visible horizontally and vertically and briefly outlined.
+  Inspect the target rectangle and both scroll offsets; opening the link must not edit Wide.md.
+  Snap before and after. Before the fix, the board opened at scrollLeft 0 with the target at
+  x=2343, y=1701, outside the window.
+- **Existing view and layouts.** Add `Self jump [[Wide#^far-card]]` in Lane 1 and click its link.
+  The same board scrolls to the target without reopening or losing its lanes. Follow the copied
+  link repeatedly, and after switching to table and list layouts. Each layout reveals its target.
+  Switch through markdown and back via the palette, then follow the link again. A missing block
+  target must leave the board usable and produce no page error. Run add-card and within/cross-lane
+  drag journeys afterward, checking each saved mutation. Finish with clean `errors`.
 
 ## Gotchas
 
