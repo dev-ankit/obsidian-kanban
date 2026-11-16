@@ -8,6 +8,7 @@ a notice explains why (PR #1188).
 
 ## Sub-features
 
+- `nnfc-inline-fields` preserves wrapped inline metadata independently of Dataview being installed (#848).
 - `nnfc-tags` keeps first-line tags on the card and excludes them from the filename (#1016).
 - `nnfc-plain` makes a note from a plain title, and the card links to it.
 - `nnfc-date-trailing` strips a date at the end of the title from the filename; the card links to it.
@@ -35,6 +36,10 @@ Preconditions:
   (folder exists). `Board-missing.md` has `new-note-folder: Gone` (no such folder). The global
   setting is unset and Obsidian's new-file location is the vault root.
 
+- **Inline fields** (`note-content`). Create notes from `my description #mytag [created:: 2023-10-22]`
+  and `other description [created:: 2023-10-22] #mytag`, closing each note split. Expect notes
+  `my description.md` and `other description.md`, and cards `[[my description]] #mytag [created:: 2023-10-22]`
+  and `[[other description]] [created:: 2023-10-22] #mytag`. Keep both field/tag orderings.
 - **Tags** (`note-content`). Use the card menu on `Task 1 #Tag1`. The note is `Task 1.md`
   and `$K file --expect '- [ ] [[Task 1]] #Tag1'` succeeds. The tag still renders on the card.
 - **Plain.** `$K click '.kanban-plugin__item::Write release notes >> a[aria-label="More options"]'`,

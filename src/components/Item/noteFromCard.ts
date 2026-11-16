@@ -1,4 +1,5 @@
 import { StateManager } from 'src/StateManager';
+import { extractWrappedInlineFields } from 'src/parsers/helpers/inlineMetadata';
 
 import { escapeRegExpStr } from '../helpers';
 
@@ -22,6 +23,10 @@ export function getNoteFromCardTitle(firstLine: string, stateManager: StateManag
   let match: RegExpExecArray | null;
   while ((match = metadataRegEx.exec(firstLine))) {
     retained.push({ start: match.index, end: match.index + match[0].length, title: ' ' });
+  }
+
+  for (const field of extractWrappedInlineFields(firstLine)) {
+    retained.push({ start: field.start, end: field.end, title: ' ' });
   }
 
   retained.sort((a, b) => a.start - b.start || b.end - a.end);

@@ -413,6 +413,24 @@ function extractSpecialTaskFields(line: string): InlineField[] {
   return results;
 }
 
+export function extractWrappedInlineFields(line: string): InlineField[] {
+  const fields: InlineField[] = [];
+  for (const wrapper of Object.keys(INLINE_FIELD_WRAPPERS)) {
+    let foundIndex = line.indexOf(wrapper);
+    while (foundIndex >= 0) {
+      const parsedField = findSpecificInlineField(line, foundIndex);
+      if (!parsedField) {
+        foundIndex = line.indexOf(wrapper, foundIndex + 1);
+        continue;
+      }
+
+      fields.push(parsedField);
+      foundIndex = line.indexOf(wrapper, parsedField.end);
+    }
+  }
+  return fields;
+}
+
 export function extractInlineFields(
   line: string,
   includeTaskFields: boolean = false
@@ -420,22 +438,7 @@ export function extractInlineFields(
   const dv = getDataviewPlugin();
   const tasks = getTasksPlugin();
 
-  let fields: InlineField[] = [];
-  if (dv) {
-    for (const wrapper of Object.keys(INLINE_FIELD_WRAPPERS)) {
-      let foundIndex = line.indexOf(wrapper);
-      while (foundIndex >= 0) {
-        const parsedField = findSpecificInlineField(line, foundIndex);
-        if (!parsedField) {
-          foundIndex = line.indexOf(wrapper, foundIndex + 1);
-          continue;
-        }
-
-        fields.push(parsedField);
-        foundIndex = line.indexOf(wrapper, parsedField.end);
-      }
-    }
-  }
+  let fields = dv ? extractWrappedInlineFields(line) : [];
 
   if (tasks && includeTaskFields) fields = fields.concat(extractSpecialTaskFields(line));
 
