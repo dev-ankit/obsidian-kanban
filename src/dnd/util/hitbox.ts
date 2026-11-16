@@ -160,39 +160,25 @@ export function rectIntersection(entities: Entity[], target: Hitbox) {
   return entities[maxValueIndex] ? entities[maxValueIndex] : null;
 }
 
-export function getScrollIntersection(
-  entities: Entity[],
-  target: Hitbox,
-  dragEntity: Entity
-): [Entity, number] {
-  const primary = getBestIntersect(entities, target, dragEntity);
+// How hard a pointer pushes a scroll container's edge: 0 until it enters the edge's zone, rising
+// to 1 at the edge and staying there past it.
+export function getScrollStrength(pointer: Coordinates, zone: Hitbox, side: Side) {
+  const isHorizontal = side === 'left' || side === 'right';
+  const across = isHorizontal ? pointer.y : pointer.x;
 
-  if (!primary) return null;
+  if (across < zone[isHorizontal ? 1 : 0] || across > zone[isHorizontal ? 3 : 2]) return 0;
 
-  const side = primary.getData().side as Side;
-  const hitbox = primary.getHitbox();
+  const depth =
+    side === 'left'
+      ? zone[2] - pointer.x
+      : side === 'right'
+        ? pointer.x - zone[0]
+        : side === 'top'
+          ? zone[3] - pointer.y
+          : pointer.y - zone[1];
+  const size = isHorizontal ? zone[2] - zone[0] : zone[3] - zone[1];
 
-  let targetIndex = 0;
-  let hitboxIndex = 0;
-
-  if (side === 'left') {
-    targetIndex = 0;
-    hitboxIndex = 2;
-  } else if (side === 'right') {
-    targetIndex = 2;
-    hitboxIndex = 0;
-  } else if (side === 'top') {
-    targetIndex = 1;
-    hitboxIndex = 3;
-  } else if (side === 'bottom') {
-    targetIndex = 3;
-    hitboxIndex = 1;
-  }
-
-  const distance = Math.abs(target[targetIndex] - hitbox[hitboxIndex]);
-  const max = Math.abs(hitbox[targetIndex] - hitbox[hitboxIndex]);
-
-  return [primary, max - distance];
+  return Math.min(Math.max(depth / size, 0), 1);
 }
 
 /**

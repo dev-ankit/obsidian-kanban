@@ -90,6 +90,7 @@ input goes through real CDP mouse and keyboard events, not DOM `.click()`.
 | Drag to an off-screen lane | `$K drag '<card>' '<target>' --edge right --after` (prints scroll px/s) |
 | Reorder lanes | `$K drag '.kanban-plugin__lane::QA >> .kanban-plugin__lane-grip' '.kanban-plugin__lane::Ready' --axis x --before` |
 | Inspect a drag mid-flight | `$K drag ... --hold`, `$K snap mid-drag`, `$K release` |
+| Move the held pointer | `$K move X,Y` (after `--hold`; drop zones update only on movement) |
 | Hold a drag at an exact spot | `$K drag '<card>' --point X,Y --hold` (viewport px; prints which scroll containers moved) |
 | Wait for UI | `$K wait '<loc>'`, `$K wait '<loc>' --gone --timeout 8000` |
 | Read the board as shown | `$K outline` |

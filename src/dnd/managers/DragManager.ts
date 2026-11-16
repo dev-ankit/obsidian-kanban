@@ -12,7 +12,7 @@ import {
   adjustHitboxForMovement,
   distanceBetween,
   getBestIntersect,
-  getScrollIntersection,
+  getScrollStrength,
 } from '../util/hitbox';
 
 export interface DragEventData {
@@ -74,6 +74,7 @@ export class DragManager {
 
   primaryIntersection?: Entity;
   scrollIntersection?: [Entity, number];
+  pointerScrollEl?: Element;
 
   isHTMLDragging: boolean = false;
   dragOverTimeout: number = 0;
@@ -162,6 +163,7 @@ export class DragManager {
     this.dragOriginHitbox = undefined;
     this.dragPosition = undefined;
     this.scrollIntersection = undefined;
+    this.pointerScrollEl = undefined;
     this.primaryIntersection = undefined;
   }
 
@@ -179,6 +181,7 @@ export class DragManager {
     this.dragOriginHitbox = undefined;
     this.dragPosition = undefined;
     this.scrollIntersection = undefined;
+    this.pointerScrollEl = undefined;
     this.primaryIntersection = undefined;
 
     if (isLeave) {
@@ -200,8 +203,6 @@ export class DragManager {
 
     const hitboxEntities: Entity[] = [];
     const hitboxHitboxes: Hitbox[] = [];
-    const scrollEntities: Entity[] = [];
-    const scrollHitboxes: Hitbox[] = [];
 
     this.hitboxEntities.forEach((entity) => {
       const data = entity.getData();
@@ -212,76 +213,60 @@ export class DragManager {
       }
     });
 
-    // Exclude neighboring scroll containers, but allow the pointer to overshoot its own edge.
-    const pointerScrollEl = getScrollContainerAt(
-      win.document,
-      this.dragPosition.x - win.scrollX,
-      this.dragPosition.y - win.scrollY
-    );
-
-    this.scrollEntities.forEach((entity) => {
-      const data = entity.getData();
-      const scrollEl: HTMLElement = data.scrollContainer;
-      const hitbox = entity.getHitbox();
-      const x = this.dragPosition.x - win.scrollX;
-      const y = this.dragPosition.y - win.scrollY;
-      // The pointer selects the edge; a card wider than its container overlaps both edges.
-      const isAtEdge =
-        data.side === 'left'
-          ? x <= hitbox[2]
-          : data.side === 'right'
-            ? x >= hitbox[0]
-            : data.side === 'top'
-              ? y <= hitbox[3]
-              : y >= hitbox[1];
-
-      if (
-        win === data.win &&
-        data.accepts.includes(type) &&
-        isAtEdge &&
-        (!pointerScrollEl ||
-          scrollEl.contains(pointerScrollEl) ||
-          pointerScrollEl.contains(scrollEl))
-      ) {
-        scrollEntities.push(entity);
-        scrollHitboxes.push(hitbox);
-      }
-    });
-
-    if (hitboxEntities.length === 0 && scrollEntities.length === 0) {
-      return;
-    }
-
-    const dragHitbox = adjustHitboxForMovement(
-      this.dragOriginHitbox,
-      this.dragOrigin,
-      this.dragPosition
-    );
-
-    const isScrolling = this.handleScrollIntersect(
-      dragHitbox,
-      this.dragEntity,
-      scrollHitboxes,
-      scrollEntities
-    );
+    const isScrolling = this.handleScrollIntersect(this.getScrollIntersection());
 
     if (!isScrolling) {
+      const dragHitbox = adjustHitboxForMovement(
+        this.dragOriginHitbox,
+        this.dragOrigin,
+        this.dragPosition
+      );
+
       this.handleHitboxIntersect(dragHitbox, this.dragEntity, hitboxHitboxes, hitboxEntities);
     }
   }
 
-  handleScrollIntersect(
-    dragHitbox: Hitbox,
-    dragEntity: Entity,
-    hitboxes: Hitbox[],
-    hitboxEntities: Entity[]
-  ) {
-    const scrollHits: Entity[] = boxIntersect([dragHitbox], hitboxes).map(
-      (match) => hitboxEntities[match[1]]
-    );
+  // The edge the pointer is pushing hardest, if any. The pointer alone decides: the dragged
+  // entity can be wider than a container, and reaches containers the pointer is nowhere near.
+  getScrollIntersection() {
+    const { type, win } = this.dragEntity.getData();
+    const pointer = {
+      x: this.dragPosition.x - win.scrollX,
+      y: this.dragPosition.y - win.scrollY,
+    };
 
-    const scrollIntersection = getScrollIntersection(scrollHits, dragHitbox, dragEntity);
+    // Past the last edge there is no container under the pointer; it still belongs to the one
+    // it left, so it keeps pushing that edge and no other board's.
+    const pointerScrollEl = (this.pointerScrollEl =
+      getScrollContainerAt(win.document, pointer.x, pointer.y) ?? this.pointerScrollEl);
 
+    let scrollIntersection: [Entity, number] | undefined;
+
+    this.scrollEntities.forEach((entity) => {
+      const data = entity.getData();
+      const scrollEl: HTMLElement = data.scrollContainer;
+
+      // Only the pointer's container, the ones around it and the ones inside it: not a sibling
+      // lane, or the other board in a split.
+      if (
+        win !== data.win ||
+        !data.accepts.includes(type) ||
+        !(scrollEl.contains(pointerScrollEl) || pointerScrollEl?.contains(scrollEl))
+      ) {
+        return;
+      }
+
+      const strength = getScrollStrength(pointer, entity.getHitbox(), data.side);
+
+      if (strength > (scrollIntersection?.[1] ?? 0)) {
+        scrollIntersection = [entity, strength];
+      }
+    });
+
+    return scrollIntersection;
+  }
+
+  handleScrollIntersect(scrollIntersection?: [Entity, number]) {
     if (
       this.scrollIntersection &&
       (!scrollIntersection || scrollIntersection[0] !== this.scrollIntersection[0])

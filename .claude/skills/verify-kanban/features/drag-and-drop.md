@@ -17,8 +17,13 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 - `dnd-lane-reorder` moves a whole lane left or right by its grip.
 - `dnd-scroll-isolation` scrolls only the board or lane whose edge is active, including when
   moving a card between two boards in a split (#1051).
-- `dnd-scroll-overshoot` keeps scrolling when the pointer goes a little past the edge it is
+- `dnd-scroll-overshoot` keeps scrolling at full speed when the pointer goes past the edge it is
   scrolling: below a lane's list, or off the board over the file explorer.
+- `dnd-scroll-ramp` scrolls faster the deeper the pointer is in an edge's 35 px zone. Only the
+  pointer counts: the dragged card's size and where it was grabbed change nothing (#1111).
+- `dnd-narrow-board` drags cards in a list-view board narrower than its lanes without the board
+  scrolling back and forth (#1111).
+- `dnd-bottom-drop` drops a card below the last card of a list scrolled to its bottom (#296).
 
 ## How to get to it (user POV)
 
@@ -112,11 +117,50 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   The report must name one container (`#1`, the first lane) and a positive vertical distance;
   `snap`, then `release`. Then scroll the board right by dragging a card to its right edge, and
   hold a card 8 px left of the board's left edge (over the file explorer) with `--point`: only
-  `#0` (the board) scrolls back. On the build before this fix both report `scrolled nothing`.
+  `#0` (the board) scrolls back, and it still does 200 px into the file explorer. On the build
+  before this fix both report `scrolled nothing`.
   In the split from `dnd-scroll-isolation`, also hold a left-board card with the pointer 8 px
   inside the right board: the left board must stay put (the pointer is in the other board), and
   hold a card low in the second lane's column while it overlaps the first lane: only the second
   lane's list scrolls.
+
+- **Speed follows the pointer** (`dnd-scroll-ramp`, `wide`). The board's right zone is its last
+  35 px (read the board's box with `eval`; 1365 to 1400 at 1400×900). Hold `Alpha task` at
+  several depths with `$K drag '.kanban-plugin__item::Alpha task' --point <x>,160 --dwell 1500 --hold`,
+  `release`, and restore the scroll offset between holds. The report must grow with depth:
+  nothing outside the zone (x 1345), then about 180, 370, 640 and 845 px at 7, 15, 25 and 33 px
+  in, and 900 px (600 px/s) at the edge or past it. Repeat at a lane's bottom edge with a tall
+  card (`dnd-bottom`, `Source tall`, x 778, y from 798 to 845: same numbers, on `#2`), and in
+  phone emulation at 430×932 (`SKILL.md`, "Mobile emulation"). A build that tests the card's box
+  instead starts scrolling while the pointer is still far from the zone (main, 2.0.57), or jumps
+  from nothing to full speed at the zone's start (the first #1111 fix).
+
+- **Narrower than a lane** (`dnd-narrow-board`, `basic`). Move `Buy milk` into Doing, switch to
+  `View as list`, split the board twice to the right and drag the last split divider
+  (`$K drag '.workspace-leaf-resize-handle' --nth 2 --point 1153,400`) until the active board is
+  narrower than a lane: a 245 px board with the standard 272 px lanes. Snap. Start a
+  `requestAnimationFrame` sampler of the board's `scrollLeft` with `eval`, then drag `Buy milk`
+  to a visible point just below Todo's last card, near the horizontal center of the board
+  (`--point 1277,264 --hold`), `$K move` a pixel or two, and `release`. The samples must never
+  reverse direction and `$K file --expect $'[[Notes/Spec]]\n- [ ] Buy milk'` must pass. Drag it
+  back into Doing the same way. Repeat three times, checking the file after each drop; snap and
+  run `errors`. Before the fix the dragged card overlapped both horizontal scroll edges:
+  reaching one scroll limit enabled the opposite edge, so the board reversed repeatedly and
+  the drop target never updated.
+
+- **Bottom of a scrolled list** (`dnd-bottom-drop`). Launch `--fixture dnd-bottom`. Target has
+  thirty cards of mixed heights and a vertical scrollbar. Snap, then hold `Source short` at the
+  list's bottom edge: `$K drag '.kanban-plugin__item::Source short' --point 778,825 --dwell 3500 --hold`
+  at 1400×900. Read the list's `scrollTop`, `scrollHeight` and `offsetHeight`: it is at its
+  end (`1067.5`, `1770`, `703`). `$K move 778,828`, wait a second, `$K move 778,826`, `release`.
+  `$K file --expect $'- [ ] Target 30<br>Extra line<br>More detail<br>Last line\n- [ ] Source short'`
+  must pass. Do the same with `Source tall` held at `778,870`; it lands after `Source short`.
+  Snap and run `errors`. Before the fix the list stopped at `scrollTop = 1067.5` while its
+  integer dimensions gave a maximum of `1770 - 703 = 1067`, so exact equality never marked the
+  bottom edge finished, the edge stayed an active scroll zone and drop targets stopped updating:
+  the card landed beside Target 11. A taller card entering a list already at its bottom also
+  enlarges the contents without resizing the list's box, so the scroll range is refreshed on
+  content resizes too; the tall-card step covers that.
 
 ## Gotchas
 
@@ -131,63 +175,17 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
 - Drop zones are re-measured only on pointer movement. After an autoscroll, a release with no
   movement in between drops into whatever lane was under the pointer _before_ the scroll.
   Real hands always jitter, so this isn't a user bug; `drag --edge` moves 1 px before releasing.
-  A bare `release` after `--edge --hold` doesn't. Move first if you need a correct drop there.
-- Autoscroll speed is time-based since c67f797: the `--edge` report should read about 600 px/s
-  whenever the dragged card's edge is past the zone (any normal card at the board edge), on any
-  refresh rate. Much faster means stacked scroll loops or unclamped strength have come back
-  (2.0.51 measured ~10,200 px/s, 2.0.52 ~4,400 px/s). To see per-frame steps, wrap the board
-  scroller's `scrollBy` via `eval` and count calls (one loop = one call per frame).
+  A bare `release` after `--hold` doesn't: `$K move X,Y` first if you need a correct drop there.
+- Autoscroll speed is time-based since c67f797 and follows the pointer's depth in the 35 px zone,
+  on any refresh rate: 600 px/s at the edge or past it, so `--edge` with its default 5 px inset
+  reads about 515 px/s and `--inset 0` about 600. Much faster means stacked scroll loops or
+  unclamped strength have come back (2.0.51 measured ~10,200 px/s, 2.0.52 ~4,400 px/s). To see
+  per-frame steps, wrap the board scroller's `scrollBy` via `eval` and count calls (one loop =
+  one call per frame).
+- Scrolling starts when the pointer, not the card, reaches a zone. Dragging a card until its
+  edge touches the board's edge scrolls nothing.
 - `file --expect` with text that's already in the file passes instantly. For reorders, expect a
   string that spans the new boundary (end of one section plus the next heading).
 - Source and target must both be on screen unless you use `--edge`. Close any note split first;
   lanes outside the viewport don't render their cards.
 - Text matching is substring-based: `::Ship` would also match "Shipped". Use full, distinct titles.
-
-## Narrow list view (#1111)
-
-Switch `basic` to `View as list`, split the board twice to the right, and drag the last
-split divider until the active board is narrower than a lane. A 248 px board with the
-standard 272 px lanes reproduces the original failure. Move `Buy milk` into Doing before
-shrinking the board so Todo remains a nonempty target.
-
-Capture a snap before dragging. Drag `Buy milk` back into Todo with the pointer near the
-horizontal center of the visible board. When the lane extends beyond the window, use
-`drag --point` with a visible point near Todo's last card rather than the full lane bounds.
-Sample the board's `scrollLeft` and lane rectangles with `requestAnimationFrame` while
-moving. The board must not oscillate horizontally and the file must place the card in Todo.
-Repeat in both directions three times, checking the file after each drop, then capture a
-snap and run `errors`.
-
-Before the fix, the dragged card overlapped both horizontal scroll edges. Reaching one
-scroll limit enabled the opposite edge, reversing the board repeatedly and preventing the
-drop target from updating. The pointer now selects which edge can scroll. Also rerun
-`dnd-autoscroll`, `dnd-scroll-isolation`, and `dnd-scroll-overshoot` to check normal edge use.
-
-## Bottom of a scrolled list (#296)
-
-Launch `--fixture dnd-bottom`. Target has thirty cards of mixed heights and a vertical
-scrollbar. Run `doctor` and capture a snap. Read Target's `.kanban-plugin__lane-items`
-rectangle, then drag `Source short` to its bottom edge and hold for 3500 ms. At 1400×900,
-`drag '.kanban-plugin__item::Source short' --point 778,825 --dwell 3500 --hold` reaches
-that edge. Capture a snap and the list's `scrollTop`, `scrollHeight`, and `offsetHeight`.
-
-Move the held pointer slightly, remaining at the bottom edge, and release. A plain
-`release` without movement leaves the last pre-scroll drop target selected. Check that
-`Target 30<br>Extra line<br>More detail<br>Last line` is immediately followed by
-`- [ ] Source short` in the saved file. Move `Source tall` below the last card too,
-placing its upper edge below that card. At 1400×900, hold the pointer at `778,870` and
-move it slightly after scrolling settles, then release and check the adjacent order.
-Repeat on a fresh fixture, capture before/after snaps, and run
-`errors`. Also rerun basic card addition and dragging, horizontal autoscroll, split-board
-scroll isolation, and edge overshoot.
-
-Before the fix, the list stopped at `scrollTop = 1067.5` while its integer dimensions
-reported a maximum of `1770 - 703 = 1067`. Exact equality never marked the bottom edge
-finished. The drag manager kept treating it as an active scroll zone and skipped drop
-target updates, leaving the card beside Target 11 instead of after Target 30. Comparing
-rounded offsets against the limit lets drop targeting resume at the end of the list.
-
-When a taller card enters a lane already at its bottom, its placeholder enlarges the
-scrollable contents without resizing the lane's visible box. The resize observer must
-refresh the scroll range for content changes as well, so the new bottom space remains
-reachable. The tall-card step covers this case.

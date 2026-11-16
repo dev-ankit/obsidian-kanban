@@ -556,6 +556,8 @@ const HELP = `kv.mjs - drive an isolated Obsidian running this repo's Kanban bui
                       hold the dragged item at the board's edge and report how far/fast it
                       scrolled; then drop on <toLoc> (now on screen), or where the pointer is
                       --hold stops before releasing so you can snap mid-drag
+  move X,Y            move the held pointer (after drag --hold) to viewport X,Y; drop zones
+                      update only on movement
   release             release the mouse button (ends a drag --hold)
   record <name> [--seconds N] [--label T]
                       record the window to evidence/<name>.mp4 with real timing (run it in the
@@ -806,6 +808,18 @@ async function main() {
       fs.rmSync(framesDir, { recursive: true, force: true });
       console.log(`${out} (${frames.length - 1} frames, ${seconds}s)`);
       return;
+    }
+    case 'move': {
+      const to = String(pos[0] || '').split(',').map(Number);
+      if (to.length !== 2 || to.some(Number.isNaN)) die('move needs X,Y');
+      const { cdp } = await attach();
+      const from = await cdp.eval('({ x: window.__kvLastX ?? 0, y: window.__kvLastY ?? 0 })');
+      for (let i = 1; i <= 5; i++) {
+        await mouse(cdp, 'mouseMoved', from.x + ((to[0] - from.x) * i) / 5, from.y + ((to[1] - from.y) * i) / 5, 'left');
+        await sleep(25);
+      }
+      console.log(`moved held pointer to (${to.join(', ')})`);
+      return cdp.close();
     }
     case 'release': {
       const { cdp } = await attach();
