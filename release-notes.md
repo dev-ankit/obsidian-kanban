@@ -4,13 +4,20 @@ This release fixes more bugs from the upstream issue tracker. Every fix was repr
 
 ## Fixes
 
-- **New lists keep "Mark cards in this list as complete"** when you switch it on while creating them. (#984)
-- **"Today", "tomorrow" and date colors stay current** while a board is open, including on the card you're dragging and on cards scrolled out of view. (#1036, #1048)
-- **Dragging near the edge of one board no longer scrolls the other board** in a split, or a neighbouring list. Dragging a little past the bottom of a list keeps it scrolling. (#1051)
-- **Typing in a note next to a large board no longer stalls** when the note saves. Cards update when a linked note's properties change, and a board recovers by itself once a broken linked note is fixed. (#670)
-- **Daily-note links in Markdown format work with nested folders**, including date formats like `YYYY/MM/DD`. (#516)
-- **Arrow keys in the date picker follow your week start**, and Sunday works as the week start in languages whose weeks start on Monday. (#811)
-- **Adding or collapsing a list after reopening a board that's already open** no longer shows an "is not iterable" error. This was introduced in 2.0.56.
-- **A card that embeds a missing note with a Markdown link** no longer breaks the board.
+- **Dragging a card toward an edge scrolls based on where your finger or pointer is**, not where the card's side is. Scrolling starts about 70 px from the edge, slowly at first and faster as you get closer. Boards in narrow tabs no longer bounce left and right while you drag. (#1111)
+- **Dropping a card at the very bottom of a long list** puts it at the bottom. (#296)
+- **"Move to list" from a card's menu marks the card complete** when the target list completes its cards, as dragging does. A sorted list re-sorts the same way after either. (#1070)
+- **Opening a copied card link** scrolls to the card and outlines it. If the card's list is collapsed, the list is outlined. (#754)
+- **Clicking a date whose daily note doesn't exist yet** creates it with your Daily Notes folder, format and template. Other date links open their own target. (#1066)
+- **Date colors work on relative dates** ("in 2 days") and on linked dates. They color the text and no longer add a bar across the card. (#656)
+- **Embedded notes in cards update** when the embedded note changes. (#867)
+- **A board's tag colors, date colors and tag order can be reset** to your global settings. (#1094)
+- **Resizing table columns works in pop-out windows.** (#1121)
+- **Renaming a board works** when it's open in a background tab. (#1096)
+- **Boards follow Obsidian's "Show tab title bar" setting.** (#680)
+- **Regional languages like English (UK)** use their base language and no longer log an error. (#1248)
+- **Every archive action adds cards to the end of the archive**, so it stays in order and "Maximum number of archived cards" removes the oldest. Archiving a list used to add its cards to the top, where the limit could remove them straight away. (#1243)
+- **Changing two board settings in quick succession** saves both.
+- **Dropping a card on a collapsed list** puts the card in that list.
 
-Includes everything from 2.0.56.
+Includes everything from 2.0.57.
