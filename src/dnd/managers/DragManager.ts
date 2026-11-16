@@ -5,7 +5,7 @@ import { StateManager } from 'src/StateManager';
 import { handleDragOrPaste } from 'src/components/Item/helpers';
 
 import { DndManagerContext } from '../components/context';
-import { Coordinates, Entity, Hitbox, Side } from '../types';
+import { Coordinates, Entity, Hitbox, ScrollEntity, Side } from '../types';
 import { rafThrottle } from '../util/animation';
 import { createHTMLDndEntity } from '../util/createHTMLDndEntity';
 import {
@@ -37,7 +37,7 @@ export class DragManager {
   win: Window;
   emitter: EventEmitter;
   hitboxEntities: Map<string, Entity>;
-  scrollEntities: Map<string, Entity>;
+  scrollEntities: Map<string, ScrollEntity>;
 
   dragEntity?: Entity;
   dragEntityId?: string;
@@ -56,7 +56,7 @@ export class DragManager {
     win: Window,
     emitter: EventEmitter,
     hitboxEntities: Map<string, Entity>,
-    scrollEntities: Map<string, Entity>
+    scrollEntities: Map<string, ScrollEntity>
   ) {
     this.win = win;
     this.hitboxEntities = hitboxEntities;
@@ -186,10 +186,19 @@ export class DragManager {
       }
     });
 
+    const pointerPosition = {
+      x: this.dragPosition.x - win.scrollX,
+      y: this.dragPosition.y - win.scrollY,
+    };
+
     this.scrollEntities.forEach((entity) => {
       const data = entity.getData();
 
-      if (win === data.win && data.accepts.includes(type)) {
+      if (
+        win === data.win &&
+        data.accepts.includes(type) &&
+        entity.containsPoint(pointerPosition)
+      ) {
         scrollEntities.push(entity);
         scrollHitboxes.push(entity.getHitbox());
       }
@@ -238,17 +247,13 @@ export class DragManager {
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
-      this.emitter.emit(
-        'endDragScroll',
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
+      this.emitter.emit(`endDragScroll:${scrollEntityId}`, {
+        ...this.getDragEventData(),
+        scrollEntity,
+        scrollEntityId,
+        scrollEntitySide,
+        scrollStrength,
+      });
 
       this.scrollIntersection = undefined;
     }
@@ -262,17 +267,13 @@ export class DragManager {
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
-      this.emitter.emit(
-        'beginDragScroll',
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
+      this.emitter.emit(`beginDragScroll:${scrollEntityId}`, {
+        ...this.getDragEventData(),
+        scrollEntity,
+        scrollEntityId,
+        scrollEntitySide,
+        scrollStrength,
+      });
 
       this.scrollIntersection = scrollIntersection;
     } else if (
@@ -285,17 +286,13 @@ export class DragManager {
       const scrollEntityId = scrollEntity.entityId;
       const scrollEntitySide = scrollEntityData.side;
 
-      this.emitter.emit(
-        'updateDragScroll',
-        {
-          ...this.getDragEventData(),
-          scrollEntity,
-          scrollEntityId,
-          scrollEntitySide,
-          scrollStrength,
-        },
-        scrollEntityId
-      );
+      this.emitter.emit(`updateDragScroll:${scrollEntityId}`, {
+        ...this.getDragEventData(),
+        scrollEntity,
+        scrollEntityId,
+        scrollEntitySide,
+        scrollStrength,
+      });
 
       this.scrollIntersection = scrollIntersection;
     }
