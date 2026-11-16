@@ -46,6 +46,8 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [Cards](./cards.md): add, edit in place, delete and archive cards.
 - [Drag and drop](./drag-and-drop.md): move cards within and between lanes (including empty and
   off-screen lanes), autoscroll at the board edge, and reorder lanes.
+- [Internal link drops](./link-drops.md): preserve visible labels for empty HTML, missing HTML,
+  explicit aliases, and unresolved targets. Includes a parsing-only fallback for CDP.
 - [New note from card](./new-note-from-card.md): turn a card into a linked note in the right folder,
   keeping dates and times on the card.
 - [Lanes](./lanes.md): add a list, collapse it, and keep CJK titles upright when collapsed.
