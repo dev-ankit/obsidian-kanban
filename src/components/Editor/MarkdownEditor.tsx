@@ -238,18 +238,24 @@ export function MarkdownEditor({
       });
     }
 
-    // When the keyboard opens, bring the whole input into view: the editor and, below it, the
-    // mobile Submit button (scrolling only the editor left Submit just out of sight).
-    const onShow = () => {
-      const input = elRef.current.closest(`.${c('item-input-wrapper')}`) ?? elRef.current;
-      input.scrollIntoView({ block: 'end' });
-    };
+    // Keep the whole input in view on phones: the editor and, below it, the Submit button. The
+    // keyboard and editing toolbar keep resizing the board after keyboardDidShow, so also follow
+    // every resize of the scroll area around the input while editing.
+    const input = elRef.current.closest(`.${c('item-input-wrapper')}`) ?? elRef.current;
+    const onShow = () => input.scrollIntoView({ block: 'nearest' });
+    let scrollArea = input.parentElement;
+    while (scrollArea && !/(auto|scroll)/.test(getComputedStyle(scrollArea).overflowY)) {
+      scrollArea = scrollArea.parentElement;
+    }
+    const resizeObserver = Platform.isMobile && scrollArea ? new ResizeObserver(onShow) : null;
 
     if (Platform.isMobile) {
       cm.dom.win.addEventListener('keyboardDidShow', onShow);
+      resizeObserver?.observe(scrollArea);
     }
 
     return () => {
+      resizeObserver?.disconnect();
       if (Platform.isMobile) {
         cm.dom.win.removeEventListener('keyboardDidShow', onShow);
       }
