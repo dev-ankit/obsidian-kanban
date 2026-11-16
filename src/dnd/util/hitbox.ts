@@ -53,6 +53,9 @@ export function calculateHitbox(
   ];
 }
 
+// How far in from a scroll container's edge a drag starts scrolling it.
+const scrollZone = 70;
+
 export function calculateScrollHitbox(
   rect: DOMRectReadOnly,
   scroll: ScrollState | null,
@@ -62,22 +65,22 @@ export function calculateScrollHitbox(
   const hitbox = calculateHitbox(rect, scroll, scrollShift, null);
 
   if (side === 'top') {
-    hitbox[3] = hitbox[1] + 35;
+    hitbox[3] = hitbox[1] + scrollZone;
     return hitbox;
   }
 
   if (side === 'right') {
-    hitbox[0] = hitbox[0] + rect.width - 35;
+    hitbox[0] = hitbox[0] + rect.width - scrollZone;
     return hitbox;
   }
 
   if (side === 'bottom') {
-    hitbox[1] = hitbox[1] + rect.height - 35;
+    hitbox[1] = hitbox[1] + rect.height - scrollZone;
     return hitbox;
   }
 
   // left
-  hitbox[2] = hitbox[0] + 35;
+  hitbox[2] = hitbox[0] + scrollZone;
   return hitbox;
 }
 

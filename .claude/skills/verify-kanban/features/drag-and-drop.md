@@ -21,7 +21,7 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
   moving a card between two boards in a split (#1051).
 - `dnd-scroll-overshoot` keeps scrolling at full speed when the pointer goes past the edge it is
   scrolling: below a lane's list, or off the board over the file explorer.
-- `dnd-scroll-ramp` scrolls faster the deeper the pointer is in an edge's 35 px zone. Only the
+- `dnd-scroll-ramp` scrolls faster the deeper the pointer is in an edge's 70 px zone. Only the
   pointer counts: the dragged card's size and where it was grabbed change nothing (#1111).
 - `dnd-narrow-board` drags cards in a list-view board narrower than its lanes without the board
   scrolling back and forth (#1111).
@@ -144,12 +144,12 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   lane's list scrolls.
 
 - **Speed follows the pointer** (`dnd-scroll-ramp`, `wide`). The board's right zone is its last
-  35 px (read the board's box with `eval`; 1365 to 1400 at 1400×900). Hold `Alpha task` at
+  70 px (read the board's box with `eval`; 1330 to 1400 at 1400×900). Hold `Alpha task` at
   several depths with `$K drag '.kanban-plugin__item::Alpha task' --point <x>,160 --dwell 1500 --hold`,
   `release`, and restore the scroll offset between holds. The report must grow with depth:
-  nothing outside the zone (x 1345), then about 180, 370, 640 and 845 px at 7, 15, 25 and 33 px
+  nothing outside the zone (x 1320), then about 180, 370, 640 and 845 px at 14, 30, 50 and 66 px
   in, and 900 px (600 px/s) at the edge or past it. Repeat at a lane's bottom edge with a tall
-  card (`dnd-bottom`, `Source tall`, x 778, y from 798 to 845: same numbers, on `#2`), and in
+  card (`dnd-bottom`, `Source tall`, x 778, the same depths above the list's bottom at 836: same numbers, on `#2`), and in
   phone emulation at 430×932 (`SKILL.md`, "Mobile emulation"). A build that tests the card's box
   instead starts scrolling while the pointer is still far from the zone (main, 2.0.57), or jumps
   from nothing to full speed at the zone's start (the first #1111 fix).
@@ -195,7 +195,7 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   movement in between drops into whatever lane was under the pointer _before_ the scroll.
   Real hands always jitter, so this isn't a user bug; `drag --edge` moves 1 px before releasing.
   A bare `release` after `--hold` doesn't: `$K move X,Y` first if you need a correct drop there.
-- Autoscroll speed is time-based since c67f797 and follows the pointer's depth in the 35 px zone,
+- Autoscroll speed is time-based since c67f797 and follows the pointer's depth in the 70 px zone,
   on any refresh rate: 600 px/s at the edge or past it, so `--edge` with its default 5 px inset
   reads about 515 px/s and `--inset 0` about 600. Much faster means stacked scroll loops or
   unclamped strength have come back (2.0.51 measured ~10,200 px/s, 2.0.52 ~4,400 px/s). To see
