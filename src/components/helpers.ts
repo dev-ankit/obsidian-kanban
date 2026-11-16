@@ -12,6 +12,7 @@ import {
   toggleTask,
 } from 'src/parsers/helpers/inlineMetadata';
 
+import { useCurrentTime } from './CurrentTime';
 import { SearchContextProps } from './context';
 import { Board, DataKey, DateColor, Item, Lane, PageData, TagColor } from './types';
 
@@ -242,7 +243,7 @@ export function useGetTagColorFn(stateManager: StateManager): (tag: string) => T
   return useMemo(() => getTagColorFn(tagColors), [tagColors]);
 }
 
-export function getDateColorFn(dateColors: DateColor[]) {
+export function getDateColorFn(dateColors: DateColor[], now = moment()) {
   const orders = (dateColors || []).map<[moment.Moment | 'today' | 'before' | 'after', DateColor]>(
     (c) => {
       if (c.isToday) {
@@ -258,7 +259,7 @@ export function getDateColorFn(dateColors: DateColor[]) {
       }
 
       const modifier = c.direction === 'after' ? 1 : -1;
-      const date = moment();
+      const date = now.clone();
 
       date.add(c.distance * modifier, c.unit);
 
@@ -266,7 +267,6 @@ export function getDateColorFn(dateColors: DateColor[]) {
     }
   );
 
-  const now = moment();
   orders.sort((a, b) => {
     if (a[0] === 'today') {
       return typeof b[0] === 'string' ? -1 : b[0].isSame(now, 'day') ? 1 : -1;
@@ -288,7 +288,6 @@ export function getDateColorFn(dateColors: DateColor[]) {
   });
 
   return (date: moment.Moment) => {
-    const now = moment();
     const result = orders.find((o) => {
       const key = o[1];
       if (key.isToday) return date.isSame(now, 'day');
@@ -320,7 +319,8 @@ export function useGetDateColorFn(
   stateManager: StateManager
 ): (date: moment.Moment) => DateColor | null {
   const dateColors = stateManager.useSetting('date-colors');
-  return useMemo(() => getDateColorFn(dateColors), [dateColors]);
+  const now = useCurrentTime();
+  return useMemo(() => getDateColorFn(dateColors, moment(now)), [dateColors, now]);
 }
 
 export function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): PageData {

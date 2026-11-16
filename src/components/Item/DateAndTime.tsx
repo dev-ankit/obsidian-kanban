@@ -4,15 +4,16 @@ import { JSX, useMemo } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
 
+import { useCurrentTime } from '../CurrentTime';
 import { c } from '../helpers';
 import { DateColor, Item } from '../types';
 
-export function getRelativeDate(date: moment.Moment, time: moment.Moment) {
+export function getRelativeDate(date: moment.Moment, time: moment.Moment, now: moment.Moment) {
   if (time) {
-    return time.from(moment());
+    return time.from(now);
   }
 
-  const today = moment().startOf('day');
+  const today = now.clone().startOf('day');
 
   if (today.isSame(date, 'day')) {
     return t('today');
@@ -37,13 +38,18 @@ interface DateProps {
 }
 
 export function RelativeDate({ item, stateManager }: DateProps) {
+  const now = useCurrentTime();
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
 
   if (!shouldShowRelativeDate || !item.data.metadata.date) {
     return null;
   }
 
-  const relativeDate = getRelativeDate(item.data.metadata.date, item.data.metadata.time);
+  const relativeDate = getRelativeDate(
+    item.data.metadata.date,
+    item.data.metadata.time,
+    moment(now)
+  );
 
   return <span className={c('item-metadata-date-relative')}>{relativeDate}</span>;
 }

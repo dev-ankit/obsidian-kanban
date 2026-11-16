@@ -47,35 +47,35 @@ export function constructDatePicker(
   });
 }
 
-export function toPreviousMonth(date: moment.Moment) {
+function startOfPickerWeek(date: moment.Moment, firstDayOfWeek: number) {
+  return date.subtract((date.day() - firstDayOfWeek + 7) % 7, 'days');
+}
+
+export function toPreviousMonth(date: moment.Moment, firstDayOfWeek: number) {
   const initialMonth = date.month();
-  const first = date.clone().startOf('month').weekday(0);
+  const first = startOfPickerWeek(date.clone().startOf('month'), firstDayOfWeek);
   const diff = date.diff(first, 'week');
 
-  date.subtract(1, 'month').startOf('month').weekday(6).add(diff, 'week');
+  startOfPickerWeek(date.subtract(1, 'month').startOf('month'), firstDayOfWeek)
+    .add(6, 'days')
+    .add(diff, 'week');
 
-  let nextMonth = date.month();
-
-  while (initialMonth === nextMonth) {
+  while (initialMonth === date.month()) {
     date.subtract(1, 'week');
-    nextMonth = date.month();
   }
 
   return date;
 }
 
-export function toNextMonth(date: moment.Moment) {
+export function toNextMonth(date: moment.Moment, firstDayOfWeek: number) {
   const initialMonth = date.month();
-  const first = date.clone().startOf('month').weekday(6);
+  const first = startOfPickerWeek(date.clone().startOf('month'), firstDayOfWeek).add(6, 'days');
   const diff = date.diff(first, 'week');
 
-  date.add(1, 'month').startOf('month').weekday(0).add(diff, 'week');
+  startOfPickerWeek(date.add(1, 'month').startOf('month'), firstDayOfWeek).add(diff, 'week');
 
-  let nextMonth = date.month();
-
-  while (initialMonth === nextMonth) {
+  while (initialMonth === date.month()) {
     date.add(1, 'week');
-    nextMonth = date.month();
   }
 
   return date;

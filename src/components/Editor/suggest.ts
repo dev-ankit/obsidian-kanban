@@ -50,17 +50,19 @@ export class DateSuggest extends EditorSuggest<[]> {
       if (!datepicker) return;
 
       const currentDate = moment(datepicker.selectedDates[0] || new Date());
+      const firstDayOfWeek = datepicker.l10n.firstDayOfWeek;
+      const weekday = (currentDate.day() - firstDayOfWeek + 7) % 7;
       let nextDate: Date;
 
       if (dir === 'right') {
-        if (currentDate.weekday() === 6) {
-          nextDate = toNextMonth(currentDate).toDate();
+        if (weekday === 6) {
+          nextDate = toNextMonth(currentDate, firstDayOfWeek).toDate();
         } else {
           nextDate = currentDate.add(1, 'day').toDate();
         }
       } else if (dir === 'left') {
-        if (currentDate.weekday() === 0) {
-          nextDate = toPreviousMonth(currentDate).toDate();
+        if (weekday === 0) {
+          nextDate = toPreviousMonth(currentDate, firstDayOfWeek).toDate();
         } else {
           nextDate = currentDate.subtract(1, 'day').toDate();
         }
