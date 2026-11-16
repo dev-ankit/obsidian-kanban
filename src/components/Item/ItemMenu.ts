@@ -49,7 +49,9 @@ export function useItemMenu({
           i.setIcon('lucide-file-plus-2')
             .setTitle(t('New note from card'))
             .onClick(async () => {
-              const [firstLine, ...restLines] = item.data.titleRaw.split('\n');
+              // Legacy cards use <br> for line breaks; retain the original separator and body.
+              const [firstLine] = item.data.titleRaw.split(/\n|<br>/, 1);
+              const rest = item.data.titleRaw.slice(firstLine.length);
               const { sanitizedTitle, preservedContent } = getNoteFromCardTitle(
                 firstLine,
                 stateManager
@@ -116,7 +118,7 @@ export function useItemMenu({
                 newFile,
                 stateManager.file.path
               );
-              const newTitleRaw = [[link, ...preservedContent].join(' '), ...restLines].join('\n');
+              const newTitleRaw = [link, ...preservedContent].join(' ') + rest;
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitleRaw));
             });

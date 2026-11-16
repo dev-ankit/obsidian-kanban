@@ -2,17 +2,21 @@
 
 From a card's menu, users create a new note named after the card. The note opens in a split, and
 the card's title becomes a link to the note. First-line tags, inline fields, dates/times, links and
-embeds stay outside that link with their original syntax. Tags, inline fields and date/time syntax
-are excluded from the filename; links and embeds contribute their text. The note goes in the
-board's configured note folder,
+embeds stay outside that link with their original syntax. Filenames use the existing first-line
+sanitization: dates/times are removed, links and embeds contribute their text, tags lose their
+hash, illegal characters become spaces, and whitespace is condensed. Inline fields stay on the
+card when Dataview is enabled, matching board parsing. The note goes in the board's configured
+note folder,
 falling back to the global setting and then Obsidian's default location (PR #1228). If creation fails,
 a notice explains why (PR #1188).
 
 ## Sub-features
 
 - `nnfc-links` retains first-line URLs and link targets when creating a note (#632).
-- `nnfc-inline-fields` preserves wrapped inline metadata independently of Dataview being installed (#848).
-- `nnfc-tags` keeps first-line tags on the card and excludes them from the filename (#1016).
+- `nnfc-inline-fields` preserves wrapped inline metadata when Dataview is enabled (#848).
+- `nnfc-tags` keeps first-line tags on the card and preserves their de-hashed filename text (#1016).
+- `nnfc-code-url` does not preserve a URL inside inline code as a separate link.
+- `nnfc-multiline` keeps the original newline or legacy `<br>` and the rest of the card intact.
 - `nnfc-plain` makes a note from a plain title, and the card links to it.
 - `nnfc-date-trailing` strips a date at the end of the title from the filename; the card links to it.
 - `nnfc-date-middle` strips a date in the middle of the title from the filename; the card links to it.
@@ -39,22 +43,34 @@ Preconditions:
   (folder exists). `Board-missing.md` has `new-note-folder: Gone` (no such folder). The global
   setting is unset and Obsidian's new-file location is the vault root.
 
+- **Dataview precondition.** For the inline-field expectations below, install and enable the real
+  Dataview plugin in the scratch vault only. Copy its release files into the fixture's temporary
+  `.obsidian/plugins/dataview` directory before launch, remove that temporary directory after
+  launch, then enable Dataview from Obsidian Settings → Community plugins. Verify it appears
+  in `app.plugins.enabledPlugins` before creating notes. Also run without Dataview: filenames
+  are identical, while field wrappers are treated as ordinary text, as on the board.
 - **Links and combined content** (`note-content`). Create notes from `Hello`, `Mixed`, `Nested`,
   `Bare`, and `Local`, closing the split after each. Expect `[[Hello world]] [world](https://hello.world)`;
-  `[[Mixed site]] #work/nested [owner:: [[Alice]]] @{2026-05-01} @@{09:30} [site](https://example.com/#part)`
-  with the original second line unchanged; `[[Nested reference]] [reference](<https://example.com/a_(b)>) #research`;
+  `[[Mixed work nested [owner Alice] site]] #work/nested [owner:: [[Alice]]] @{2026-05-01} @@{09:30} [site](https://example.com/#part)`
+  with the original second line unchanged; `[[Nested reference ) research]] [reference](<https://example.com/a_(b)>) #research`;
   `[[Bare https example.com section]] https://example.com/#section`; and
   `[[Local Notes Spec image]] [[Notes/Spec]] ![[image.png]]`. Check the actual filenames with `ls`.
   Also create a note from `Parenthesized (owner:: Alice) #work` and expect
-  `[[Parenthesized]] (owner:: Alice) #work`. A tag-only card must keep `#onlytag` alongside
-  Obsidian's generated untitled note link. No duplicate fragments should appear for nested fields,
+  `[[Parenthesized (owner Alice) work]] (owner:: Alice) #work`. A tag-only card must become
+  `[[onlytag]] #onlytag`. No duplicate fragments should appear for nested fields,
   links containing URL fragments, or dates that link to daily notes.
 - **Inline fields** (`note-content`). Create notes from `my description #mytag [created:: 2023-10-22]`
   and `other description [created:: 2023-10-22] #mytag`, closing each note split. Expect notes
-  `my description.md` and `other description.md`, and cards `[[my description]] #mytag [created:: 2023-10-22]`
-  and `[[other description]] [created:: 2023-10-22] #mytag`. Keep both field/tag orderings.
-- **Tags** (`note-content`). Use the card menu on `Task 1 #Tag1`. The note is `Task 1.md`
-  and `$K file --expect '- [ ] [[Task 1]] #Tag1'` succeeds. The tag still renders on the card.
+  `my description mytag [created 2023-10-22].md` and
+  `other description [created 2023-10-22] mytag.md`, and cards
+  `[[my description mytag [created 2023-10-22]]] #mytag [created:: 2023-10-22]` and
+  `[[other description [created 2023-10-22] mytag]] [created:: 2023-10-22] #mytag`. Keep both field/tag orderings.
+- **Tags** (`note-content`). Use the card menu on `Task 1 #Tag1`. The note is `Task 1 Tag1.md`
+  and `$K file --expect '- [ ] [[Task 1 Tag1]] #Tag1'` succeeds. The tag still renders on the card.
+- **Code URL and image** (`note-content`). Create a note from `Code URL`. Expect
+  ``[[Code URL `https example.com code` code]] #code``; the URL inside code is not appended.
+  Create one from `Image`: expect `[[Image logo media]] ![logo](https://example.com/logo.png) #media`.
+  The image syntax stays intact.
 - **Plain.** `$K click '.kanban-plugin__item::Write release notes >> a[aria-label="More options"]'`,
   `$K click '.menu .menu-item::New note from card'`. `$K ls` lists `Write release notes.md`;
   `$K eval 'app.workspace.getActiveFile().path'` is that note; and

@@ -15,6 +15,8 @@ kanban-plugin: board
 - [ ] Local [[Notes/Spec]] ![[image.png]]
 - [ ] Parenthesized (owner:: Alice) #work
 - [ ] #onlytag
+- [ ] Code URL `https://example.com/code` #code
+- [ ] Image ![logo](https://example.com/logo.png) #media
 
 %% kanban:settings
 
