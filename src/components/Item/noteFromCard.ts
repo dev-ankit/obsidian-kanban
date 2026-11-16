@@ -5,7 +5,8 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { escapeRegExpStr } from '../helpers';
 
-const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
+// Characters a filename can't hold or a [[link]] to it can't contain.
+const illegalCharsRegEx = /[\\/:"*?<>|[\]#^]+/g;
 const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
 const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
 const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;

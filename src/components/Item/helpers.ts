@@ -4,6 +4,8 @@ import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
 import { buildLinkToDailyNote } from 'src/helpers';
 import { getTaskStatusDone } from 'src/parsers/helpers/inlineMetadata';
+import { parseFragment } from 'src/parsers/parseMarkdown';
+import { visit } from 'unist-util-visit';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
 import { getDefaultLocale } from '../Editor/datePickerLocale';
@@ -92,6 +94,21 @@ interface ConstructMenuDatePickerOnChangeParams {
   dateIndex?: number;
 }
 
+// Index, among all matches of dateRegEx, of the last match outside inline code.
+function lastParsedDateIndex(stateManager: StateManager, titleRaw: string, dateRegEx: RegExp) {
+  const code: [number, number][] = [];
+  visit(parseFragment(stateManager, titleRaw), 'inlineCode', (node) => {
+    code.push([node.position.start.offset, node.position.end.offset]);
+  });
+  let last = 0;
+  let index = 0;
+  const re = new RegExp(dateRegEx.source, 'g');
+  for (let m = re.exec(titleRaw); m; m = re.exec(titleRaw), index++) {
+    if (!code.some(([start, end]) => m.index >= start && m.index < end)) last = index;
+  }
+  return last;
+}
+
 export function constructMenuDatePickerOnChange({
   stateManager,
   boardModifiers,
@@ -110,8 +127,9 @@ export function constructMenuDatePickerOnChange({
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`,
     'g'
   );
-  // Footer, table and menu pickers display the metadata date, the last token on the card.
-  const targetIndex = dateIndex ?? (item.data.titleRaw.match(dateRegEx)?.length ?? 1) - 1;
+  // Footer, table and menu pickers display the metadata date: the last date token the board parses,
+  // which excludes dates inside code spans.
+  const targetIndex = dateIndex ?? lastParsedDateIndex(stateManager, item.data.titleRaw, dateRegEx);
 
   return (dates: Date[]) => {
     const date = dates[0];
