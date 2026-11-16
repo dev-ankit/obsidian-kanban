@@ -98,6 +98,11 @@ Preconditions:
 - **Proof.** `snap` with the card menu open, again after the note opens (use `--file Board-missing.md`
   for that board), plus the `ls` and file checks above.
 
+- **The link resolves.** After any New note from card step, check that every link the card gained points at the
+  created note: `$K eval '(() => { const f = app.vault.getAbstractFileByPath("Board.md"); return app.metadataCache.getFileCache(f).links.map(l => l.link + " -> " + (app.metadataCache.getFirstLinkpathDest(l.link, "Board.md")?.path ?? "UNRESOLVED")) })()'`.
+  Comparing card text alone missed a broken link once: a bracketed field left in the name closed the `[[…]]` early.
+  Cards to keep: `my description #mytag [created:: 2023-10-22]` and `Review PR #12 for C# code`.
+
 ## Gotchas
 
 - 2.0.52 failed `nnfc-date-middle` (card never linked) and leaked daily-note dates into filenames;
