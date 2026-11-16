@@ -9,6 +9,7 @@ lane's `##` heading.
 - `card-add` adds a card at the bottom of a lane from the lane's `+ Add a card` button.
 - `card-add-blank` ignores a submission that is only whitespace.
 - `card-edit` edits a card in place by double-clicking it.
+- `card-duplicate-link` duplicates a card without sharing its block ID or copied link.
 - `card-delete` removes a card from the card menu.
 - `card-archive` moves a card under `## Archive` from the card menu.
 - `card-archive-completed` archives every checked card from the board header.
@@ -46,6 +47,22 @@ Preconditions:
   (`$K file --expect '## Archive'`, then read the section).
 - **Archive completed.** `$K click '.workspace-leaf.mod-active .view-action[aria-label="Archive completed cards"]'`.
   Every `[x]` card moves under `## Archive`.
+- **Duplicate a linked card (#830).** Start a fresh `$K launch --fixture duplicate-card` run and
+  `$K doctor`. `$K snap duplicate-before`. Open `Original linked card`'s `More options` menu,
+  then choose `Duplicate card`. The copy is inserted before the original. `$K file` must show
+  exactly one `^original-card`, on the original; the copy has no block ID. Double-click the first
+  matching card's title, `Mod+a`, type `Copied linked card`, and press `Enter`.
+  `$K file --expect '- [ ] Copied linked card'` succeeds. Use `Copy link to card` on the original
+  and the copy, reading `navigator.clipboard.readText()` through `$K eval` after each action.
+  The original link is `[[Board#^original-card]]`; the copy's link has a different ID, which now
+  appears only on the copy in `$K file`. Copy its link again: it stays the same. `$K snap duplicate-after`.
+  Before the fix, both cards retained `^original-card` and both links were identical.
+- **Duplicate an unlinked card.** In the same fixture, duplicate `Unlinked card` and rename the
+  first matching card to `Copied unlinked card`. Neither has a block ID yet. Copy a link from
+  each through the card menu; their links and newly saved block IDs must differ.
+- **Duplicate persistence.** Open as markdown from the header, then return with the palette's
+  `Kanban: Toggle between Kanban and markdown mode`. Copy both linked cards' links again;
+  each still uses its own saved ID. Finish with `$K errors`.
 - **Proof.** `snap` before and after each step, then `$K errors`.
 
 ## Gotchas

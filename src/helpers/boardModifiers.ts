@@ -273,7 +273,9 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
           });
         }
 
-        return insertEntity(boardData, path, [entityWithNewID]);
+        return insertEntity(boardData, path, [
+          update(entityWithNewID, { data: { blockId: { $set: undefined } } }),
+        ]);
       });
     },
   };

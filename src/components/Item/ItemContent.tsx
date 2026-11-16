@@ -1,4 +1,5 @@
 import { EditorView } from '@codemirror/view';
+import { moment } from 'obsidian';
 import { memo } from 'preact/compat';
 import {
   Dispatch,
@@ -38,6 +39,9 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
 
   return useMemo(() => {
     const onEditDate = (e: MouseEvent) => {
+      const dateEl = e.targetNode.instanceOf(HTMLElement)
+        ? e.targetNode.closest<HTMLElement>(`.${c('preview-date-wrapper')}`)
+        : null;
       constructDatePicker(
         e.view,
         stateManager,
@@ -48,8 +52,9 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
           item,
           hasDate: true,
           path,
+          dateIndex: Number(dateEl?.dataset.dateIndex ?? 0),
         }),
-        item.data.metadata.date?.toDate()
+        dateEl ? moment(dateEl.dataset.date).toDate() : item.data.metadata.date?.toDate()
       );
     };
 

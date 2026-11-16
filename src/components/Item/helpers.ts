@@ -89,6 +89,7 @@ interface ConstructMenuDatePickerOnChangeParams {
   item: Item;
   hasDate: boolean;
   path: Path;
+  dateIndex?: number;
 }
 
 export function constructMenuDatePickerOnChange({
@@ -97,6 +98,7 @@ export function constructMenuDatePickerOnChange({
   item,
   hasDate,
   path,
+  dateIndex = 0,
 }: ConstructMenuDatePickerOnChangeParams) {
   const dateFormat = stateManager.getSetting('date-format');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
@@ -104,7 +106,10 @@ export function constructMenuDatePickerOnChange({
   const contentMatch = shouldLinkDates
     ? '(?:\\[[^\\]]+\\]\\([^)]+\\)|\\[\\[[^\\]]+\\]\\])'
     : '{[^}]+}';
-  const dateRegEx = new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`);
+  const dateRegEx = new RegExp(
+    `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`,
+    'g'
+  );
 
   return (dates: Date[]) => {
     const date = dates[0];
@@ -116,7 +121,10 @@ export function constructMenuDatePickerOnChange({
     let titleRaw = item.data.titleRaw;
 
     if (hasDate) {
-      titleRaw = item.data.titleRaw.replace(dateRegEx, `$1${dateTrigger}${wrappedDate}`);
+      let index = 0;
+      titleRaw = item.data.titleRaw.replace(dateRegEx, (match, space) =>
+        index++ === dateIndex ? `${space}${dateTrigger}${wrappedDate}` : match
+      );
     } else {
       titleRaw = `${item.data.titleRaw} ${dateTrigger}${wrappedDate}`;
     }
