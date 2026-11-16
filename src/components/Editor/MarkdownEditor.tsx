@@ -20,7 +20,6 @@ interface MarkdownEditorProps {
   onEnter: (cm: EditorView, mod: boolean, shift: boolean) => boolean;
   onEscape: (cm: EditorView) => void;
   onSubmit: (cm: EditorView) => void;
-  onPaste?: (e: ClipboardEvent, cm: EditorView) => void;
   onChange?: (update: ViewUpdate) => void;
   value?: string;
   className: string;
@@ -95,24 +94,14 @@ function getVimPlugin(cm: EditorView): string {
   })?.value?.cm;
 }
 
-export function MarkdownEditor({
-  editorRef,
-  onEnter,
-  onEscape,
-  onChange,
-  onPaste,
-  className,
-  onSubmit,
-  editState,
-  value,
-  placeholder,
-}: MarkdownEditorProps) {
+export function MarkdownEditor(props: MarkdownEditorProps) {
+  const { editorRef, className, onSubmit, editState, value, placeholder } = props;
   const { view, stateManager } = useContext(KanbanContext);
   const elRef = useRef<HTMLDivElement>();
   const internalRef = useRef<EditorView>();
-  // The editor mounts once, but form state can change its Enter handler between submissions.
-  const onEnterRef = useRef(onEnter);
-  onEnterRef.current = onEnter;
+  // The editor is built once, so its handlers call whatever the latest render passed.
+  const latest = useRef(props);
+  latest.current = props;
 
   useEffect(() => {
     class Editor extends view.plugin.MarkdownEditor {
@@ -132,7 +121,7 @@ export function MarkdownEditor({
       updateBottomPadding() {}
       onUpdate(update: ViewUpdate, changed: boolean) {
         super.onUpdate(update, changed);
-        onChange && onChange(update);
+        latest.current.onChange?.(update);
       }
       buildLocalExtensions(): Extension[] {
         const extensions = super.buildLocalExtensions();
@@ -168,18 +157,9 @@ export function MarkdownEditor({
         );
 
         if (placeholder) extensions.push(placeholderExt(placeholder));
-        if (onPaste) {
-          extensions.push(
-            Prec.high(
-              EditorView.domEventHandlers({
-                paste: onPaste,
-              })
-            )
-          );
-        }
 
         const makeEnterHandler = (mod: boolean, shift: boolean) => (cm: EditorView) => {
-          const didRun = onEnterRef.current(cm, mod, shift);
+          const didRun = latest.current.onEnter(cm, mod, shift);
           if (didRun) return true;
           if (this.app.vault.getConfig('smartIndentList')) {
             this.editor.newlineAndIndentContinueMarkdownList();
@@ -207,7 +187,7 @@ export function MarkdownEditor({
               {
                 key: 'Escape',
                 run: (cm) => {
-                  onEscape(cm);
+                  latest.current.onEscape(cm);
                   return false;
                 },
                 preventDefault: true,
