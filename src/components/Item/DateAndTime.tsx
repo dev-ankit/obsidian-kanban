@@ -43,10 +43,26 @@ export function RelativeDate({ item, stateManager }: DateProps) {
   const relativeDate = useCurrentTime((now) =>
     shouldShowRelativeDate && date ? getRelativeDate(date, time, moment(now)) : null
   );
+  const dateColor = useDateColor(stateManager, shouldShowRelativeDate ? time ?? date : undefined);
 
   if (relativeDate === null) return null;
 
-  return <span className={c('item-metadata-date-relative')}>{relativeDate}</span>;
+  return (
+    <span
+      className={classcat([
+        c('item-metadata-date-relative'),
+        { [c('date')]: !!dateColor, 'has-background': !!dateColor?.backgroundColor },
+      ])}
+      style={
+        dateColor && {
+          '--date-color': dateColor.color,
+          '--date-background-color': dateColor.backgroundColor,
+        }
+      }
+    >
+      {relativeDate}
+    </span>
+  );
 }
 
 interface DateAndTimeProps {
