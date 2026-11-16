@@ -8,6 +8,7 @@ the displayed row boundaries retain the existing previous/next-month behavior.
 - `date-keyboard-week-start` uses the displayed calendar's first and last weekdays.
 - `date-keyboard-month-row` preserves the row when moving between months.
 - `date-keyboard-vertical` moves Up and Down by seven days.
+- `date-week-start-sunday` honors Sunday as the chosen week start where the locale starts on Monday.
 
 ## How to get to it (user POV)
 
@@ -35,8 +36,17 @@ Preconditions:
 - **Other starts.** Repeat with a Sunday-first board and a Wednesday-first board. The rightmost
   displayed weekday, rather than Moment's locale weekday, triggers the next-month move.
   Finish with `$K errors`.
+- **Sunday under a Monday-first locale** (`date-week-start-sunday`). Test setup only:
+  `$K eval '(() => { localStorage.setItem("language", "de"); setTimeout(() => location.reload(), 100) })()'`,
+  wait for the reload, and check `moment.locale()` is `de`. On Keyboard-Sunday.md add a card and
+  type `Week @`; read the picker's `.flatpickr-weekday` texts: they start with `So`. Keyboard.md
+  (Monday) starts with `Mo`, Keyboard-Wednesday.md with `Mi`, and Clock.md, which sets no week
+  start, with the locale's `Mo`. Before the fix the Sunday board showed `Mo` first.
 
 ## Gotchas
+
+- Sunday is stored as `0`, and a board without the setting reads it as `null`. Check both: one
+  must not be mistaken for the other.
 
 - This journey exercises the editor's `@` suggestion, not the card menu's picker.
 - Month-jumping at the displayed row edge is existing behavior. This fix changes which weekday
