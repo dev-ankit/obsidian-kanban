@@ -5,6 +5,11 @@ set of eligible vault paths, including in large vaults, without freezing the set
 
 ## Sub-features
 
+- `settings-tag-reset` restores inherited tag colors, including from an empty local override,
+  and takes the board's old colors off its tags at once (#1094).
+- `settings-list-reset` gives a board's date colors and tag sort order the same reset.
+- `settings-quick-changes` saves every setting changed in quick succession, not only the last.
+- `settings-locale-fallback` opens settings in regional or unsupported languages without console errors (#1248).
 - `settings-large-open` opens board and global settings in a large vault without building a DOM
   element for every file and folder.
 - `settings-large-select` finds and saves paths near the end of the complete candidate list.
@@ -73,6 +78,44 @@ Preconditions:
   `[[Write release notes]]`. Capture a snap and check the file contents.
 - **Basic regression.** Run `card-add`, then `dnd-cross-lane` and `dnd-empty-lane` from the existing
   cards and drag feature maps. Assert the saved board order after each.
+
+- **Tag color inheritance.** In global Kanban settings add a tag color for `#work`, set its
+  background to `#ff0000`, blur the field, and wait until plugin `data.json` contains the color.
+  Close settings: `Plan sprint #work` has a red tag. Open board settings and add a local color;
+  delete it with `.kanban-plugin__tag-color-input-wrapper [aria-label="Delete"]`.
+  Assert the board saves `"tag-colors":[]`: this remains an explicit choice to suppress global
+  colors. Click `.kanban-plugin__tag-color-input-wrapper [aria-label="Reset to default"]` and
+  assert `file --absent 'tag-colors'`. Close settings and verify the tag background is red again.
+  Repeat after reopening the board with an empty override, and with a nonempty override. The
+  reset clears the local editor rows, removes the key on disk and restores inheritance. Cancel
+  the modal and reopen it to confirm the result survives. Global settings retain their color.
+  Capture the local controls and the restored tag; finish with `errors`.
+- **Reset the board's lists** (`settings-list-reset`). Launch `--fixture settings-reset`: the
+  plugin's global settings color `#global` blue, color past dates blue and sort `#zeta` before
+  `#alpha`; Board.md colors `#work` red and overrides date colors and tag sort with empty lists.
+  Read the `--tag-background` of both tags and the `--date-color` of the date: red, none, none.
+  Open board settings and click `[aria-label="Reset to default"]` inside
+  `.kanban-plugin__tag-color-input-wrapper`, `.kanban-plugin__date-color-input-wrapper` and
+  `.kanban-plugin__tag-sort-input-wrapper`, one right after the other. The tag sort rows now
+  list `#zeta`, `#alpha`. Wait two seconds, close the modal, and
+  `$K file --absent 'tag-colors'`, `--absent 'date-colors'`, `--absent 'tag-sort'` all pass.
+  Without reloading, `#work` has no color, `#global` is blue and the date is blue; Todo's
+  Sort by → Sort by tags puts `Two #zeta` first. Before the fix only tag colors had a reset,
+  `#work` stayed red until the board was reopened, and of several resets made within a second
+  only the last was saved.
+- **Quick changes** (`settings-quick-changes`). In board settings click the toggles of
+  `Display card checkbox` and `Hide card counts in list titles` one right after the other, wait
+  two seconds and close. Both `"show-checkboxes":true` and `"hide-card-count":true` are on disk.
+  Before the fix only the second was.
+
+- **Regional language.** Use English (GB) as the scratch profile's language. If the native
+  Language dropdown cannot be driven over CDP, configure the environment with
+  `eval 'localStorage.setItem("language", "en-GB")'`, then disable and re-enable Kanban
+  through Settings → Community plugins. This is locale setup; open Kanban settings through
+  the UI to test the reported failure. Verify English labels and clean `errors`. The old
+  build logged `kanban locale not found en-GB` for every translated string. Repeat with an
+  unsupported language to check English fallback, and an exact supported locale to check that
+  its existing translations still take precedence. Stop the scratch instance afterward.
 
 ## Gotchas
 

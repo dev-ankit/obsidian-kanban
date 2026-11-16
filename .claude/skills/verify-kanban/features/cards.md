@@ -6,6 +6,7 @@ lane's `##` heading.
 
 ## Sub-features
 
+- `card-link-navigation` reveals and outlines the card reached by a copied block link (#754).
 - `card-add` adds a card at the bottom of a lane from the lane's `+ Add a card` button.
 - `card-add-blank` ignores a submission that is only whitespace.
 - `card-edit` edits a card in place by double-clicking it.
@@ -78,6 +79,7 @@ Preconditions:
   in the file, then double-click the new card and verify its editor still contains the literal tag.
   Submit, switch to markdown with the header button and back with the Kanban palette command.
   Both tables still render with two cells in their data row, and a line break inside the second cell.
+
 ### Archive limit regression (#695)
 
 With a fresh basic fixture, open Obsidian settings (`key Mod+,`), click
@@ -93,6 +95,39 @@ under `## Archive` on disk despite the global limit of one. Reopen board setting
 `-1`: after archiving two cards only the newest remains. Capture the input and
 saved archive with `snap`; finish with `errors`. To replace an existing number, use
 `Home`, `Shift+End`, `Backspace`, then `type`.
+
+- **Copied link navigation** (`card-link-navigation`). Launch `--fixture batch3-dates-links`
+  and open Wide.md, with eight lanes of forty cards. Scroll horizontally to Lane 8 and vertically
+  to card 40 using the scrollbars or real wheel input. Its More options → Copy link to card
+  copies `[[Wide#^far-card]]`. Links.md already holds that link: open it and click the link
+  (`$K click '.cm-hmd-internal-link::Wide#^far-card'`; a link on the cursor's line shows as
+  source and doesn't follow, which is why the note starts with a line of text). The card is
+  visible horizontally and vertically and briefly outlined. Inspect the target rectangle and
+  both scroll offsets; opening the link must not edit Wide.md. Snap before and after. Before the
+  fix, the board opened at scrollLeft 0 with the target at x=2343, y=1701, outside the window.
+- **Tall cards, fresh open.** From Links.md follow `[[Tall#^tall-target]]`: card 22 of a lane of
+  thirty four-line cards. Its rectangle must be inside the view's content area (it lands
+  centered, y 433 to 520 at 1400×900). When the board scrolled before its cards had their
+  heights, the lane scrolled but the card ended up below the fold (y 925 to 1012).
+- **Collapsed lane.** Follow `[[Tall#^collapsed-target]]`: its card is in Tall 8, which the
+  fixture saves collapsed. The board scrolls to the collapsed lane and outlines it; the lane
+  stays collapsed and `$K file Tall.md` still ends its `list-collapse` with `true`. In table
+  layout the same link reveals the card's row, in list layout the collapsed lane's bar.
+- **Existing view and layouts.** In Tall.md, click the link in `Self jump` (Tall 2). The same
+  board scrolls to the target without reopening or losing its lanes. Scroll away and follow it
+  again; `Collapsed jump` does the same for the collapsed lane, and `Other board` opens Wide.md
+  in the same tab at `^far-card`. Follow the links after switching to table and list layouts
+  (scroll the card with the link into view first); each layout reveals its target.
+- **Once only.** After following a link, scroll away and switch layout (board → table → list),
+  then switch to markdown and back with the palette: the board must stay where it is, with no
+  scroll and no outline (`getAnimations()` on the target is empty). Before the fix every such
+  remount scrolled to the target and outlined it again. A missing block target
+  (`[[Wide#^missing-card]]`) leaves the board usable and produces no page error.
+- **Rename.** With a board focused, run `Rename file` from the palette (F2): the tab's title
+  becomes editable (`document.activeElement` is `.view-header-title`), and typing a name and
+  Enter renames the file with the board still showing its lanes. Before the fix nothing happened.
+  Run add-card and within/cross-lane drag journeys afterward, checking each saved mutation.
+  Finish with clean `errors`.
 
 ## Gotchas
 

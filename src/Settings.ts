@@ -171,11 +171,12 @@ export class SettingsManager {
     this.settings = settings;
   }
 
+  // Every change is kept as it is made; only passing the result on waits for a pause.
   applySettingsUpdate(spec: Spec<KanbanSettings>) {
+    this.settings = update(this.settings, spec);
     this.win.clearTimeout(this.applyDebounceTimer);
 
     this.applyDebounceTimer = this.win.setTimeout(() => {
-      this.settings = update(this.settings, spec);
       this.config.onSettingsChange(this.settings);
     }, 1000);
   }
@@ -540,20 +541,31 @@ export class SettingsManager {
     new Setting(contentEl).then((setting) => {
       const [value, globalValue] = this.getSetting('tag-sort', local);
 
-      const keys: TagSortSetting[] = ((value || globalValue || []) as TagSort[]).map((k) => {
-        return {
-          ...TagSortSettingTemplate,
-          id: generateInstanceId(),
-          data: k,
-        };
-      });
+      const toKeys = (tags: TagSort[]): TagSortSetting[] =>
+        (tags || []).map((k) => {
+          return {
+            ...TagSortSettingTemplate,
+            id: generateInstanceId(),
+            data: k,
+          };
+        });
 
-      renderTagSortSettings(setting.settingEl, contentEl, keys, (keys: TagSortSetting[]) =>
-        this.applySettingsUpdate({
-          'tag-sort': {
-            $set: keys.map((k) => k.data),
-          },
-        })
+      renderTagSortSettings(
+        setting.settingEl,
+        contentEl,
+        toKeys((value || globalValue) as TagSort[]),
+        (keys: TagSortSetting[]) =>
+          this.applySettingsUpdate({
+            'tag-sort': {
+              $set: keys.map((k) => k.data),
+            },
+          }),
+        local
+          ? () => {
+              this.applySettingsUpdate({ $unset: ['tag-sort'] });
+              return toKeys(globalValue as TagSort[]);
+            }
+          : undefined
       );
 
       this.cleanupFns.push(() => {
@@ -574,12 +586,21 @@ export class SettingsManager {
         };
       });
 
-      renderTagSettings(setting.settingEl, keys, (keys: TagColorSetting[]) =>
-        this.applySettingsUpdate({
-          'tag-colors': {
-            $set: keys.map((k) => k.data),
-          },
-        })
+      renderTagSettings(
+        setting.settingEl,
+        keys,
+        (keys: TagColorSetting[]) =>
+          this.applySettingsUpdate({
+            'tag-colors': {
+              $set: keys.map((k) => k.data),
+            },
+          }),
+        local
+          ? () => {
+              this.applySettingsUpdate({ $unset: ['tag-colors'] });
+              return [];
+            }
+          : undefined
       );
 
       this.cleanupFns.push(() => {
@@ -939,6 +960,12 @@ export class SettingsManager {
               $set: keys.map((k) => k.data),
             },
           }),
+        local
+          ? () => {
+              this.applySettingsUpdate({ $unset: ['date-colors'] });
+              return [];
+            }
+          : undefined,
         () => {
           const [value, globalValue] = this.getSetting('date-display-format', local);
           const defaultFormat = getDefaultDateFormat(this.app);

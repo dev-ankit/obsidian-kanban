@@ -3,11 +3,16 @@ import { Menu, Notice, Platform, TFile, TFolder } from 'obsidian';
 import { Dispatch, StateUpdater, useCallback } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { moveEntity } from 'src/dnd/util/data';
 import { t } from 'src/lang/helpers';
 
 import { BoardModifiers } from '../../helpers/boardModifiers';
-import { applyTemplate, escapeRegExpStr, generateInstanceId } from '../helpers';
+import {
+  applyTemplate,
+  escapeRegExpStr,
+  generateInstanceId,
+  markdownLinkDestination,
+  moveItem,
+} from '../helpers';
 import { EditState, Item } from '../types';
 import {
   constructDatePicker,
@@ -244,7 +249,7 @@ export function useItemMenu({
               const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
               const dateTrigger = stateManager.getSetting('date-trigger');
               const contentMatch = shouldLinkDates
-                ? '(?:\\[[^\\]]+\\]\\([^\\)]+\\)|\\[\\[[^\\]]+\\]\\])'
+                ? `(?:\\[[^\\]]+\\]${markdownLinkDestination}|\\[\\[[^\\]]+\\]\\])`
                 : '{[^}]+}';
               const dateRegEx = new RegExp(
                 `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`
@@ -306,9 +311,9 @@ export function useItemMenu({
               .setTitle(lanes[i].data.title)
               .onClick(() => {
                 if (path[0] === i) return;
-                stateManager.setState((boardData) => {
-                  return moveEntity(boardData, path, [i, 0]);
-                });
+                stateManager.setState((boardData) =>
+                  moveItem(stateManager, boardData, path, [i, 0])
+                );
               })
           );
         }

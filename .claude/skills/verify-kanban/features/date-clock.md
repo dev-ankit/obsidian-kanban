@@ -7,6 +7,8 @@ unchanged.
 
 ## Sub-features
 
+- `date-color-text` colors the text of linked dates and relative labels with the same rules
+  (#656).
 - `date-clock-relative` updates tomorrow/today/yesterday and time-until labels.
 - `date-clock-color` recomputes moving thresholds and today's color.
 - `date-clock-inline` also recolors inline dates, clearing a color when no rule applies.
@@ -94,6 +96,18 @@ Preconditions:
   focus re-rendered all 600 cards (about 30 ms, 80–100 ms at 4x).
 - **Proof.** Capture before/after snaps and observations and finish with `$K errors`.
   `$K stop` discards the page-clock override with the scratch process.
+
+- **Linked and relative text** (`date-color-text`). Launch `--fixture batch3-dates-links`.
+  Use the page-clock setup above if today is not November 16, 2026. Open Board.md, Footer.md,
+  and Linked.md through the explorer. Snap each and inspect computed `color` on the date text
+  and `.kanban-plugin__item-metadata-date-relative`. Today is red on green, tomorrow is orange,
+  and November 22 is blue. Linked dates must not retain the theme link color. Existing threshold
+  ordering stays the same. A relative label takes the rule's text color only: its computed
+  `background-color` is transparent (`rgba(0, 0, 0, 0)`) and it has no `kanban-plugin__date`
+  class, with or without a rule. On an uncolored date, links retain the theme link color.
+  Repeat after the midnight tick to check both labels and colors refresh. Before the fix,
+  relative labels were uncolored and linked text was purple; the first fix made each label a
+  chip, which in the footer is a bar as wide as the card, green for today and grey otherwise.
 
 ## Gotchas
 

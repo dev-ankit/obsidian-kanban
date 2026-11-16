@@ -1,0 +1,64 @@
+{
+  "main": {
+    "id": "4bff8d75fee435aa",
+    "type": "split",
+    "children": [
+      {
+        "id": "c23b136413e6e1b2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "aabbcc0011223344",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "aabbcc0011223355",
+            "type": "leaf",
+            "state": {
+              "type": "kanban",
+              "state": {
+                "file": "Other.md"
+              },
+              "title": "Other"
+            }
+          }
+        ],
+        "currentTab": 0
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "2c8dfb4d384fe385",
+    "type": "split",
+    "children": [
+      {
+        "id": "416f3fabc26c3cf6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "88cba427bf252673",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "active": "aabbcc0011223344"
+}

@@ -141,6 +141,15 @@ function DraggableLaneRaw({
     <SortContext.Provider value={lane.data.sorted ?? null}>
       <div
         ref={measureRef}
+        // A collapsed list shows none of its cards, so it answers for their block links itself.
+        data-block-id={
+          isCollapsed
+            ? lane.children
+                .map((item) => item.data.blockId)
+                .filter(Boolean)
+                .join(' ')
+            : undefined
+        }
         className={classcat([
           c('lane-wrapper'),
           {

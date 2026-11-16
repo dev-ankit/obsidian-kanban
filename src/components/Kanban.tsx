@@ -66,6 +66,34 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const tagColors = stateManager.useSetting('tag-colors');
   const boardView = view.useViewState(frontmatterKey);
 
+  // A link to a card is followed once, by the board it points at, when that board is on screen:
+  // right away if it already is, otherwise after it has rendered and its cards have their
+  // heights. A collapsed list stands in for the cards inside it.
+  useEffect(() => {
+    const reveal = () => {
+      if (!boardData || !view.blockToReveal) return;
+
+      const target = rootRef.current?.querySelector<HTMLElement>(
+        `[data-block-id~="${CSS.escape(view.blockToReveal)}"]`
+      );
+
+      view.blockToReveal = undefined;
+      if (!target) return;
+
+      target.scrollIntoView({ block: 'center', inline: 'center' });
+      target.animate(
+        { outline: ['2px solid var(--text-accent)', '2px solid transparent'] },
+        { duration: 1500 }
+      );
+    };
+
+    reveal();
+    view.emitter.on('revealBlock', reveal);
+    return () => {
+      view.emitter.off('revealBlock', reveal);
+    };
+  }, [view, boardData?.id]);
+
   const closeLaneForm = useCallback(() => {
     if (boardData?.children.length > 0) {
       setIsLaneFormVisible(false);

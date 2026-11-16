@@ -12,7 +12,7 @@ import {
 import { moment } from 'obsidian';
 
 import { StateManager } from '../../StateManager';
-import { escapeRegExpStr } from '../helpers';
+import { escapeRegExpStr, markdownLinkDestination } from '../helpers';
 
 export const stateManagerField = StateField.define<StateManager | null>({
   create() {
@@ -133,5 +133,5 @@ export const datePlugins: Extension[] = [
   create('time', '{([^}]+)}'),
   create('date', '{([^}]+)}'),
   create('date', '\\[\\[([^\\]]+)\\]\\]'),
-  create('date', '\\[([^\\]]+)\\]\\([^)]+\\)'),
+  create('date', `\\[([^\\]]+)\\]${markdownLinkDestination}`),
 ];

@@ -1,0 +1,5 @@
+{
+  "tag-colors": [{ "tagKey": "#global", "color": "#ffffff", "backgroundColor": "#0000ff" }],
+  "date-colors": [{ "isBefore": true, "color": "#0000ff" }],
+  "tag-sort": [{ "tag": "#zeta" }, { "tag": "#alpha" }]
+}

@@ -4,7 +4,7 @@ import Preact, { Dispatch } from 'preact/compat';
 import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
-import { getEntityFromPath } from 'src/dnd/util/data';
+import { getEntityFromPath, moveEntity, updateEntity } from 'src/dnd/util/data';
 import {
   InlineField,
   getTaskStatusDone,
@@ -92,6 +92,37 @@ export function maybeCompleteForMove(
       },
     }),
   };
+}
+
+// Moves a card within a board, by drag or from its menu. A list that completes its cards
+// completes this one, and the list it lands in is no longer in the order it was sorted into.
+export function moveItem(
+  stateManager: StateManager,
+  board: Board,
+  source: Path,
+  destination: Path
+) {
+  const { next, replacement } = maybeCompleteForMove(
+    stateManager,
+    board,
+    source,
+    stateManager,
+    board,
+    destination,
+    getEntityFromPath(board, source)
+  );
+  const moved: Board = moveEntity(
+    board,
+    source,
+    destination,
+    () => next,
+    () => replacement
+  );
+  const lanePath = destination.slice(0, -1);
+
+  return getEntityFromPath(board, lanePath)?.data?.sorted === undefined
+    ? moved
+    : updateEntity(moved, lanePath, { data: { $unset: ['sorted'] } });
 }
 
 export function useIMEInputProps() {
@@ -199,6 +230,10 @@ const reHasRegExChar = RegExp(reRegExChar.source);
 export function escapeRegExpStr(str: string) {
   return str && reHasRegExChar.test(str) ? str.replace(reRegExChar, '\\$&') : str || '';
 }
+
+// The `(destination)` of a Markdown link, as a pattern: in angle brackets, or without spaces and
+// with balanced parentheses.
+export const markdownLinkDestination = '\\((?:<[^<>\\n]*>|(?:[^\\s()]|\\([^\\s()]*\\))+)\\)';
 
 export function getTemplatePlugins(app: App) {
   const templatesPlugin = (app as any).internalPlugins.plugins.templates;

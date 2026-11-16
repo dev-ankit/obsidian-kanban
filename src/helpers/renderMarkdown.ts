@@ -1,5 +1,8 @@
-import { Keymap, Menu } from 'obsidian';
+import { Keymap, Menu, getLinkpath, moment } from 'obsidian';
+import { createDailyNote } from 'obsidian-daily-notes-interface';
 import { KanbanView } from 'src/KanbanView';
+import { c } from 'src/components/helpers';
+import { isLinkToDailyNote } from 'src/helpers';
 
 const noBreakSpace = /\u00A0/g;
 
@@ -50,14 +53,38 @@ export function bindMarkdownEvents(view: KanbanView) {
     };
   };
 
-  const onLinkClick = (evt: MouseEvent, targetEl: HTMLElement) => {
+  const creatingDailyNotes = new Set<string>();
+
+  const onLinkClick = async (evt: MouseEvent, targetEl: HTMLElement) => {
     if (evt.button !== 0 && evt.button !== 1) return;
 
     const link = parseLink(targetEl);
     if (!link) return;
 
     evt.preventDefault();
-    app.workspace.openLinkText(link.href, view.file.path, Keymap.isModEvent(evt));
+
+    const newLeaf = Keymap.isModEvent(evt);
+    const date = targetEl.closest<HTMLElement>(`.${c('date')}`)?.dataset.date;
+
+    if (
+      date &&
+      !app.metadataCache.getFirstLinkpathDest(getLinkpath(link.href), view.file.path) &&
+      isLinkToDailyNote(link.href, moment(date))
+    ) {
+      // A second click lands before the first one's note exists.
+      if (creatingDailyNotes.has(date)) return;
+      creatingDailyNotes.add(date);
+
+      try {
+        const file = await createDailyNote(moment(date));
+        if (file) await app.workspace.getLeaf(newLeaf).openFile(file);
+      } finally {
+        creatingDailyNotes.delete(date);
+      }
+      return;
+    }
+
+    app.workspace.openLinkText(link.href, view.file.path, newLeaf);
   };
 
   contentEl.on('click', 'a.internal-link', onLinkClick);

@@ -44,6 +44,7 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 ## Features
 
 - [Cards](./cards.md): add, edit in place, duplicate, delete and archive cards.
+- [Card Markdown rendering](./card-rendering.md): live embeds, callouts, code blocks and task lists.
 - [Inline dates](./inline-dates.md): edit the clicked date when a card contains multiple dates.
 - [Cards](./cards.md): add, edit in place, delete and archive cards.
 - [Search](./search.md): match the current card text after outside file changes.
@@ -64,3 +65,4 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [Date clock](./date-clock.md): refresh relative labels and colors as time passes.
 - [Date picker keyboard](./date-keyboard.md): navigate using the displayed week start.
 - [Large-board performance](./performance.md): profile split-note typing, sidebar file drags, and linked metadata refresh.
+- [Documentation links](./documentation.md): retire unavailable project links.

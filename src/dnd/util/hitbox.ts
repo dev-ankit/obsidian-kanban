@@ -53,6 +53,9 @@ export function calculateHitbox(
   ];
 }
 
+// How far in from a scroll container's edge a drag starts scrolling it.
+const scrollZone = 70;
+
 export function calculateScrollHitbox(
   rect: DOMRectReadOnly,
   scroll: ScrollState | null,
@@ -62,22 +65,22 @@ export function calculateScrollHitbox(
   const hitbox = calculateHitbox(rect, scroll, scrollShift, null);
 
   if (side === 'top') {
-    hitbox[3] = hitbox[1] + 35;
+    hitbox[3] = hitbox[1] + scrollZone;
     return hitbox;
   }
 
   if (side === 'right') {
-    hitbox[0] = hitbox[0] + rect.width - 35;
+    hitbox[0] = hitbox[0] + rect.width - scrollZone;
     return hitbox;
   }
 
   if (side === 'bottom') {
-    hitbox[1] = hitbox[1] + rect.height - 35;
+    hitbox[1] = hitbox[1] + rect.height - scrollZone;
     return hitbox;
   }
 
   // left
-  hitbox[2] = hitbox[0] + 35;
+  hitbox[2] = hitbox[0] + scrollZone;
   return hitbox;
 }
 
@@ -160,39 +163,25 @@ export function rectIntersection(entities: Entity[], target: Hitbox) {
   return entities[maxValueIndex] ? entities[maxValueIndex] : null;
 }
 
-export function getScrollIntersection(
-  entities: Entity[],
-  target: Hitbox,
-  dragEntity: Entity
-): [Entity, number] {
-  const primary = getBestIntersect(entities, target, dragEntity);
+// How hard a pointer pushes a scroll container's edge: 0 until it enters the edge's zone, rising
+// to 1 at the edge and staying there past it.
+export function getScrollStrength(pointer: Coordinates, zone: Hitbox, side: Side) {
+  const isHorizontal = side === 'left' || side === 'right';
+  const across = isHorizontal ? pointer.y : pointer.x;
 
-  if (!primary) return null;
+  if (across < zone[isHorizontal ? 1 : 0] || across > zone[isHorizontal ? 3 : 2]) return 0;
 
-  const side = primary.getData().side as Side;
-  const hitbox = primary.getHitbox();
+  const depth =
+    side === 'left'
+      ? zone[2] - pointer.x
+      : side === 'right'
+        ? pointer.x - zone[0]
+        : side === 'top'
+          ? zone[3] - pointer.y
+          : pointer.y - zone[1];
+  const size = isHorizontal ? zone[2] - zone[0] : zone[3] - zone[1];
 
-  let targetIndex = 0;
-  let hitboxIndex = 0;
-
-  if (side === 'left') {
-    targetIndex = 0;
-    hitboxIndex = 2;
-  } else if (side === 'right') {
-    targetIndex = 2;
-    hitboxIndex = 0;
-  } else if (side === 'top') {
-    targetIndex = 1;
-    hitboxIndex = 3;
-  } else if (side === 'bottom') {
-    targetIndex = 3;
-    hitboxIndex = 1;
-  }
-
-  const distance = Math.abs(target[targetIndex] - hitbox[hitboxIndex]);
-  const max = Math.abs(hitbox[targetIndex] - hitbox[hitboxIndex]);
-
-  return [primary, max - distance];
+  return Math.min(Math.max(depth / size, 0), 1);
 }
 
 /**
@@ -247,7 +236,7 @@ export function closestCorners(entities: Entity[], target: Hitbox) {
 function centerOfRectangle(hitbox: Hitbox): Coordinates {
   return {
     x: (hitbox[0] + hitbox[2]) / 2,
-    y: (hitbox[1] + hitbox[2]) / 2,
+    y: (hitbox[1] + hitbox[3]) / 2,
   };
 }
 
@@ -279,21 +268,16 @@ export function getBestIntersect(
       return Infinity;
     }
 
-    const data = entity.getData();
-    const isDropArea = data.acceptsSort;
+    const isDropArea = entity.getData().acceptsSort;
     const entityHitbox = entity.getHitbox();
-    const entityCenter = centerOfRectangle(entityHitbox);
 
+    // Dropped into as a whole (a card onto a collapsed list): the one the dragged entity is over.
     if (isDropArea && !isDropArea.contains(dragEntity.getData().type)) {
-      return distanceBetween(dragCenter, entityCenter);
+      return distanceBetween(dragCenter, centerOfRectangle(entityHitbox));
     }
 
-    const entityTopLeft = cornersOfRectangle(entityHitbox)[0];
-    const axis = data.sortAxis === 'horizontal' ? 'x' : 'y';
-
-    const modifier = entityCenter[axis] > dragTopLeft[axis] ? 1000 : 0;
-
-    return distanceBetween(entityTopLeft, dragTopLeft) + modifier;
+    // Sorted among: the slot that starts nearest to where the dragged entity does.
+    return distanceBetween(cornersOfRectangle(entityHitbox)[0], dragTopLeft);
   });
 
   const minValueIndex = getMinValueIndex(distances);

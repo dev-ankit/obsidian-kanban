@@ -8,6 +8,7 @@ import { c, generateInstanceId } from '../components/helpers';
 import { DateColor, DateColorSetting, DateColorSettingTemplate } from '../components/types';
 import { getParentBodyElement } from '../dnd/util/getWindow';
 import { t } from '../lang/helpers';
+import { ResetButton } from './ResetButton';
 import { ColorPickerInput } from './TagColorSettings';
 
 interface ItemProps {
@@ -184,12 +185,19 @@ function Item({
 interface DateSettingsProps {
   dataKeys: DateColorSetting[];
   onChange: (settings: DateColorSetting[]) => void;
+  onReset?: () => DateColorSetting[];
   portalContainer: HTMLElement;
   getTimeFormat: () => string;
   getDateFormat: () => string;
 }
 
-function DateSettings({ dataKeys, onChange, getTimeFormat, getDateFormat }: DateSettingsProps) {
+function DateSettings({
+  dataKeys,
+  onChange,
+  onReset,
+  getTimeFormat,
+  getDateFormat,
+}: DateSettingsProps) {
   const [keys, setKeys] = Preact.useState(dataKeys);
   const defaultColors = Preact.useMemo(() => {
     const wrapper = createDiv(c('item-metadata'));
@@ -263,6 +271,7 @@ function DateSettings({ dataKeys, onChange, getTimeFormat, getDateFormat }: Date
         <div className="setting-item-description">
           {t('Set colors for dates displayed in cards based on the rules below.')}
         </div>
+        {onReset && <ResetButton onClick={() => setKeys(onReset())} />}
       </div>
       <div>
         {keys.map((key, index) => (
@@ -288,6 +297,7 @@ export function renderDateSettings(
   containerEl: HTMLElement,
   keys: DateColorSetting[],
   onChange: (key: DateColorSetting[]) => void,
+  onReset: (() => DateColorSetting[]) | undefined,
   getDateFormat: () => string,
   getTimeFormat: () => string
 ) {
@@ -295,6 +305,7 @@ export function renderDateSettings(
     <DateSettings
       dataKeys={keys}
       onChange={onChange}
+      onReset={onReset}
       portalContainer={getParentBodyElement(containerEl)}
       getDateFormat={getDateFormat}
       getTimeFormat={getTimeFormat}

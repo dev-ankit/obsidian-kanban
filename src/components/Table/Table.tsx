@@ -180,8 +180,10 @@ export function TableView({
                         <div
                           {...{
                             onDoubleClick: () => header.column.resetSize(),
-                            onMouseDown: header.getResizeHandler(),
-                            onTouchStart: header.getResizeHandler(),
+                            onMouseDown: (event) =>
+                              header.getResizeHandler(event.currentTarget.ownerDocument)(event),
+                            onTouchStart: (event) =>
+                              header.getResizeHandler(event.currentTarget.ownerDocument)(event),
                             className: `resizer ${table.options.columnResizeDirection} ${
                               header.column.getIsResizing() ? 'isResizing' : ''
                             }`,
@@ -196,7 +198,7 @@ export function TableView({
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
+              <tr key={row.id} data-block-id={row.original.item.data.blockId}>
                 {row.getVisibleCells().map((cell) => {
                   return (
                     <td

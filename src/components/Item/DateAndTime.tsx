@@ -43,10 +43,16 @@ export function RelativeDate({ item, stateManager }: DateProps) {
   const relativeDate = useCurrentTime((now) =>
     shouldShowRelativeDate && date ? getRelativeDate(date, time, moment(now)) : null
   );
+  const dateColor = useDateColor(stateManager, shouldShowRelativeDate ? time ?? date : undefined);
 
   if (relativeDate === null) return null;
 
-  return <span className={c('item-metadata-date-relative')}>{relativeDate}</span>;
+  // A label, not a chip: it takes the rule's text color and nothing else.
+  return (
+    <span className={c('item-metadata-date-relative')} style={{ color: dateColor?.color }}>
+      {relativeDate}
+    </span>
+  );
 }
 
 interface DateAndTimeProps {
@@ -110,6 +116,7 @@ export function DateAndTime({
 
   return (
     <span
+      data-date={targetDate.toISOString()}
       style={
         dateColor && {
           '--date-color': dateColor.color,

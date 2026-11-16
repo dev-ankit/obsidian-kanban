@@ -39,6 +39,8 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   activeEditor: any;
   viewSettings: KanbanViewSettings = {};
+  // The card a link to this board points at, until the board has revealed it.
+  blockToReveal?: string;
   // The markdown view's mode (editing/reading, raw source) from before this leaf became a board.
   // Kept in this view's state so switching back to markdown, or restoring the workspace, returns
   // the note to the same mode.
@@ -119,6 +121,15 @@ export class KanbanView extends TextFileView implements HoverParent {
     }
   }
 
+  // The renderers are this view's children: a renderer dropped from the cache but left loaded
+  // keeps rendering, for a board that is gone.
+  clearPreviews() {
+    this.previewQueue.clear();
+    this.previewCache.forEach((preview) => this.removeChild(preview));
+    this.previewCache.clear();
+    this.emitter.emit('queueEmpty');
+  }
+
   setView(view: KanbanFormat) {
     this.setViewState(frontmatterKey, view);
     this.app.fileManager.processFrontMatter(this.file, (frontmatter) => {
@@ -195,9 +206,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     const event = new CustomEvent('save-all-editing-items');
     this.containerEl.dispatchEvent(event);
 
-    this.previewQueue.clear();
-    this.previewCache.clear();
-    this.emitter.emit('queueEmpty');
+    this.clearPreviews();
 
     // Remove draggables from render, as the DOM has already detached
     this.plugin.removeView(this);
@@ -245,9 +254,7 @@ export class KanbanView extends TextFileView implements HoverParent {
 
     if (clear) {
       this.activeEditor = null;
-      this.previewQueue.clear();
-      this.previewCache.clear();
-      this.emitter.emit('queueEmpty');
+      this.clearPreviews();
       Object.values(this.actionButtons).forEach((b) => b.remove());
       this.actionButtons = {};
     }
@@ -268,6 +275,17 @@ export class KanbanView extends TextFileView implements HoverParent {
     if (mode !== undefined) state.mode = mode;
     if (source !== undefined) state.source = source;
     return state;
+  }
+
+  // Obsidian passes what a navigation asks of the view here, once: a link's `#^block`, or the
+  // rename command's request to edit the title.
+  setEphemeralState(state: any) {
+    super.setEphemeralState(state);
+
+    if (typeof state?.subpath === 'string' && state.subpath.startsWith('#^')) {
+      this.blockToReveal = state.subpath.slice(2);
+      this.emitter.emit('revealBlock');
+    }
   }
 
   setViewState<K extends keyof KanbanViewSettings>(

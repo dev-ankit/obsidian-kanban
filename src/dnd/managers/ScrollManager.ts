@@ -23,8 +23,8 @@ export type IntersectionObserverHandler = (entry: IntersectionObserverEntry) => 
 
 export const scrollContainerEntityType = 'scroll-container';
 
-// Drag auto-scroll speed at the very edge of the scroll zone, in px per second. Time-based so
-// it doesn't change with the display's refresh rate.
+// Drag auto-scroll speed at full strength (the pointer at the edge or past it), in px per second.
+// Time-based so it doesn't change with the display's refresh rate.
 const maxScrollSpeed = 600;
 
 const sides: Side[] = ['top', 'right', 'bottom', 'left'];
@@ -236,13 +236,14 @@ export class ScrollManager {
   };
 
   isDoneScrolling(side: Side) {
+    // Scroll offsets can be fractional, while scroll and offset dimensions are rounded.
     switch (side) {
       case 'top':
         return this.scrollState.y === 0;
       case 'right':
-        return this.scrollState.x === this.scrollState.maxX;
+        return Math.ceil(this.scrollState.x) >= this.scrollState.maxX;
       case 'bottom':
-        return this.scrollState.y === this.scrollState.maxY;
+        return Math.ceil(this.scrollState.y) >= this.scrollState.maxY;
       case 'left':
         return this.scrollState.x === 0;
     }
@@ -269,22 +270,15 @@ export class ScrollManager {
         top: 0,
       };
 
-      this.activeScroll.forEach((rawStrength, side) => {
+      this.activeScroll.forEach((strength, side) => {
         if (this.isDoneScrolling(side)) {
           return this.activeScroll.delete(side);
         }
 
-        // Strength is how far the dragged entity's edge is from the scroll edge, 35px at the
-        // start of the zone and 0 at the edge. A wide card can reach past the edge, which made
-        // it negative and the speed unbounded; keep it inside the zone.
-        const strength = Math.min(Math.max(rawStrength, 0), 35);
-
         const scrollKey = ['left', 'right'].includes(side) ? 'left' : 'top';
         const shouldIncreaseScroll = ['right', 'bottom'].includes(side);
 
-        scrollBy[scrollKey] = shouldIncreaseScroll
-          ? maxScrollSpeed * dt * (1 - strength / 35)
-          : -maxScrollSpeed * dt * (1 - strength / 35);
+        scrollBy[scrollKey] = (shouldIncreaseScroll ? 1 : -1) * maxScrollSpeed * dt * strength;
       });
 
       this.scrollEl.scrollBy(scrollBy);

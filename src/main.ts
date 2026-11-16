@@ -529,7 +529,9 @@ export default class KanbanPlugin extends Plugin {
         const kanbanLeaves = app.workspace.getLeavesOfType(kanbanViewType);
 
         kanbanLeaves.forEach((leaf) => {
-          (leaf.view as KanbanView).handleRename(file.path, oldPath);
+          if (leaf.view instanceof KanbanView) {
+            leaf.view.handleRename(file.path, oldPath);
+          }
         });
       })
     );
