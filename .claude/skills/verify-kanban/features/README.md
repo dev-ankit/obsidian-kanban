@@ -63,3 +63,4 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [Daily-note links](./daily-note-links.md): preserve nested folder paths in Markdown date links.
 - [Date clock](./date-clock.md): refresh relative labels and colors as time passes.
 - [Date picker keyboard](./date-keyboard.md): navigate using the displayed week start.
+- [Large-board performance](./performance.md): profile split-note typing, sidebar file drags, and linked metadata refresh.

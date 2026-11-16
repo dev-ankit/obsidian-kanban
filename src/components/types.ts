@@ -72,6 +72,8 @@ export interface ItemMetadata {
   tags?: string[];
   fileAccessor?: FileAccessor;
   file?: TFile | null;
+  // A trailing embed changes fileAccessor, but metadata still comes from the last link.
+  fileMetadataTarget?: string;
   fileMetadata?: FileMetadata;
   fileMetadataOrder?: string[];
   inlineMetadata?: InlineField[];

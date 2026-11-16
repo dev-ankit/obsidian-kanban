@@ -95,6 +95,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
       tags: [],
       fileAccessor: undefined,
       file: undefined,
+      fileMetadataTarget: undefined,
       fileMetadata: undefined,
       fileMetadataOrder: undefined,
     },
@@ -164,6 +165,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
 
       if (genericNode.type === 'wikilink') {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
+        itemData.metadata.fileMetadataTarget = (genericNode as FileNode).fileAccessor?.target;
         itemData.metadata.fileMetadata = (genericNode as FileNode).fileMetadata;
         itemData.metadata.fileMetadataOrder = (genericNode as FileNode).fileMetadataOrder;
         return true;
@@ -171,6 +173,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
 
       if (genericNode.type === 'link' && (genericNode as FileNode).fileAccessor) {
         itemData.metadata.fileAccessor = (genericNode as FileNode).fileAccessor;
+        itemData.metadata.fileMetadataTarget = (genericNode as FileNode).fileAccessor?.target;
         itemData.metadata.fileMetadata = (genericNode as FileNode).fileMetadata;
         itemData.metadata.fileMetadataOrder = (genericNode as FileNode).fileMetadataOrder;
         return true;
