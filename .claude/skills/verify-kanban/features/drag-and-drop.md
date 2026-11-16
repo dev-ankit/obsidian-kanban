@@ -14,7 +14,9 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 - `dnd-empty-lane` drops a card into a lane with no cards.
 - `dnd-autoscroll` scrolls a wide board while a card is held at its edge (upstream PR #1179 changed
   the speed), then drops it in a lane that was off screen.
-- `dnd-lane-reorder` moves a whole lane left or right by its grip.
+- `dnd-lane-reorder` moves a whole lane left or right by its grip, into the slot nearest to
+  where it is held, in both directions.
+- `dnd-collapsed-lane` drops a card into the collapsed lane it is held over.
 - `dnd-scroll-isolation` scrolls only the board or lane whose edge is active, including when
   moving a card between two boards in a split (#1051).
 - `dnd-scroll-overshoot` keeps scrolling at full speed when the pointer goes past the edge it is
@@ -86,6 +88,20 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   `outline` lane order ends with Review, Shipped, QA, Staging. On disk the Shipped heading now comes
   before QA: `$K file --expect $'- [ ] Hotel task\n- [ ] Bravo task\n\n\n## QA'` (adjust the card lines
   to what Shipped holds).
+- **Lane reorder, both directions** (`wide`, unscrolled).
+  `$K drag '.kanban-plugin__lane::Ready >> .kanban-plugin__lane-grip' '.kanban-plugin__lane::Backlog' --axis x --before`
+  saves the headings as Ready, Backlog, 待办事项. Then drag Ready's grip onto 待办事项 with
+  `--axis x --after`: Backlog, 待办事项, Ready. Then Backlog's grip onto Ready with `--after`:
+  待办事项, Ready, Backlog. Check `$K file | grep '^## '` after each. Before the fix the two
+  `--after` drops landed before their target: a lane moving right had to be dragged a whole
+  lane further than one moving left.
+- **Onto a collapsed lane** (`dnd-collapsed-lane`, `split-scroll`). Collapse Left 2 to Left 5
+  with their chevrons; they become 39 px strips from x 642 to 828. Hold a Left 1 card centered
+  on Left 3: `$K drag '.kanban-plugin__item::Left 1 card 02' --point 710,208 --hold`,
+  `$K move 711,208`. The lane with the class `is-dropping` must be Left 3; snap, `release`, and
+  the card is saved under `## Left 3`. Repeat centered on Left 2 (x 661), Left 4 (759) and
+  Left 5 (808). Before the fix the card went into the lane to the right of the one it was over
+  (Left 4 for x 710), further right the lower it was held.
 - **Proof.** `snap` before and after each step, then `$K errors`.
 
 - **Separate boards and lanes** (`dnd-scroll-isolation`). Launch `--fixture split-scroll`,

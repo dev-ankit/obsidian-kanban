@@ -233,7 +233,7 @@ export function closestCorners(entities: Entity[], target: Hitbox) {
 function centerOfRectangle(hitbox: Hitbox): Coordinates {
   return {
     x: (hitbox[0] + hitbox[2]) / 2,
-    y: (hitbox[1] + hitbox[2]) / 2,
+    y: (hitbox[1] + hitbox[3]) / 2,
   };
 }
 
@@ -265,21 +265,16 @@ export function getBestIntersect(
       return Infinity;
     }
 
-    const data = entity.getData();
-    const isDropArea = data.acceptsSort;
+    const isDropArea = entity.getData().acceptsSort;
     const entityHitbox = entity.getHitbox();
-    const entityCenter = centerOfRectangle(entityHitbox);
 
+    // Dropped into as a whole (a card onto a collapsed list): the one the dragged entity is over.
     if (isDropArea && !isDropArea.contains(dragEntity.getData().type)) {
-      return distanceBetween(dragCenter, entityCenter);
+      return distanceBetween(dragCenter, centerOfRectangle(entityHitbox));
     }
 
-    const entityTopLeft = cornersOfRectangle(entityHitbox)[0];
-    const axis = data.sortAxis === 'horizontal' ? 'x' : 'y';
-
-    const modifier = entityCenter[axis] > dragTopLeft[axis] ? 1000 : 0;
-
-    return distanceBetween(entityTopLeft, dragTopLeft) + modifier;
+    // Sorted among: the slot that starts nearest to where the dragged entity does.
+    return distanceBetween(cornersOfRectangle(entityHitbox)[0], dragTopLeft);
   });
 
   const minValueIndex = getMinValueIndex(distances);
