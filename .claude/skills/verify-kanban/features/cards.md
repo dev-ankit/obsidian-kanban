@@ -78,6 +78,21 @@ Preconditions:
   in the file, then double-click the new card and verify its editor still contains the literal tag.
   Submit, switch to markdown with the header button and back with the Kanban palette command.
   Both tables still render with two cells in their data row, and a line break inside the second cell.
+### Archive limit regression (#695)
+
+With a fresh basic fixture, open Obsidian settings (`key Mod+,`), click
+`.vertical-tab-nav-item::Kanban`, and enter `1` in
+`.setting-item::Maximum number of archived cards >> input`. Wait for the global
+settings file to contain `"max-archive-size": 1`, then close settings with Escape.
+Open board settings from `.mod-root .view-action[aria-label="Open board settings"]`,
+enter `-1` in the same field, and check that the input has no `error` class. Wait
+for `file --expect '"max-archive-size":-1'`, then close the modal. Archive
+`Write release notes` and `Plan sprint` through their card menus. Both must remain
+under `## Archive` on disk despite the global limit of one. Reopen board settings:
+`-1` is still displayed. Repeat with a local limit of `1` and a global limit of
+`-1`: after archiving two cards only the newest remains. Capture the input and
+saved archive with `snap`; finish with `errors`. To replace an existing number, use
+`Home`, `Shift+End`, `Backspace`, then `type`.
 
 ## Gotchas
 

@@ -417,7 +417,7 @@ export class SettingsManager {
         text.inputEl.value = value ? value.toString() : '';
 
         text.onChange((val) => {
-          if (val && numberRegEx.test(val)) {
+          if (val && (val === '-1' || numberRegEx.test(val))) {
             text.inputEl.removeClass('error');
 
             this.applySettingsUpdate({

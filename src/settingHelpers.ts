@@ -1,25 +1,26 @@
-import Choices, { Choices as IChoices } from 'choices.js';
-import update from 'immutability-helper';
-import { App, Setting, TFile, TFolder, Vault } from 'obsidian';
+import { App, FuzzySuggestModal, Setting, TFile, TFolder, Vault } from 'obsidian';
 
 import { KanbanSettings, SettingsManager } from './Settings';
 import { getTemplatePlugins } from './components/helpers';
 import { t } from './lang/helpers';
+
+interface PathChoice {
+  value: string;
+  label: string;
+}
 
 export const defaultDateTrigger = '@';
 export const defaultTimeTrigger = '@@';
 export const defaultMetadataPosition = 'body';
 
 export function getFolderChoices(app: App) {
-  const folderList: IChoices.Choice[] = [];
+  const folderList: PathChoice[] = [];
 
   Vault.recurseChildren(app.vault.getRoot(), (f) => {
     if (f instanceof TFolder) {
       folderList.push({
         value: f.path,
         label: f.path,
-        selected: false,
-        disabled: false,
       });
     }
   });
@@ -28,21 +29,16 @@ export function getFolderChoices(app: App) {
 }
 
 export function getTemplateChoices(app: App, folderStr?: string) {
-  const fileList: IChoices.Choice[] = [];
+  const fileList: PathChoice[] = [];
 
-  let folder = folderStr ? app.vault.getAbstractFileByPath(folderStr) : null;
+  const configuredFolder = folderStr ? app.vault.getAbstractFileByPath(folderStr) : null;
+  const folder = configuredFolder instanceof TFolder ? configuredFolder : app.vault.getRoot();
 
-  if (!folder || !(folder instanceof TFolder)) {
-    folder = app.vault.getRoot();
-  }
-
-  Vault.recurseChildren(folder as TFolder, (f) => {
+  Vault.recurseChildren(folder, (f) => {
     if (f instanceof TFile) {
       fileList.push({
         value: f.path,
         label: f.basename,
-        selected: false,
-        disabled: false,
       });
     }
   });
@@ -70,12 +66,35 @@ export function getListOptions(app: App) {
 }
 
 interface CreateSearchSelectParams {
-  choices: IChoices.Choice[];
+  choices: PathChoice[];
   key: keyof KanbanSettings;
   warningText?: string;
   local: boolean;
   placeHolderStr: string;
   manager: SettingsManager;
+}
+
+class PathSuggestModal extends FuzzySuggestModal<PathChoice> {
+  constructor(
+    app: App,
+    private choices: PathChoice[],
+    private onSelect: (choice: PathChoice) => void
+  ) {
+    super(app);
+    this.setPlaceholder(t('Search...'));
+  }
+
+  getItems() {
+    return this.choices;
+  }
+
+  getItemText(choice: PathChoice) {
+    return choice.label;
+  }
+
+  onChooseItem(choice: PathChoice) {
+    this.onSelect(choice);
+  }
 }
 
 export function createSearchSelect({
@@ -87,95 +106,43 @@ export function createSearchSelect({
   manager,
 }: CreateSearchSelectParams) {
   return (setting: Setting) => {
-    setting.controlEl.createEl('select', {}, (el) => {
-      // el must be in the dom, so we setTimeout
-      el.win.setTimeout(() => {
-        let list = choices;
+    const [value, globalValue] = manager.getSetting(key, local);
+    const inheritedChoice = choices.find((choice) => choice.value === globalValue);
+    const defaultChoice: PathChoice = {
+      value: '',
+      label: inheritedChoice ? `${inheritedChoice.label} (${t('default')})` : placeHolderStr,
+    };
+    const list = [
+      defaultChoice,
+      ...choices
+        .filter((choice) => choice !== inheritedChoice)
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    ];
 
-        const [value, globalValue] = manager.getSetting(key, local);
+    setting.addButton((button) => {
+      button.setButtonText(
+        list.find((choice) => choice.value === value)?.label ?? defaultChoice.label
+      );
 
-        let didSetPlaceholder = false;
-        if (globalValue) {
-          const index = list.findIndex((f) => f.value === globalValue);
-
-          if (index > -1) {
-            didSetPlaceholder = true;
-            const choice = choices[index];
-
-            list = update(list, {
-              $splice: [[index, 1]],
-              $unshift: [
-                update(choice, {
-                  placeholder: {
-                    $set: true,
-                  },
-                  value: {
-                    $set: '',
-                  },
-                  label: {
-                    $apply: (v) => `${v} (${t('default')})`,
-                  },
-                }),
-              ],
-            });
-          }
-        }
-
-        if (!didSetPlaceholder) {
-          list = update(list, {
-            $unshift: [
-              {
-                placeholder: true,
-                value: '',
-                label: placeHolderStr,
-                selected: false,
-                disabled: false,
-              },
-            ],
+      // The native picker searches the full list without constructing a DOM node for every path.
+      const modal = new PathSuggestModal(manager.app, list, (choice) => {
+        button.setButtonText(choice.label);
+        if (choice.value) {
+          manager.applySettingsUpdate({
+            [key]: { $set: choice.value },
           });
+        } else {
+          manager.applySettingsUpdate({ $unset: [key] });
         }
-
-        const c = new Choices(el, {
-          placeholder: true,
-          position: 'bottom' as 'auto',
-          searchPlaceholderValue: t('Search...'),
-          searchEnabled: list.length > 10,
-          choices: list,
-        }).setChoiceByValue('');
-
-        if (value && typeof value === 'string' && list.findIndex((f) => f.value === value) > -1) {
-          c.setChoiceByValue(value);
-        }
-
-        const onChange = (e: CustomEvent) => {
-          const val = e.detail.value;
-
-          if (val) {
-            manager.applySettingsUpdate({
-              [key]: {
-                $set: val,
-              },
-            });
-          } else {
-            manager.applySettingsUpdate({
-              $unset: [key],
-            });
-          }
-        };
-
-        el.addEventListener('change', onChange);
-
-        manager.cleanupFns.push(() => {
-          c.destroy();
-          el.removeEventListener('change', onChange);
-        });
       });
-
-      if (warningText) {
-        setting.descEl.createDiv({}, (div) => {
-          div.createEl('strong', { text: warningText });
-        });
-      }
+      button.onClick(() => modal.open());
+      manager.cleanupFns.push(() => modal.close());
     });
+
+    if (warningText) {
+      setting.descEl.createDiv({}, (div) => {
+        div.createEl('strong', { text: warningText });
+      });
+    }
   };
 }
