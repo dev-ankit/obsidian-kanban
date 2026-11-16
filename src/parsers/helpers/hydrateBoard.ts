@@ -47,13 +47,19 @@ export function preprocessTitle(stateManager: StateManager, title: string) {
     }
   );
   title = title.replace(
-    new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}\\[([^\\]]+)\\]\\([^)]+\\)`, 'g'),
-    (match, space, content) => {
+    new RegExp(`(^|\\s)${escapeRegExpStr(dateTrigger)}\\[([^\\]]+)\\]\\(([^)]+)\\)`, 'g'),
+    (match, space, content, destination) => {
       const parsed = moment(content, dateFormat);
       if (!parsed.isValid()) return match;
+      let path: string;
+      try {
+        path = decodeURIComponent(destination);
+      } catch {
+        return match;
+      }
+      path = path.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
       date = parsed;
-      const linkPath = app.metadataCache.getFirstLinkpathDest(content, stateManager.file.path);
-      return `${space}<span data-date="${dateAttr(date)}" class="${c('preview-date-wrapper')} ${c('date')} ${c('preview-date-link')}"><a class="${c('preview-date')} internal-link" data-href="${linkPath?.path ?? content}" href="${linkPath?.path ?? content}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
+      return `${space}<span data-date="${dateAttr(date)}" class="${c('preview-date-wrapper')} ${c('date')} ${c('preview-date-link')}"><a class="${c('preview-date')} internal-link" data-href="${path}" href="${path}" target="_blank" rel="noopener">${parsed.format(dateDisplayFormat)}</a></span>`;
     }
   );
   let dateIndex = 0;

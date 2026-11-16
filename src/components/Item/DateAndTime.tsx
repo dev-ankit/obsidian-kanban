@@ -126,6 +126,7 @@ export function DateAndTime({
 
   return (
     <span
+      data-date={targetDate.toISOString()}
       style={
         dateColor && {
           '--date-color': dateColor.color,
