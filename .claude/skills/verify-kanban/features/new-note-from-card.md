@@ -8,6 +8,7 @@ a notice explains why (PR #1188).
 
 ## Sub-features
 
+- `nnfc-tags` keeps first-line tags on the card and excludes them from the filename (#1016).
 - `nnfc-plain` makes a note from a plain title, and the card links to it.
 - `nnfc-date-trailing` strips a date at the end of the title from the filename; the card links to it.
 - `nnfc-date-middle` strips a date in the middle of the title from the filename; the card links to it.
@@ -34,6 +35,8 @@ Preconditions:
   (folder exists). `Board-missing.md` has `new-note-folder: Gone` (no such folder). The global
   setting is unset and Obsidian's new-file location is the vault root.
 
+- **Tags** (`note-content`). Use the card menu on `Task 1 #Tag1`. The note is `Task 1.md`
+  and `$K file --expect '- [ ] [[Task 1]] #Tag1'` succeeds. The tag still renders on the card.
 - **Plain.** `$K click '.kanban-plugin__item::Write release notes >> a[aria-label="More options"]'`,
   `$K click '.menu .menu-item::New note from card'`. `$K ls` lists `Write release notes.md`;
   `$K eval 'app.workspace.getActiveFile().path'` is that note; and
