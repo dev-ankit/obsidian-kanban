@@ -15,13 +15,7 @@ import {
   constructMenuTimePickerOnChange,
   constructTimePicker,
 } from './helpers';
-
-const illegalCharsRegEx = /[\\/:"*?<>|]+/g;
-const embedRegEx = /!?\[\[([^\]]*)\.[^\]]+\]\]/g;
-const wikilinkRegEx = /!?\[\[([^\]]*)\]\]/g;
-const mdLinkRegEx = /!?\[([^\]]*)\]\([^)]*\)/g;
-const tagRegEx = /#([^\u2000-\u206F\u2E00-\u2E7F'!"#$%&()*+,.:;<=>?@^`{|}~[\]\\\s\n\r]+)/g;
-const condenceWhiteSpaceRE = /\s+/g;
+import { getNoteFromCardTitle } from './noteFromCard';
 
 interface UseItemMenuParams {
   setEditState: Dispatch<StateUpdater<EditState>>;
@@ -56,29 +50,10 @@ export function useItemMenu({
             .setTitle(t('New note from card'))
             .onClick(async () => {
               const [firstLine, ...restLines] = item.data.titleRaw.split('\n');
-              const dateTrigger = escapeRegExpStr(
-                stateManager.getSetting('date-trigger') as string
+              const { sanitizedTitle, preservedContent } = getNoteFromCardTitle(
+                firstLine,
+                stateManager
               );
-              const timeTrigger = escapeRegExpStr(
-                stateManager.getSetting('time-trigger') as string
-              );
-              // Every form the board renders as a date or time: @{…}, @[[…]], @[…](…) and @@{…}.
-              // Matched before links are stripped, so daily-note dates can't leak into the name.
-              const dateTimeRegEx = new RegExp(
-                `(?:^|\\s)(?:${timeTrigger}\\{[^}]+\\}|${dateTrigger}(?:\\{[^}]+\\}|\\[\\[[^\\]]+\\]\\]|\\[[^\\]]+\\]\\([^)]+\\)))`,
-                'g'
-              );
-              // Dates and times stay on the card; the rest of the first line names the note.
-              const dateTimes = (firstLine.match(dateTimeRegEx) ?? []).map((m) => m.trim());
-              const sanitizedTitle = firstLine
-                .replace(dateTimeRegEx, ' ')
-                .replace(embedRegEx, '$1')
-                .replace(wikilinkRegEx, '$1')
-                .replace(mdLinkRegEx, '$1')
-                .replace(tagRegEx, '$1')
-                .replace(illegalCharsRegEx, ' ')
-                .trim()
-                .replace(condenceWhiteSpaceRE, ' ');
 
               const newNoteTemplatePath = stateManager.getSetting('new-note-template');
 
@@ -141,7 +116,7 @@ export function useItemMenu({
                 newFile,
                 stateManager.file.path
               );
-              const newTitleRaw = [[link, ...dateTimes].join(' '), ...restLines].join('\n');
+              const newTitleRaw = [[link, ...preservedContent].join(' '), ...restLines].join('\n');
 
               boardModifiers.updateItem(path, stateManager.updateItemContent(item, newTitleRaw));
             });

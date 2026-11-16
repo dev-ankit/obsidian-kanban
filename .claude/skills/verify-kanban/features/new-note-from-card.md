@@ -1,13 +1,18 @@
 # New note from card
 
 From a card's menu, users create a new note named after the card. The note opens in a split, and
-the card's text is replaced with a link to the note. Embeds, links, tags and (since upstream PR #1222)
-date/time syntax are stripped from the filename. The note goes in the board's configured note folder,
+the card's title becomes a link to the note. First-line tags, inline fields, dates/times, links and
+embeds stay outside that link with their original syntax. Tags, inline fields and date/time syntax
+are excluded from the filename; links and embeds contribute their text. The note goes in the
+board's configured note folder,
 falling back to the global setting and then Obsidian's default location (PR #1228). If creation fails,
 a notice explains why (PR #1188).
 
 ## Sub-features
 
+- `nnfc-links` retains first-line URLs and link targets when creating a note (#632).
+- `nnfc-inline-fields` preserves wrapped inline metadata independently of Dataview being installed (#848).
+- `nnfc-tags` keeps first-line tags on the card and excludes them from the filename (#1016).
 - `nnfc-plain` makes a note from a plain title, and the card links to it.
 - `nnfc-date-trailing` strips a date at the end of the title from the filename; the card links to it.
 - `nnfc-date-middle` strips a date in the middle of the title from the filename; the card links to it.
@@ -19,7 +24,7 @@ a notice explains why (PR #1188).
 - `nnfc-folder-missing` falls back to Obsidian's default location when the board's folder doesn't
   exist, and says so in a notice.
 - `nnfc-folder-global` falls back to the plugin's global note folder when the board's is missing.
-  Needs the global setting turned on in plugin settings first; not yet driven.
+  Needs the global setting turned on in plugin settings first.
 
 ## How to get to it (user POV)
 
@@ -34,6 +39,22 @@ Preconditions:
   (folder exists). `Board-missing.md` has `new-note-folder: Gone` (no such folder). The global
   setting is unset and Obsidian's new-file location is the vault root.
 
+- **Links and combined content** (`note-content`). Create notes from `Hello`, `Mixed`, `Nested`,
+  `Bare`, and `Local`, closing the split after each. Expect `[[Hello world]] [world](https://hello.world)`;
+  `[[Mixed site]] #work/nested [owner:: [[Alice]]] @{2026-05-01} @@{09:30} [site](https://example.com/#part)`
+  with the original second line unchanged; `[[Nested reference]] [reference](<https://example.com/a_(b)>) #research`;
+  `[[Bare https example.com section]] https://example.com/#section`; and
+  `[[Local Notes Spec image]] [[Notes/Spec]] ![[image.png]]`. Check the actual filenames with `ls`.
+  Also create a note from `Parenthesized (owner:: Alice) #work` and expect
+  `[[Parenthesized]] (owner:: Alice) #work`. A tag-only card must keep `#onlytag` alongside
+  Obsidian's generated untitled note link. No duplicate fragments should appear for nested fields,
+  links containing URL fragments, or dates that link to daily notes.
+- **Inline fields** (`note-content`). Create notes from `my description #mytag [created:: 2023-10-22]`
+  and `other description [created:: 2023-10-22] #mytag`, closing each note split. Expect notes
+  `my description.md` and `other description.md`, and cards `[[my description]] #mytag [created:: 2023-10-22]`
+  and `[[other description]] [created:: 2023-10-22] #mytag`. Keep both field/tag orderings.
+- **Tags** (`note-content`). Use the card menu on `Task 1 #Tag1`. The note is `Task 1.md`
+  and `$K file --expect '- [ ] [[Task 1]] #Tag1'` succeeds. The tag still renders on the card.
 - **Plain.** `$K click '.kanban-plugin__item::Write release notes >> a[aria-label="More options"]'`,
   `$K click '.menu .menu-item::New note from card'`. `$K ls` lists `Write release notes.md`;
   `$K eval 'app.workspace.getActiveFile().path'` is that note; and
