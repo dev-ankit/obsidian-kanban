@@ -138,7 +138,7 @@ function getMdastExtensions(stateManager: StateManager) {
         node.fileAccessor = {
           target: decodeURIComponent(node.url),
           isEmbed: true,
-          stats: file.stat,
+          stats: file?.stat,
         } as FileAccessor;
       } else {
         node.fileAccessor = {

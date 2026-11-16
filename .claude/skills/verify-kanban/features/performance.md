@@ -13,6 +13,7 @@ browser rendering can cost more than JavaScript hit testing.
   after a linked note lost one of several shown properties.
 - `metadata-matches-parse` keeps the refreshed board equal to a from-scratch parse of the file.
 - `metadata-error-recovery` clears a board error caused by a linked note once that note is fixed.
+- `metadata-missing-embed` shows a card that embeds a missing note with a Markdown link.
 
 ## How to get to it (user POV)
 
@@ -87,6 +88,8 @@ Preconditions:
       `fileMetadataOrder` must be equal (an unresolved link has `file` undefined; archived cards
       have no `file` and an unhydrated `titleSearch`). Repeat on Board.md after rewriting
       Details.md and after creating Missing.md. The board files' bytes must not change.
+11. Open Missing-embed.md: both cards show and `$K errors` stays empty. Before the fix the board
+    was replaced by `Cannot read properties of null (reading 'stat')`.
 
 ## Gotchas
 
