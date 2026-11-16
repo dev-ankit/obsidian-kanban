@@ -6,6 +6,7 @@ frontmatter (`kanban-plugin: board|table|list`).
 
 ## Sub-features
 
+- `view-rename-deferred` renames a board while another restored Kanban tab is still deferred (#1096).
 - `view-table` switches to the table layout and saves it.
 - `view-list` switches to the list layout. Not yet driven.
 - `view-board` switches back to the board layout.
@@ -48,6 +49,15 @@ Preconditions:
   lanes (2.0.54 and earlier: blank, 0 lanes). Same for a card whose text links `[[Board]]` when you click
   that link, and for `$K eval '(async () => { await app.workspace.openLinkText("Board", "", false) })()'`.
 - **Proof.** `snap` after each switch, then `$K errors`.
+
+- **Rename with a deferred tab.** Launch `--fixture settings-windows`. The first tab opens
+  `Board.md`; the second Kanban tab has not been selected. Observe
+  `app.workspace.getLeavesOfType("kanban").map(l => ({ deferred: l.isDeferred, rename: typeof l.view.handleRename }))`:
+  one view has no rename method. Right-click `.mod-root .workspace-tab-header::Board`, choose
+  `.menu-item::Rename...`, type `Renamed`, and press Enter. Assert `Renamed.md` contains all
+  cards, `Board.md` no longer exists, and `errors` is clean. Click the second tab with
+  `click '.mod-root .workspace-tab-header' --nth 1`; `outline` must show `Other.md` with all
+  six cards. Capture both states. Before the fix the rename raised `handleRename is not a function`.
 
 ## Gotchas
 
