@@ -53,7 +53,7 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
       setShouldMarkAsComplete(false);
       onNewLane();
     },
-    [onNewLane, setShouldMarkAsComplete, boardModifiers]
+    [onNewLane, shouldMarkAsComplete, boardModifiers]
   );
 
   const editState = useMemo(() => ({ x: 0, y: 0 }), []);
@@ -64,7 +64,7 @@ export function LaneForm({ onNewLane, closeLaneForm }: LaneFormProps) {
         return true;
       }
     },
-    [createLane]
+    [createLane, stateManager]
   );
   const onSubmit = useCallback(
     (cm: EditorView) => createLane(cm, cm.state.doc.toString()),

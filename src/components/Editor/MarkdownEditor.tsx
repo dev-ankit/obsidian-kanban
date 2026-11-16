@@ -110,6 +110,9 @@ export function MarkdownEditor({
   const { view, stateManager } = useContext(KanbanContext);
   const elRef = useRef<HTMLDivElement>();
   const internalRef = useRef<EditorView>();
+  // The editor mounts once, but form state can change its Enter handler between submissions.
+  const onEnterRef = useRef(onEnter);
+  onEnterRef.current = onEnter;
 
   useEffect(() => {
     class Editor extends view.plugin.MarkdownEditor {
@@ -176,7 +179,7 @@ export function MarkdownEditor({
         }
 
         const makeEnterHandler = (mod: boolean, shift: boolean) => (cm: EditorView) => {
-          const didRun = onEnter(cm, mod, shift);
+          const didRun = onEnterRef.current(cm, mod, shift);
           if (didRun) return true;
           if (this.app.vault.getConfig('smartIndentList')) {
             this.editor.newlineAndIndentContinueMarkdownList();
