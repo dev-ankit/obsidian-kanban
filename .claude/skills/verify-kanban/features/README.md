@@ -44,6 +44,7 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 ## Features
 
 - [Cards](./cards.md): add, edit in place, delete and archive cards.
+- [Search](./search.md): match the current card text after outside file changes.
 - [Drag and drop](./drag-and-drop.md): move cards within and between lanes (including empty and
   off-screen lanes), autoscroll at the board edge, and reorder lanes.
 - [New note from card](./new-note-from-card.md): turn a card into a linked note in the right folder,
