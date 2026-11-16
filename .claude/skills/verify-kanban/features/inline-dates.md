@@ -37,7 +37,8 @@ Preconditions:
 - **Invalid token before a date.** Click the date on `Invalid before`, then choose January 25.
   `$K file --expect 'Invalid before @{not-a-date} then @{2026-01-25}'` succeeds.
 - **Multiline.** Click the second date on `Multiline dates`, then choose January 25.
-  `$K file --expect $'Multiline dates @{2026-01-10}\n\tSecond line @{2026-01-25}'` succeeds.
+  `$K file --expect 'Multiline dates @{2026-01-10}<br>Second line @{2026-01-25}'` succeeds: the
+  card's legacy `<br>` stays as written (#1024), only the second date changes.
 - **Single date and menu edit.** Click the date on `Single date`, choose January 12, and assert
   `Single date @{2026-01-12}`. Open its `More options` menu and choose `Edit date`, then January 15.
   `$K file --expect 'Single date @{2026-01-15}'` succeeds.
