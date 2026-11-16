@@ -15,6 +15,8 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 - `dnd-autoscroll` scrolls a wide board while a card is held at its edge (upstream PR #1179 changed
   the speed), then drops it in a lane that was off screen.
 - `dnd-lane-reorder` moves a whole lane left or right by its grip.
+- `dnd-scroll-isolation` scrolls only the board or lane whose edge is active, including when
+  moving a card between two boards in a split (#1051).
 
 ## How to get to it (user POV)
 
@@ -78,6 +80,27 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   before QA: `$K file --expect $'- [ ] Hotel task\n- [ ] Bravo task\n\n\n## QA'` (adjust the card lines
   to what Shipped holds).
 - **Proof.** `snap` before and after each step, then `$K errors`.
+
+- **Separate boards and lanes** (`dnd-scroll-isolation`). Launch `--fixture split-scroll`,
+  right-click `.workspace-tab-header::Board`, click `.menu-item::Split right`, then click
+  `.nav-file-title[data-path="Other.md"]`. The two boards each have eight long lanes.
+  Capture a snap and the scroll offsets with
+  `$K eval '[...document.querySelectorAll(".kanban-plugin__board")].map(b => ({x:b.scrollLeft, lanes:[...b.querySelectorAll(".kanban-plugin__lane-items")].map(l => l.scrollTop)}))'`.
+  Drag `Left 1 card 01` toward the left board's right edge and hold there with
+  `$K drag '.kanban-plugin__item::Left 1 card 01' --edge right --dwell 800 --hold`.
+  Capture offsets again and a snap before `release`: the left board must scroll and the right
+  board must stay at zero. Repeat from the right board, verifying the left board stays put.
+  After scrolling the right board, hold its card just inside that board's left edge at the split.
+  Only the right board may scroll back: the card overlapping the left board must not activate it.
+  In a fresh run with the same split, drag `Left 1 card 01` after `Right 1 card 02`.
+  Assert the adjacent cards in `Other.md` and the source card's absence from `Board.md`.
+  Also hold a card at the bottom edge of its lane using real pointer input. Record every lane's
+  `scrollTop` before and during the hold: only that lane may scroll, including lanes outside
+  the viewport. Move away from the edge while still holding, then release; scrolling must stop.
+  Finish with `errors`. Before the fix, one edge event scrolled every eligible container in
+  the same window because EventEmitter's listener context was mistaken for an event filter.
+  Scroll hit testing also considered neighboring containers overlapped by the card, regardless
+  of which container held the pointer.
 
 ## Gotchas
 

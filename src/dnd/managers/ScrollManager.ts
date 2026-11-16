@@ -2,8 +2,9 @@ import { generateInstanceId } from 'src/components/helpers';
 
 import {
   CoordinateShift,
-  Entity,
+  Coordinates,
   Path,
+  ScrollEntity,
   ScrollState,
   Side,
   initialScrollShift,
@@ -41,10 +42,10 @@ export class ScrollManager {
   observer: IntersectionObserver;
   observerHandlers: Map<string, IntersectionObserverHandler>;
 
-  top: Entity;
-  right: Entity;
-  bottom: Entity;
-  left: Entity;
+  top: ScrollEntity;
+  right: ScrollEntity;
+  bottom: ScrollEntity;
+  left: ScrollEntity;
 
   scrollFrame: number = 0;
   scrollFrameRequested = false;
@@ -187,21 +188,24 @@ export class ScrollManager {
   bindScrollHandlers() {
     sides.forEach((side) => {
       const id = this.getId(side);
-      this.dndManager.dragManager.emitter.on('beginDragScroll', this.handleBeginDragScroll, id);
-      this.dndManager.dragManager.emitter.on('updateDragScroll', this.handleUpdateDragScroll, id);
-      this.dndManager.dragManager.emitter.on('endDragScroll', this.handleEndDragScroll, id);
-      this.dndManager.dragManager.emitter.on('dragEnd', this.onDragEnd);
+      this.dndManager.dragManager.emitter.on(`beginDragScroll:${id}`, this.handleBeginDragScroll);
+      this.dndManager.dragManager.emitter.on(`updateDragScroll:${id}`, this.handleUpdateDragScroll);
+      this.dndManager.dragManager.emitter.on(`endDragScroll:${id}`, this.handleEndDragScroll);
     });
+    this.dndManager.dragManager.emitter.on('dragEnd', this.onDragEnd);
   }
 
   unbindScrollHandlers() {
     sides.forEach((side) => {
       const id = this.getId(side);
-      this.dndManager.dragManager.emitter.off('beginDragScroll', this.handleBeginDragScroll, id);
-      this.dndManager.dragManager.emitter.off('updateDragScroll', this.handleUpdateDragScroll, id);
-      this.dndManager.dragManager.emitter.off('endDragScroll', this.handleEndDragScroll, id);
-      this.dndManager.dragManager.emitter.off('dragEnd', this.onDragEnd);
+      this.dndManager.dragManager.emitter.off(`beginDragScroll:${id}`, this.handleBeginDragScroll);
+      this.dndManager.dragManager.emitter.off(
+        `updateDragScroll:${id}`,
+        this.handleUpdateDragScroll
+      );
+      this.dndManager.dragManager.emitter.off(`endDragScroll:${id}`, this.handleEndDragScroll);
     });
+    this.dndManager.dragManager.emitter.off('dragEnd', this.onDragEnd);
   }
 
   onScroll = () => {
@@ -318,12 +322,26 @@ export class ScrollManager {
     };
   }
 
-  createScrollEntity(side: Side): Entity {
+  containsPoint(point: Coordinates): boolean {
+    const rect = this.scrollEl.getBoundingClientRect();
+    return (
+      point.x >= rect.left &&
+      point.x < rect.right &&
+      point.y >= rect.top &&
+      point.y < rect.bottom &&
+      (!this.parent || this.parent.containsPoint(point))
+    );
+  }
+
+  createScrollEntity(side: Side): ScrollEntity {
     const manager = this;
 
     return {
       scopeId: this.scopeId,
       entityId: manager.getId(side),
+      containsPoint(point) {
+        return manager.containsPoint(point);
+      },
       initial: calculateScrollHitbox(
         this.scrollEl.getBoundingClientRect(),
         this.parent?.scrollState || initialScrollState,
