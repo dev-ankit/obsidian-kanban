@@ -6,6 +6,7 @@ is empty or absent, the generated link keeps its default label instead of becomi
 ## Sub-features
 
 - `link-drop-empty` preserves the generated wikilink or Markdown label when HTML text is empty (#624).
+- `link-drop-whitespace` treats whitespace-only HTML text as absent and trims a visible alias.
 - `link-drop-no-html` preserves the generated label when the transfer has no HTML.
 - `link-drop-alias` preserves a nonempty HTML alias in both link formats.
 - `link-drop-unresolved` keeps the target of an unresolved link visible.
@@ -19,6 +20,11 @@ is empty or absent, the generated link keeps its default label instead of becomi
 
 Preconditions:
 
+- Launch `--fixture link-drops` for the real drag attempt. Open `Sources.md`, use the palette
+  command `Split right`, then open `Board.md` in the right pane. Drag the first
+  `.markdown-source-view .cm-hmd-internal-link` onto `.kanban-plugin__lane::Todo`.
+  Capture the board before and after. If CDP creates no card, report that limit and use the
+  parsing fallback below.
 - The baseline `basic` board is active, with `Notes/Spec.md` present; `$K doctor` all PASS.
 - Try a real drag first. CDP external drops are unreliable; failure to create a card is not
   evidence that the parser is correct.
@@ -30,10 +36,12 @@ Preconditions:
   not an end-to-end drag check. `KV_RUN` selects an explicit scratch run.
 - **Empty and missing HTML.** For a link to `Notes/Spec`, expect `[[Spec]]` with wikilinks enabled
   and `[Spec](Spec.md)` with Markdown links enabled. Neither format may have an empty label.
+- **Whitespace.** Three spaces must produce `[[Spec]]` or `[Spec](Spec.md)`.
+  `  Visible label  ` must produce `[[Spec|Visible label]]` or `[Visible label](Spec.md)`.
 - **Nonempty alias.** HTML text `Visible label` must remain `[[Spec|Visible label]]` or
   `[Visible label](Spec.md)`.
 - **Unresolved target.** Empty HTML for `Missing note` must yield `[[Missing note]]`.
-- **Proof.** The script writes all eight cases to the run's `evidence/link-drop-parsing.json`
+- **Proof.** The script writes all twelve cases to the run's `evidence/link-drop-parsing.json`
   and asserts their values. Use `--report-only` to capture results on an unfixed build.
   Run `$K errors` afterwards. Rerun `card-add` and the basic drag journeys to verify normal
   board editing independently.

@@ -611,8 +611,9 @@ export async function handleDragOrPaste(
       let link = draggable.file
         ? linkTo(stateManager, draggable.file, parseLinktext(draggable.linktext).subpath)
         : `[[${draggable.linktext}]]`;
-      const alias = new DOMParser().parseFromString(transfer.getData('text/html'), 'text/html')
-        .documentElement.textContent; // Get raw text
+      const alias = new DOMParser()
+        .parseFromString(transfer.getData('text/html'), 'text/html')
+        .documentElement.textContent?.trim();
       if (alias) {
         link = link.replace(/]]$/, `|${alias}]]`).replace(/^\[[^\]].+]\(/, `[${alias}](`);
       }

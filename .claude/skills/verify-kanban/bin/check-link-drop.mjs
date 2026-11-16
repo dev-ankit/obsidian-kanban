@@ -93,6 +93,8 @@ try {
         for (const [name,html,file] of [
           ['empty','<a class="internal-link" data-href="Notes/Spec" href="Notes/Spec"></a>',true],
           ['missing','',true],
+          ['whitespace','<a class="internal-link" href="Notes/Spec">   </a>',true],
+          ['padded-alias','<a class="internal-link" href="Notes/Spec">  Visible label  </a>',true],
           ['alias','<a class="internal-link" data-href="Notes/Spec" href="Notes/Spec">Visible label</a>',true],
           ['unresolved','<a class="internal-link" href="Missing note"></a>',false]
         ]) {
@@ -125,7 +127,7 @@ try {
       const expected =
         test.name === 'unresolved'
           ? '[[Missing note]]'
-          : test.name === 'alias'
+          : ['alias', 'padded-alias'].includes(test.name)
             ? test.markdown
               ? '[Visible label](Spec.md)'
               : '[[Spec|Visible label]]'
@@ -139,7 +141,7 @@ try {
       );
     }
     console.log(
-      'PASS: empty HTML, absent HTML, visible alias, and unresolved link in both link formats'
+      'PASS: empty HTML, absent HTML, whitespace, trimmed aliases, and unresolved link in both link formats'
     );
   }
 } finally {
