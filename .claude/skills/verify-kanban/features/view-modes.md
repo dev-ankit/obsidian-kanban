@@ -7,6 +7,7 @@ frontmatter (`kanban-plugin: board|table|list`).
 ## Sub-features
 
 - `view-rename-deferred` renames a board while another restored Kanban tab is still deferred (#1096).
+- `view-title-bar` follows Obsidian's Show tab title bar preference (#680).
 - `view-table` switches to the table layout and saves it.
 - `view-list` switches to the list layout. Not yet driven.
 - `view-board` switches back to the board layout.
@@ -58,6 +59,11 @@ Preconditions:
   cards, `Board.md` no longer exists, and `errors` is clean. Click the second tab with
   `click '.mod-root .workspace-tab-header' --nth 1`; `outline` must show `Other.md` with all
   six cards. Capture both states. Before the fix the rename raised `handleRename is not a function`.
+
+- **Tab title bar.** In Settings → Appearance disable Show tab title bar, close settings, and
+  verify the active board's `.view-header` has computed `display: none`. Its lanes stay visible.
+  Repeat with a markdown note. Re-enable the preference and verify the board header and actions
+  return. Before the fix Kanban forced `display: flex !important` regardless of this preference.
 
 ## Gotchas
 
