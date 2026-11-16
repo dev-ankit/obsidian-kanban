@@ -1,17 +1,16 @@
 Community-maintained build of Kanban. The plugin ID and board format are unchanged.
 
-This release fixes bugs from the upstream issue tracker. Every fix was reproduced in a real Obsidian instance before it was fixed, checked afterwards (see `.claude/skills/verify-kanban`), code-reviewed over two rounds, and tested on an iPhone.
+This release fixes more bugs from the upstream issue tracker. Every fix was reproduced in a real Obsidian instance before it was fixed, checked afterwards (see `.claude/skills/verify-kanban`), code-reviewed, and tested on an iPhone.
 
 ## Fixes
 
-- **New note from card no longer loses card content.** Tags, inline fields, links and URLs used to be stripped from the card. They now stay on the card next to the link to the new note, and the note's link always resolves. (#1016, #848, #632)
-- **Editing a card's second date changes that date**, not the first one. Dates in the card footer and table view edit the date they show. (#1000)
-- **Duplicated cards get their own block ID**, so links to the copy go to the copy. (#830)
-- **A literal `<br>` inside a table survives editing** instead of turning into a line break that corrupts the table. (#1024)
-- **Search matches the right cards** after the board reloads. (#1246)
-- **Dragging works on a newly created board** without reopening it. (#902)
-- **Dropping a link with empty or blank text** no longer creates an invisible card. (#624)
-- **The board archive limit accepts `-1`** (keep everything), as documented, so archived cards aren't discarded by an inherited limit. (#695)
-- **Settings open instantly in large vaults.** With 36,000 notes they took about 19 seconds before. Note folder and Note template now use Obsidian's search picker. (#735)
+- **New lists keep "Mark cards in this list as complete"** when you switch it on while creating them. (#984)
+- **"Today", "tomorrow" and date colors stay current** while a board is open, including on the card you're dragging and on cards scrolled out of view. (#1036, #1048)
+- **Dragging near the edge of one board no longer scrolls the other board** in a split, or a neighbouring list. Dragging a little past the bottom of a list keeps it scrolling. (#1051)
+- **Typing in a note next to a large board no longer stalls** when the note saves. Cards update when a linked note's properties change, and a board recovers by itself once a broken linked note is fixed. (#670)
+- **Daily-note links in Markdown format work with nested folders**, including date formats like `YYYY/MM/DD`. (#516)
+- **Arrow keys in the date picker follow your week start**, and Sunday works as the week start in languages whose weeks start on Monday. (#811)
+- **Adding or collapsing a list after reopening a board that's already open** no longer shows an "is not iterable" error. This was introduced in 2.0.56.
+- **A card that embeds a missing note with a Markdown link** no longer breaks the board.
 
-Includes everything from 2.0.55.
+Includes everything from 2.0.56.
