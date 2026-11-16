@@ -255,6 +255,7 @@ export class StateManager {
       'tag-sort': this.getSettingRaw('tag-sort', suppliedSettings) ?? [],
       'date-colors': this.getSettingRaw('date-colors', suppliedSettings) ?? [],
       'tag-action': this.getSettingRaw('tag-action', suppliedSettings) ?? 'obsidian',
+      'list-collapse': this.getSettingRaw('list-collapse', suppliedSettings) ?? [],
     };
   }
 

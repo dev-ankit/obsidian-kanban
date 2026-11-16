@@ -11,6 +11,7 @@ saved in the board's settings block. Reordering lanes by dragging is in
 - `lane-add-complete` honors the new-list completion toggle for both button and keyboard submission (#984).
 - `lane-add-blank` ignores a whitespace-only list title (upstream PR #1226).
 - `lane-collapse` collapses a lane and saves that state.
+- `lane-reopen` adds and collapses lanes after the open board is re-opened, with or without saved collapse state.
 - `lane-collapse-cjk` keeps CJK titles in collapsed lanes reading bottom to top with glyphs turned
   sideways like Latin text, never upside down (PR #1244).
 - `lane-menu` opens the lane's `More options` menu. Not yet driven.
@@ -53,6 +54,13 @@ Preconditions:
 - **Collapse.** `$K click '.kanban-plugin__lane::Blocked >> .kanban-plugin__lane-collapse'`.
   `$K count '.kanban-plugin__lane-wrapper.collapse-horizontal'` is `1`, and
   `$K file --expect '"list-collapse":[false,false,false,true]'` succeeds.
+- **After re-opening the board.** Re-opening an open board through the quick switcher resets
+  the view's own settings. On a fresh `basic` board, drag `Fix drag scroll` after `Ship 2.0.52`
+  and back into `Doing`, then `$K key Mod+o`, `$K type 'Board'`, `$K key Enter`. Add a list with
+  the completion toggle on and collapse `Doing`: both save, and `$K errors` is empty. Repeat on
+  a board written without a settings footer (`---\nkanban-plugin: board\n---\n\n## A\n\n## B\n`):
+  after re-open, collapsing `B` saves `"list-collapse":[…,true]` and adding a list saves. Before
+  the fix, both threw `is not iterable` and replaced the board with the error view.
 - **CJK collapsed** (`wide`). `$K click '.kanban-plugin__lane::待办事项 >> .kanban-plugin__lane-collapse'`
   and the same for `進行中`. Then
   `$K snap cjk-todo --clip '.kanban-plugin__lane::待办事项 >> .kanban-plugin__lane-header-wrapper'`

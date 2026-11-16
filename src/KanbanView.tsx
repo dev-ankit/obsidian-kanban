@@ -278,7 +278,7 @@ export class KanbanView extends TextFileView implements HoverParent {
     if (globalUpdater) {
       const stateManager = this.plugin.getStateManager(this.file);
       stateManager.viewSet.forEach((view) => {
-        view.viewSettings[key] = globalUpdater(view.viewSettings[key]);
+        view.viewSettings[key] = globalUpdater(view.getViewState(key));
       });
     } else if (val) {
       this.viewSettings[key] = val;
