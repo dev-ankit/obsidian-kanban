@@ -506,7 +506,12 @@ div.kanban-plugin__lane-title-count.wip-exceeded {
 .kanban-plugin__item .kanban-plugin__item-prefix-button,
 .kanban-plugin__item .kanban-plugin__item-postfix-button,
 .kanban-plugin__lane .kanban-plugin__lane-settings-button {
-  --icon-stroke: 2.5px;
+  // Compact buttons sit next to a single line of card or lane text; Obsidian's default icon
+  // size (--icon-m) makes them taller than that line and pushes the text out of alignment.
+  .kanban-plugin__icon {
+    --icon-size: var(--icon-xs);
+    --icon-stroke: var(--icon-xs-stroke-width);
+  }
   font-size: 13px;
   line-height: 1;
   color: var(--text-muted);
