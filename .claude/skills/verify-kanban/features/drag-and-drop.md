@@ -142,3 +142,23 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
 - Source and target must both be on screen unless you use `--edge`. Close any note split first;
   lanes outside the viewport don't render their cards.
 - Text matching is substring-based: `::Ship` would also match "Shipped". Use full, distinct titles.
+
+## Narrow list view (#1111)
+
+Switch `basic` to `View as list`, split the board twice to the right, and drag the last
+split divider until the active board is narrower than a lane. A 248 px board with the
+standard 272 px lanes reproduces the original failure. Move `Buy milk` into Doing before
+shrinking the board so Todo remains a nonempty target.
+
+Capture a snap before dragging. Drag `Buy milk` back into Todo with the pointer near the
+horizontal center of the visible board. When the lane extends beyond the window, use
+`drag --point` with a visible point near Todo's last card rather than the full lane bounds.
+Sample the board's `scrollLeft` and lane rectangles with `requestAnimationFrame` while
+moving. The board must not oscillate horizontally and the file must place the card in Todo.
+Repeat in both directions three times, checking the file after each drop, then capture a
+snap and run `errors`.
+
+Before the fix, the dragged card overlapped both horizontal scroll edges. Reaching one
+scroll limit enabled the opposite edge, reversing the board repeatedly and preventing the
+drop target from updating. The pointer now selects which edge can scroll. Also rerun
+`dnd-autoscroll`, `dnd-scroll-isolation`, and `dnd-scroll-overshoot` to check normal edge use.
