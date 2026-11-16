@@ -44,6 +44,7 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 ## Features
 
 - [Cards](./cards.md): add, edit in place, duplicate, delete and archive cards.
+- [Card Markdown rendering](./card-rendering.md): live embeds, callouts, code blocks and task lists.
 - [Inline dates](./inline-dates.md): edit the clicked date when a card contains multiple dates.
 - [Cards](./cards.md): add, edit in place, delete and archive cards.
 - [Search](./search.md): match the current card text after outside file changes.
