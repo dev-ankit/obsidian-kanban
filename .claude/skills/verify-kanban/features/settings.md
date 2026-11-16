@@ -6,6 +6,7 @@ set of eligible vault paths, including in large vaults, without freezing the set
 ## Sub-features
 
 - `settings-tag-reset` restores inherited tag colors, including from an empty local override (#1094).
+- `settings-locale-fallback` opens settings in regional or unsupported languages without console errors (#1248).
 - `settings-large-open` opens board and global settings in a large vault without building a DOM
   element for every file and folder.
 - `settings-large-select` finds and saves paths near the end of the complete candidate list.
@@ -86,6 +87,15 @@ Preconditions:
   reset clears the local editor rows, removes the key on disk and restores inheritance. Cancel
   the modal and reopen it to confirm the result survives. Global settings retain their color.
   Capture the local controls and the restored tag; finish with `errors`.
+
+- **Regional language.** Use English (GB) as the scratch profile's language. If the native
+  Language dropdown cannot be driven over CDP, configure the environment with
+  `eval 'localStorage.setItem("language", "en-GB")'`, then disable and re-enable Kanban
+  through Settings → Community plugins. This is locale setup; open Kanban settings through
+  the UI to test the reported failure. Verify English labels and clean `errors`. The old
+  build logged `kanban locale not found en-GB` for every translated string. Repeat with an
+  unsupported language to check English fallback, and an exact supported locale to check that
+  its existing translations still take precedence. Stop the scratch instance afterward.
 
 ## Gotchas
 
