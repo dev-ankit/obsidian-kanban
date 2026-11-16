@@ -61,3 +61,4 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [Settings](./settings.md): searchable folder/template selection, inherited defaults, and large-vault opening time.
 
 - [Daily-note links](./daily-note-links.md): preserve nested folder paths in Markdown date links.
+- [Date clock](./date-clock.md): refresh relative labels and colors as time passes.

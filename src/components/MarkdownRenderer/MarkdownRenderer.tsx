@@ -47,10 +47,9 @@ function colorizeDates(wrapperEl: HTMLElement, getDateColor: (date: moment.Momen
     if (!parsed.isValid()) return;
     const color = getDateColor(parsed);
     el.toggleClass('has-background', !!color?.backgroundColor);
-    if (!color) return;
     el.setCssProps({
-      '--date-color': color.color,
-      '--date-background-color': color.backgroundColor,
+      '--date-color': color?.color ?? '',
+      '--date-background-color': color?.backgroundColor ?? '',
     });
   });
 }
