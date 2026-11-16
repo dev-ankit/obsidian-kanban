@@ -33,7 +33,9 @@ export function buildLinkToDailyNote(app: App, dateStr: string) {
 
   if (shouldUseMarkdownLinks) {
     return `[${dateStr}](${
-      dailyNoteSettings.folder ? `${encodeURIComponent(dailyNoteSettings.folder)}/` : ''
+      dailyNoteSettings.folder
+        ? `${dailyNoteSettings.folder.split('/').map(encodeURIComponent).join('/')}/`
+        : ''
     }${encodeURIComponent(dateStr)}.md)`;
   }
 
