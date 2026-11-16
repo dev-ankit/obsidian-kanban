@@ -2,13 +2,13 @@
 // kv: drive an isolated Obsidian instance running this repo's Kanban build.
 // Zero dependencies: Node >= 22 (global fetch + WebSocket) and Chrome DevTools Protocol.
 // Run `kv.mjs help` for usage.
-
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 
 const SKILL_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPO = path.resolve(SKILL_DIR, '../../..');
@@ -64,7 +64,11 @@ async function pageWsUrl(port, timeoutMs = 0) {
   for (;;) {
     try {
       const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-      const page = list.find((p) => p.type === 'page' && p.url.startsWith('app://obsidian.md'));
+      const page = list.find(
+        (p) =>
+          p.type === 'page' &&
+          (flags.target ? p.id === flags.target : p.url.startsWith('app://obsidian.md'))
+      );
       if (page) return page.webSocketDebuggerUrl;
     } catch {}
     if (Date.now() >= end) return null;
@@ -126,13 +130,28 @@ class Cdp {
   }
 }
 
+async function observePage(cdp) {
+  await cdp.run(`
+    if (window.__kvErrors) return true;
+    window.__kvErrors = [];
+    document.addEventListener('pointermove', (e) => { window.__kvLastX = e.clientX; window.__kvLastY = e.clientY; }, true);
+    const orig = console.error.bind(console);
+    console.error = (...a) => { window.__kvErrors.push(a.map(String).join(' ').slice(0, 2000)); orig(...a); };
+    window.addEventListener('error', (e) => window.__kvErrors.push('uncaught: ' + e.message));
+    window.addEventListener('unhandledrejection', (e) => window.__kvErrors.push('unhandled rejection: ' + (e.reason?.stack || e.reason)));
+    return true;
+  `);
+}
+
 async function attach() {
   const dir = runDir();
   const s = readState(dir);
   if (!alive(s.pid)) die(`Obsidian (pid ${s.pid}) for ${dir} is not running. Run: kv.mjs doctor`);
   const ws = await pageWsUrl(s.port);
   if (!ws) die(`no Obsidian window on port ${s.port}. Was the window closed? Run: kv.mjs doctor`);
-  return { dir, s, cdp: await Cdp.connect(ws) };
+  const cdp = await Cdp.connect(ws);
+  await observePage(cdp);
+  return { dir, s, cdp };
 }
 
 // ---------- locators ----------
@@ -373,15 +392,7 @@ async function launch() {
   const cdp = await Cdp.connect(ws);
 
   // Record page errors from here on; `kv.mjs errors` reads them.
-  await cdp.run(`
-    window.__kvErrors = [];
-    document.addEventListener('pointermove', (e) => { window.__kvLastX = e.clientX; window.__kvLastY = e.clientY; }, true);
-    const orig = console.error.bind(console);
-    console.error = (...a) => { window.__kvErrors.push(a.map(String).join(' ').slice(0, 2000)); orig(...a); };
-    window.addEventListener('error', (e) => window.__kvErrors.push('uncaught: ' + e.message));
-    window.addEventListener('unhandledrejection', (e) => window.__kvErrors.push('unhandled rejection: ' + (e.reason?.stack || e.reason)));
-    return true;
-  `);
+  await observePage(cdp);
 
   // Fixed window size keeps screenshots comparable across runs.
   await cdp.run(`
@@ -560,6 +571,7 @@ const HELP = `kv.mjs - drive an isolated Obsidian running this repo's Kanban bui
 
   <loc> is "<css>" or "<css>::<text>" (visible text contains <text>); chain with " >> " to
   search inside the previous match, e.g. ".kanban-plugin__lane::Todo >> .kanban-plugin__new-item-button".
+  --target ID selects a page from this run's CDP /json/list (for popout windows).
   Target a run with --run DIR or KV_RUN=DIR; default is .verify-runs/latest.`;
 
 async function main() {

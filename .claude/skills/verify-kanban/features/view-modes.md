@@ -6,6 +6,9 @@ frontmatter (`kanban-plugin: board|table|list`).
 
 ## Sub-features
 
+- `view-rename-deferred` renames a board while another restored Kanban tab is still deferred (#1096).
+- `view-title-bar` follows Obsidian's Show tab title bar preference (#680).
+- `view-table-popout-resize` resizes table columns in their own window and saves the widths (#1121).
 - `view-table` switches to the table layout and saves it.
 - `view-list` switches to the list layout. Not yet driven.
 - `view-board` switches back to the board layout.
@@ -48,6 +51,36 @@ Preconditions:
   lanes (2.0.54 and earlier: blank, 0 lanes). Same for a card whose text links `[[Board]]` when you click
   that link, and for `$K eval '(async () => { await app.workspace.openLinkText("Board", "", false) })()'`.
 - **Proof.** `snap` after each switch, then `$K errors`.
+
+- **Rename with a deferred tab.** Launch `--fixture settings-windows`. The first tab opens
+  `Board.md`; the second Kanban tab has not been selected. Observe
+  `app.workspace.getLeavesOfType("kanban").map(l => ({ deferred: l.isDeferred, rename: typeof l.view.handleRename }))`:
+  one view has no rename method. Right-click `.mod-root .workspace-tab-header::Board`, choose
+  `.menu-item::Rename...`, type `Renamed`, and press Enter. Assert `Renamed.md` contains all
+  cards, `Board.md` no longer exists, and `errors` is clean. Click the second tab with
+  `click '.mod-root .workspace-tab-header' --nth 1`; `outline` must show `Other.md` with all
+  six cards. Capture both states. Before the fix the rename raised `handleRename is not a function`.
+
+- **Tab title bar.** In Settings → Appearance disable Show tab title bar, close settings, and
+  verify the active board's `.view-header` has computed `display: none`. Its lanes stay visible.
+  Repeat with a markdown note. Re-enable the preference and verify the board header and actions
+  return. Before the fix Kanban forced `display: flex !important` regardless of this preference.
+
+- **Resize in another window.** Switch to table, right-click the board tab and choose
+  `Move to new window`. Read the current run's CDP port from `state.json`, fetch
+  `http://127.0.0.1:<port>/json/list`, and use the `about:blank` page's ID as `--target ID`
+  on subsequent `kv.mjs` commands. This selects only a window of the scratch instance.
+  Start with `eval` to record errors in that window before driving it. Measure `th` widths,
+  and get the first `.resizer` rectangle. Drag that handle to its center plus 100 pixels on
+  the x axis with `drag '.resizer' --point X,Y --target ID`. The Card column must grow
+  by 100 pixels, List must stay unchanged, and the board must save `"table-sizing":{"card":372}`
+  from the basic 272-pixel starting size. Shrink by 50, then double-click the handle: the
+  saved sizes become 322 and then `{}`. Repeat a resize in the main window, switch modes
+  and return to table, and check the width persists. Sort by Card and verify alphabetical
+  rows. Run board/table/list/markdown transitions, card-add, dnd-cross-lane and
+  dnd-empty-lane; capture snapshots and run `errors` in both windows before stopping.
+  Before the fix, the popout drag did not change the width. The resize handler listened
+  to the main document; TanStack 8.16.0 also ignored its explicit document parameter.
 
 ## Gotchas
 

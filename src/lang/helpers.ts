@@ -50,8 +50,8 @@ const localeMap: { [k: string]: Partial<Lang> } = {
   zh: zhCN,
 };
 
-const lang = window.localStorage.getItem('language');
-const locale = localeMap[lang || 'en'];
+const lang = window.localStorage.getItem('language') || 'en';
+const locale = localeMap[lang] ?? localeMap[lang.split('-')[0]] ?? en;
 
 // A string in every shipped language, for reading files written while another language was active.
 export function tAll(str: keyof typeof en): string[] {
@@ -61,9 +61,5 @@ export function tAll(str: keyof typeof en): string[] {
 }
 
 export function t(str: keyof typeof en): string {
-  if (!locale) {
-    console.error('Error: kanban locale not found', lang);
-  }
-
-  return (locale && locale[str]) || en[str];
+  return locale[str] || en[str];
 }

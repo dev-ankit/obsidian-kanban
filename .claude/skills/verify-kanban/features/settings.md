@@ -5,6 +5,8 @@ set of eligible vault paths, including in large vaults, without freezing the set
 
 ## Sub-features
 
+- `settings-tag-reset` restores inherited tag colors, including from an empty local override (#1094).
+- `settings-locale-fallback` opens settings in regional or unsupported languages without console errors (#1248).
 - `settings-large-open` opens board and global settings in a large vault without building a DOM
   element for every file and folder.
 - `settings-large-select` finds and saves paths near the end of the complete candidate list.
@@ -73,6 +75,27 @@ Preconditions:
   `[[Write release notes]]`. Capture a snap and check the file contents.
 - **Basic regression.** Run `card-add`, then `dnd-cross-lane` and `dnd-empty-lane` from the existing
   cards and drag feature maps. Assert the saved board order after each.
+
+- **Tag color inheritance.** In global Kanban settings add a tag color for `#work`, set its
+  background to `#ff0000`, blur the field, and wait until plugin `data.json` contains the color.
+  Close settings: `Plan sprint #work` has a red tag. Open board settings and add a local color;
+  delete it with `.kanban-plugin__tag-color-input-wrapper [aria-label="Delete"]`.
+  Assert the board saves `"tag-colors":[]`: this remains an explicit choice to suppress global
+  colors. Click `.kanban-plugin__tag-color-input-wrapper [aria-label="Reset to default"]` and
+  assert `file --absent 'tag-colors'`. Close settings and verify the tag background is red again.
+  Repeat after reopening the board with an empty override, and with a nonempty override. The
+  reset clears the local editor rows, removes the key on disk and restores inheritance. Cancel
+  the modal and reopen it to confirm the result survives. Global settings retain their color.
+  Capture the local controls and the restored tag; finish with `errors`.
+
+- **Regional language.** Use English (GB) as the scratch profile's language. If the native
+  Language dropdown cannot be driven over CDP, configure the environment with
+  `eval 'localStorage.setItem("language", "en-GB")'`, then disable and re-enable Kanban
+  through Settings → Community plugins. This is locale setup; open Kanban settings through
+  the UI to test the reported failure. Verify English labels and clean `errors`. The old
+  build logged `kanban locale not found en-GB` for every translated string. Repeat with an
+  unsupported language to check English fallback, and an exact supported locale to check that
+  its existing translations still take precedence. Stop the scratch instance afterward.
 
 ## Gotchas
 
