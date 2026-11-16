@@ -7,7 +7,9 @@ Embedded content follows saved changes to its source file without reopening the 
 
 - `render-self-embed` refreshes a heading embedded from the same board.
 - `render-external-embed` refreshes an embedded note edited in another pane.
-- `render-embed-formatting` preserves tag/date colors and search highlights after refreshing.
+- `render-embed-formatting` preserves tag/date colors and search highlights after refreshing,
+  applying them once per render.
+- `render-board-switch` stops rendering a board's cards once its tab shows another board.
 - `render-markdown` checks code blocks, callout folding and task-list layout.
 
 ## How to get to it (user POV)
@@ -22,6 +24,7 @@ Preconditions:
 
 - `$K launch --fixture card-rendering`, then `$K doctor` must pass.
 - Board.md has a List lane containing Task and a Nested lane embedding that heading and Source.md.
+  Second.md is another board that embeds Source.md.
 
 - **Same-board embed.** Snap before. Click
   `.kanban-plugin__lane::List >> .kanban-plugin__item-prefix-button-wrapper input`.
@@ -37,6 +40,19 @@ Preconditions:
   inline date's `--date-color` before and after checking Task. The tag remains red on yellow.
   The date remains green while November 17, 2026 is in the future. Search for `render` through
   the header button, change a source task in a split pane, and verify the highlight remains.
+- **One pass per render.** With `render` in the search box, count inserted `<mark>` elements with
+  a `MutationObserver` on the view's content (`eval`), then change the card's own text from
+  outside (add the word `rerender` to the `#render` card in the vault's Board.md). The card ends
+  with two marks and the observer saw three insertions: one for the embed's refresh with the old
+  text, two for the new text. Before the fix it saw five, because every render was decorated
+  through two channels.
+- **Another board in the same tab** (`render-board-switch`). Read
+  `app.metadataCache._.changed.length` and the view's renderer children
+  (`view._children.filter((c) => c.markdown !== undefined).length`). Click Second.md in the
+  file explorer, then Board.md, three times over. The numbers must come back to where they
+  started each time (6 listeners and 11 renderers on Board.md, 5 and 3 on Second.md). Before
+  the fix each round trip left 3 more listeners and 14 more renderers, all of them re-rendering
+  cards of a board that was no longer shown whenever an embedded file changed.
 - **Inline task.** Click `.kanban-plugin__item::Some text >> .kanban-plugin__item-markdown .task-list-item-checkbox`.
   Assert `- [x] item 1` on disk. Click again; the saved task is unchecked. Repeat after an embed
   refresh. Both task boxes stay fully inside the card at Appearance font sizes 16 and 26.
@@ -53,6 +69,10 @@ Preconditions:
 ## Gotchas
 
 - Source saves are debounced. Wait for the disk assertion before judging the embedded checkbox.
+- A search collapses the lanes without a match, so List and its Task checkbox are gone while
+  `render` is in the search box. Change the source from a split pane or from outside instead.
+- The fixture's date rule colors dates after today. From November 17, 2026 on, the inline date
+  has no color; set the page clock (date-clock.md) to check the color.
 - The first task checkbox in a card is its completion checkbox. Target the item-markdown wrapper
   to click a task in the card's content.
 - Typing `---` one character at a time reproduces #1069 in the bundled Obsidian editor. Its

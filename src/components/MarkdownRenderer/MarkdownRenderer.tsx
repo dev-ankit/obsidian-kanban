@@ -53,13 +53,21 @@ function colorizeDates(containerEl: HTMLElement, dateColors: DateColor[], now: n
   });
 }
 
+// What a board shows on top of rendered Markdown: tag and date colors, and search matches.
+interface Decoration {
+  getTagColor: (tag: string) => TagColor;
+  dateColors: DateColor[];
+  clock: { now: number };
+  searchQuery?: string;
+}
+
 export class BasicMarkdownRenderer extends Component {
   containerEl: HTMLElement;
   wrapperEl: HTMLElement;
   renderCapability: PromiseCapability;
   isVisible: boolean = false;
   mark: Mark;
-  onRendered?: () => void;
+  decoration?: Decoration;
 
   lastWidth = -1;
   lastHeight = -1;
@@ -101,7 +109,7 @@ export class BasicMarkdownRenderer extends Component {
 
     this.resolveLinks();
     applyCheckboxIndexes(containerEl);
-    this.onRendered?.();
+    this.decorate();
 
     const embeds = containerEl.findAll('.internal-embed[src]');
     if (embeds.length) {
@@ -220,6 +228,27 @@ export class BasicMarkdownRenderer extends Component {
     }
   }
 
+  setDecoration(decoration: Decoration) {
+    this.decoration = decoration;
+    this.decorate();
+  }
+
+  // Rendering replaces the content, so each render ends here, and so does a change of decoration.
+  decorate() {
+    const { containerEl, decoration, mark } = this;
+    if (!decoration) return;
+
+    colorizeTags(containerEl, decoration.getTagColor);
+    this.colorizeDates();
+    mark.unmark();
+    if (decoration.searchQuery?.trim()) mark.mark(decoration.searchQuery);
+  }
+
+  colorizeDates() {
+    const { containerEl, decoration } = this;
+    if (decoration) colorizeDates(containerEl, decoration.dateColors, decoration.clock.now);
+  }
+
   resolveLinks() {
     const { containerEl, view } = this;
     const internalLinkEls = containerEl.findAll('a.internal-link');
@@ -324,8 +353,11 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
     entityManager?.emitter.on('visibility-change', onVisibilityChange);
 
     return () => {
-      renderer.current?.renderCapability.resolve();
+      preview.renderCapability.resolve();
       entityManager?.emitter.off('visibility-change', onVisibilityChange);
+      // The view's cache keeps a card's renderer for the next time the card is shown. Without
+      // an entity there is no next time, and the renderer goes with this component.
+      if (!entityId) view.removeChild(preview);
     };
   }, [view, entityId, entityManager]);
 
@@ -338,27 +370,15 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
     preview.set(markdownString);
   }, [markdownString]);
 
-  // Embeds can rerender without changing the card text. Decorate every completed render.
   useEffect(() => {
-    const preview = renderer.current;
-    const colorize = () => colorizeDates(preview.containerEl, dateColors, clock.now);
-    const decorate = () => {
-      colorizeTags(preview.containerEl, getTagColor);
-      colorize();
-      preview.mark.unmark();
-      if (searchQuery && searchQuery.trim()) {
-        preview.mark.mark(searchQuery);
-      }
-    };
+    renderer.current.setDecoration({ getTagColor, dateColors, clock, searchQuery });
+  }, [entityId, getTagColor, dateColors, clock, searchQuery]);
 
-    preview.onRendered = decorate;
-    preview.renderCapability.promise.then(decorate);
-    const unsubscribe = dateColors.length ? clock.subscribe(colorize) : undefined;
-    return () => {
-      preview.onRendered = undefined;
-      unsubscribe?.();
-    };
-  }, [entityId, markdownString, getTagColor, dateColors, clock, searchQuery]);
+  // Rules make date colors change with the clock too. The chips aren't rendered by Preact, so a
+  // tick recolors them where they are.
+  useEffect(() => {
+    if (dateColors.length) return clock.subscribe(() => renderer.current.colorizeDates());
+  }, [dateColors, clock]);
 
   useEffect(() => {
     const preview = renderer.current;
