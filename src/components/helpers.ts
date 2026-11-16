@@ -1,6 +1,6 @@
 import update from 'immutability-helper';
 import { App, MarkdownView, TFile, moment } from 'obsidian';
-import Preact, { Dispatch, RefObject, useEffect } from 'preact/compat';
+import Preact, { Dispatch } from 'preact/compat';
 import { StateUpdater, useMemo } from 'preact/hooks';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
@@ -338,24 +338,6 @@ export function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKe
         shouldHideLabel: false,
         value: data.value,
       };
-}
-
-export function useOnMount(refs: RefObject<HTMLElement>[], cb: () => void, onUnmount?: () => void) {
-  useEffect(() => {
-    let complete = 0;
-    let unmounted = false;
-    const onDone = () => {
-      if (unmounted) return;
-      if (++complete === refs.length) {
-        cb();
-      }
-    };
-    for (const ref of refs) ref.current?.onNodeInserted(onDone, true);
-    return () => {
-      unmounted = true;
-      onUnmount();
-    };
-  }, []);
 }
 
 export function useSearchValue(

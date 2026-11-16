@@ -6,6 +6,7 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 
 ## Sub-features
 
+- `dnd-new-board` initializes dragging on a board created through the command palette, before reopening it (#902).
 - `dnd-within-before` moves a card above another card in the same lane.
 - `dnd-within-after` moves a card below another card in the same lane.
 - `dnd-cross-lane` moves a card next to a card in another lane.
@@ -16,6 +17,7 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 
 ## How to get to it (user POV)
 
+- Create a board with `Kanban: Create new board`, then add lists and cards before dragging.
 - Press on a card and drag it with the mouse; release over the target slot.
 - Hold the dragged card near the left or right edge of the board to scroll it.
 - Drag a lane by the `⠿` grip at the left of its header.
@@ -30,6 +32,23 @@ Preconditions:
 - `dnd-autoscroll`, `dnd-lane-reorder`: `$K launch --fixture wide` (8 lanes: Backlog, 待办事项,
   Ready, 進行中, Review, QA, Staging, Shipped; wider than the window).
 
+- **New board, without reopening** (`dnd-new-board`). `$K key Mod+p`,
+  `$K type 'Kanban: Create new board'`, `$K key Enter`, then
+  `$K wait '.kanban-plugin__lane-action-add'`. The new board opens its list form automatically.
+  `$K type 'Fresh todo'`, `$K key Enter`, then `$K file 'Untitled Kanban.md' --expect '## Fresh todo'`.
+  Add another list with `$K type 'Fresh done'`, `$K key Enter`, then
+  `$K file 'Untitled Kanban.md' --expect '## Fresh done'`. Close the form with
+  `$K click '.kanban-plugin__lane-action-cancel'`.
+  Add `First fresh card` and `Second fresh card` to Fresh todo through its `+ Add a card` button,
+  typing each title and pressing Enter. Press Escape, then assert both titles in `Untitled Kanban.md`.
+  `$K snap new-board-before-drag`. Without reopening, changing view modes, or reloading,
+  `$K drag '.kanban-plugin__item::First fresh card' '.kanban-plugin__lane::Fresh done'`.
+  `$K file 'Untitled Kanban.md' --expect $'## Fresh done\n\n- [ ] First fresh card'` must pass.
+  `$K snap new-board-after-drag`. Drag it back before `Second fresh card`, then drag it after
+  that card. Check the new adjacent card order on disk after each move. Drag the Fresh done
+  lane grip before Fresh todo, with `--axis x --before`, and check the saved heading order.
+  Use the actual new filename if Obsidian appends a number. `file` defaults to `Board.md`,
+  so always pass the new board's filename explicitly.
 - **Within, after.** `$K drag '.kanban-plugin__item::Buy milk' '.kanban-plugin__lane::Todo >> .kanban-plugin__item::Review PR' --after`.
   `outline` shows Todo as Write release notes, Plan sprint, Review PR, Buy milk; on disk,
   `$K file --expect $'[[Notes/Spec]]\n- [ ] Buy milk'` succeeds.
@@ -42,7 +61,7 @@ Preconditions:
 - **Autoscroll to an off-screen lane** (`wide`).
   `$K drag '.kanban-plugin__item::Bravo task' '.kanban-plugin__lane::Shipped >> .kanban-plugin__item::Hotel task' --edge right --after`.
   The command prints how far and how fast the board scrolled (e.g. `scrolled 953px in 2.0s (476 px/s;
-  scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel task, Bravo task;
+scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel task, Bravo task;
   `$K file --expect $'- [ ] Hotel task\n- [ ] Bravo task'` succeeds.
 - **Autoscroll, look mid-scroll.** `$K drag '.kanban-plugin__item::Alpha task' --edge right --hold`,
   `$K snap autoscroll-held`, `$K release`. The snap shows the board scrolled to the last lanes with
@@ -62,7 +81,7 @@ Preconditions:
   for where you grabbed (a lane is grabbed by its grip, far from its center). For lanes add
   `--axis x` so before and after mean left and right.
 - Drop zones are re-measured only on pointer movement. After an autoscroll, a release with no
-  movement in between drops into whatever lane was under the pointer *before* the scroll.
+  movement in between drops into whatever lane was under the pointer _before_ the scroll.
   Real hands always jitter, so this isn't a user bug; `drag --edge` moves 1 px before releasing.
   A bare `release` after `--edge --hold` doesn't. Move first if you need a correct drop there.
 - Autoscroll speed is time-based since c67f797: the `--edge` report should read about 600 px/s

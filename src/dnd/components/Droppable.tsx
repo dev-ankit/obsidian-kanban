@@ -1,5 +1,4 @@
-import { RefObject, memo, useContext, useMemo, useRef } from 'preact/compat';
-import { useOnMount } from 'src/components/helpers';
+import { RefObject, memo, useContext, useLayoutEffect, useMemo, useRef } from 'preact/compat';
 
 import { EntityManager } from '../managers/EntityManager';
 import { EntityData, WithChildren } from '../types';
@@ -38,58 +37,28 @@ export const Droppable = memo(function Droppable({
   const parentEntityManager = useContext(EntityManagerContext);
   const parentScrollManager = useContext(ScrollManagerContext);
   const dataRef = useRef(data);
-  const managerRef = useRef<EntityManager>();
 
   dataRef.current = data;
 
   const entityManager = useMemo(() => {
-    if (dndManager) {
-      if (managerRef.current) {
-        managerRef.current.destroy();
-      }
+    if (!dndManager) return null;
 
-      const manager = new EntityManager(
-        dndManager,
-        scopeId,
-        id,
-        index,
-        parentEntityManager,
-        parentScrollManager,
-        sortManager,
-        dataRef
-      );
+    return new EntityManager(
+      dndManager,
+      scopeId,
+      id,
+      index,
+      parentEntityManager,
+      parentScrollManager,
+      sortManager,
+      dataRef
+    );
+  }, [id, index, dndManager, scopeId, parentEntityManager, parentScrollManager, sortManager]);
 
-      if (elementRef.current && measureRef.current) {
-        manager.initNodes(elementRef.current, measureRef.current);
-      }
-
-      managerRef.current = manager;
-
-      return manager;
-    }
-
-    return null;
-  }, [
-    id,
-    index,
-
-    //
-    dndManager,
-    scopeId,
-    parentEntityManager,
-    parentScrollManager,
-    sortManager,
-  ]);
-
-  useOnMount(
-    [elementRef, measureRef],
-    () => {
-      managerRef.current?.initNodes(elementRef.current, measureRef.current);
-    },
-    () => {
-      managerRef.current?.destroy();
-    }
-  );
+  useLayoutEffect(() => {
+    entityManager?.initNodes(elementRef.current, measureRef.current);
+    return () => entityManager?.destroy();
+  }, [entityManager, elementRef, measureRef]);
 
   if (!entityManager) {
     return null;
