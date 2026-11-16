@@ -17,6 +17,8 @@ Lanes can be dragged by their grip. The board file is rewritten in the new order
 - `dnd-lane-reorder` moves a whole lane left or right by its grip.
 - `dnd-scroll-isolation` scrolls only the board or lane whose edge is active, including when
   moving a card between two boards in a split (#1051).
+- `dnd-scroll-overshoot` keeps scrolling when the pointer goes a little past the edge it is
+  scrolling: below a lane's list, or off the board over the file explorer.
 
 ## How to get to it (user POV)
 
@@ -102,8 +104,25 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   Scroll hit testing also considered neighboring containers overlapped by the card, regardless
   of which container held the pointer.
 
+- **Past the edge** (`dnd-scroll-overshoot`, `split-scroll`, one board, no split). Read the first
+  lane's list box with
+  `$K eval '(() => { const r = document.querySelector(".kanban-plugin__lane-items").getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom] })()'`.
+  Hold a card 9 px below that list, over `+ Add a card`:
+  `$K drag '.kanban-plugin__item::Left 1 card 02' --point <mid x>,<bottom + 9> --dwell 1500 --hold`.
+  The report must name one container (`#1`, the first lane) and a positive vertical distance;
+  `snap`, then `release`. Then scroll the board right by dragging a card to its right edge, and
+  hold a card 8 px left of the board's left edge (over the file explorer) with `--point`: only
+  `#0` (the board) scrolls back. On the build before this fix both report `scrolled nothing`.
+  In the split from `dnd-scroll-isolation`, also hold a left-board card with the pointer 8 px
+  inside the right board: the left board must stay put (the pointer is in the other board), and
+  hold a card low in the second lane's column while it overlaps the first lane: only the second
+  lane's list scrolls.
+
 ## Gotchas
 
+- `drag --point` takes viewport pixels and numbers the scroll containers in document order
+  (`#0` is the first board, then its lanes). On its way to the point the pointer may cross
+  another edge zone and scroll it briefly; the report covers only the dwell.
 - Release too early and nothing drops: the slot animates in. `drag` waits 1000 ms over the target
   (`--settle`); don't lower it.
 - `--before`/`--after` put the dragged entity's center 10 px past the target's edge. `drag` corrects

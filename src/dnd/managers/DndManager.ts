@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3';
 import { debounce } from 'obsidian';
 
-import { Entity, ScrollEntity } from '../types';
+import { Entity } from '../types';
 import { getParentWindow } from '../util/getWindow';
 import { DragManager } from './DragManager';
 
@@ -11,7 +11,7 @@ export class DndManager {
   win: Window;
   emitter: EventEmitter;
   hitboxEntities: Map<string, Entity>;
-  scrollEntities: Map<string, ScrollEntity>;
+  scrollEntities: Map<string, Entity>;
   resizeObserver: ResizeObserver;
   dragManager: DragManager;
   onDrop: DropHandler;
@@ -78,7 +78,7 @@ export class DndManager {
     this.hitboxEntities.set(id, entity);
   }
 
-  registerScrollEntity(id: string, entity: ScrollEntity, win: Window) {
+  registerScrollEntity(id: string, entity: Entity, win: Window) {
     if (win !== this.win) return;
     this.scrollEntities.set(id, entity);
   }

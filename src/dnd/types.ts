@@ -56,10 +56,6 @@ export interface Entity {
   initial: Hitbox;
 }
 
-export interface ScrollEntity extends Entity {
-  containsPoint(point: Coordinates): boolean;
-}
-
 export interface WithChildren {
   children?: ComponentChildren;
 }

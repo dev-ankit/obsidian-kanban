@@ -2,9 +2,8 @@ import { generateInstanceId } from 'src/components/helpers';
 
 import {
   CoordinateShift,
-  Coordinates,
+  Entity,
   Path,
-  ScrollEntity,
   ScrollState,
   Side,
   initialScrollShift,
@@ -42,10 +41,10 @@ export class ScrollManager {
   observer: IntersectionObserver;
   observerHandlers: Map<string, IntersectionObserverHandler>;
 
-  top: ScrollEntity;
-  right: ScrollEntity;
-  bottom: ScrollEntity;
-  left: ScrollEntity;
+  top: Entity;
+  right: Entity;
+  bottom: Entity;
+  left: Entity;
 
   scrollFrame: number = 0;
   scrollFrameRequested = false;
@@ -322,26 +321,12 @@ export class ScrollManager {
     };
   }
 
-  containsPoint(point: Coordinates): boolean {
-    const rect = this.scrollEl.getBoundingClientRect();
-    return (
-      point.x >= rect.left &&
-      point.x < rect.right &&
-      point.y >= rect.top &&
-      point.y < rect.bottom &&
-      (!this.parent || this.parent.containsPoint(point))
-    );
-  }
-
-  createScrollEntity(side: Side): ScrollEntity {
+  createScrollEntity(side: Side): Entity {
     const manager = this;
 
     return {
       scopeId: this.scopeId,
       entityId: manager.getId(side),
-      containsPoint(point) {
-        return manager.containsPoint(point);
-      },
       initial: calculateScrollHitbox(
         this.scrollEl.getBoundingClientRect(),
         this.parent?.scrollState || initialScrollState,
