@@ -18,6 +18,7 @@ export interface BaseFormat {
   boardToMd(board: Board): string;
   mdToBoard(md: string): Board;
   reparseBoard(): Board;
+  refreshFileMetadata(): Board;
 }
 
 export const completeString = `**${t('Complete')}**`;

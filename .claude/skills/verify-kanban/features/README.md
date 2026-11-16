@@ -59,3 +59,5 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [View modes](./view-modes.md): board, table and list layouts, and switching between markdown and Kanban.
 
 - [Settings](./settings.md): searchable folder/template selection, inherited defaults, and large-vault opening time.
+
+- [Large-board performance](./performance.md): profile split-note typing, sidebar file drags, and linked metadata refresh.

@@ -348,12 +348,10 @@ export class StateManager {
   }
 
   onFileMetadataChange() {
-    this.reparseBoardFromMd();
-  }
-
-  async reparseBoardFromMd() {
+    if (!this.state || this.hasError()) return;
     try {
-      this.setState(this.getParsedBoard(this.getAView().data), false);
+      const board = this.parser.refreshFileMetadata();
+      if (board !== this.state) this.setState(board, false);
     } catch (e) {
       this.setError(e);
     }

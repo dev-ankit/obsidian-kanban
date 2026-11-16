@@ -1,0 +1,641 @@
+---
+kanban-plugin: board
+---
+
+## Lane 01
+
+- [ ] Typing note
+- [ ] Task 01-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-003
+- [ ] Task 01-004
+- [ ] Task 01-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-006
+- [ ] Task 01-007
+- [ ] Task 01-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-009
+- [ ] Task 01-010
+- [ ] Task 01-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-012
+- [ ] Task 01-013
+- [ ] Task 01-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-015
+- [ ] Task 01-016
+- [ ] Task 01-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-018
+- [ ] Task 01-019
+- [ ] Task 01-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-021
+- [ ] Task 01-022
+- [ ] Task 01-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-024
+- [ ] Task 01-025
+- [ ] Task 01-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-027
+- [ ] Task 01-028
+- [ ] Task 01-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-030
+- [ ] Task 01-031
+- [ ] Task 01-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-033
+- [ ] Task 01-034
+- [ ] Task 01-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-036
+- [ ] Task 01-037
+- [ ] Task 01-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-039
+- [ ] Task 01-040
+- [ ] Task 01-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-042
+- [ ] Task 01-043
+- [ ] Task 01-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-045
+- [ ] Task 01-046
+- [ ] Task 01-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-048
+- [ ] Task 01-049
+- [ ] Task 01-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-051
+- [ ] Task 01-052
+- [ ] Task 01-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-054
+- [ ] Task 01-055
+- [ ] Task 01-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-057
+- [ ] Task 01-058
+- [ ] Task 01-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 01-060
+
+## Lane 02
+
+- [ ] Task 02-001
+- [ ] Task 02-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-003
+- [ ] Task 02-004
+- [ ] Task 02-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-006
+- [ ] Task 02-007
+- [ ] Task 02-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-009
+- [ ] Task 02-010
+- [ ] Task 02-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-012
+- [ ] Task 02-013
+- [ ] Task 02-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-015
+- [ ] Task 02-016
+- [ ] Task 02-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-018
+- [ ] Task 02-019
+- [ ] Task 02-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-021
+- [ ] Task 02-022
+- [ ] Task 02-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-024
+- [ ] Task 02-025
+- [ ] Task 02-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-027
+- [ ] Task 02-028
+- [ ] Task 02-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-030
+- [ ] Task 02-031
+- [ ] Task 02-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-033
+- [ ] Task 02-034
+- [ ] Task 02-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-036
+- [ ] Task 02-037
+- [ ] Task 02-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-039
+- [ ] Task 02-040
+- [ ] Task 02-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-042
+- [ ] Task 02-043
+- [ ] Task 02-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-045
+- [ ] Task 02-046
+- [ ] Task 02-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-048
+- [ ] Task 02-049
+- [ ] Task 02-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-051
+- [ ] Task 02-052
+- [ ] Task 02-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-054
+- [ ] Task 02-055
+- [ ] Task 02-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-057
+- [ ] Task 02-058
+- [ ] Task 02-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 02-060
+
+## Lane 03
+
+- [ ] Task 03-001
+- [ ] Task 03-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-003
+- [ ] Task 03-004
+- [ ] Task 03-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-006
+- [ ] Task 03-007
+- [ ] Task 03-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-009
+- [ ] Task 03-010
+- [ ] Task 03-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-012
+- [ ] Task 03-013
+- [ ] Task 03-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-015
+- [ ] Task 03-016
+- [ ] Task 03-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-018
+- [ ] Task 03-019
+- [ ] Task 03-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-021
+- [ ] Task 03-022
+- [ ] Task 03-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-024
+- [ ] Task 03-025
+- [ ] Task 03-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-027
+- [ ] Task 03-028
+- [ ] Task 03-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-030
+- [ ] Task 03-031
+- [ ] Task 03-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-033
+- [ ] Task 03-034
+- [ ] Task 03-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-036
+- [ ] Task 03-037
+- [ ] Task 03-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-039
+- [ ] Task 03-040
+- [ ] Task 03-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-042
+- [ ] Task 03-043
+- [ ] Task 03-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-045
+- [ ] Task 03-046
+- [ ] Task 03-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-048
+- [ ] Task 03-049
+- [ ] Task 03-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-051
+- [ ] Task 03-052
+- [ ] Task 03-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-054
+- [ ] Task 03-055
+- [ ] Task 03-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-057
+- [ ] Task 03-058
+- [ ] Task 03-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 03-060
+
+## Lane 04
+
+- [ ] Task 04-001
+- [ ] Task 04-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-003
+- [ ] Task 04-004
+- [ ] Task 04-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-006
+- [ ] Task 04-007
+- [ ] Task 04-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-009
+- [ ] Task 04-010
+- [ ] Task 04-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-012
+- [ ] Task 04-013
+- [ ] Task 04-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-015
+- [ ] Task 04-016
+- [ ] Task 04-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-018
+- [ ] Task 04-019
+- [ ] Task 04-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-021
+- [ ] Task 04-022
+- [ ] Task 04-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-024
+- [ ] Task 04-025
+- [ ] Task 04-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-027
+- [ ] Task 04-028
+- [ ] Task 04-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-030
+- [ ] Task 04-031
+- [ ] Task 04-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-033
+- [ ] Task 04-034
+- [ ] Task 04-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-036
+- [ ] Task 04-037
+- [ ] Task 04-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-039
+- [ ] Task 04-040
+- [ ] Task 04-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-042
+- [ ] Task 04-043
+- [ ] Task 04-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-045
+- [ ] Task 04-046
+- [ ] Task 04-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-048
+- [ ] Task 04-049
+- [ ] Task 04-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-051
+- [ ] Task 04-052
+- [ ] Task 04-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-054
+- [ ] Task 04-055
+- [ ] Task 04-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-057
+- [ ] Task 04-058
+- [ ] Task 04-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 04-060
+
+## Lane 05
+
+- [ ] Task 05-001
+- [ ] Task 05-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-003
+- [ ] Task 05-004
+- [ ] Task 05-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-006
+- [ ] Task 05-007
+- [ ] Task 05-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-009
+- [ ] Task 05-010
+- [ ] Task 05-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-012
+- [ ] Task 05-013
+- [ ] Task 05-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-015
+- [ ] Task 05-016
+- [ ] Task 05-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-018
+- [ ] Task 05-019
+- [ ] Task 05-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-021
+- [ ] Task 05-022
+- [ ] Task 05-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-024
+- [ ] Task 05-025
+- [ ] Task 05-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-027
+- [ ] Task 05-028
+- [ ] Task 05-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-030
+- [ ] Task 05-031
+- [ ] Task 05-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-033
+- [ ] Task 05-034
+- [ ] Task 05-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-036
+- [ ] Task 05-037
+- [ ] Task 05-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-039
+- [ ] Task 05-040
+- [ ] Task 05-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-042
+- [ ] Task 05-043
+- [ ] Task 05-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-045
+- [ ] Task 05-046
+- [ ] Task 05-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-048
+- [ ] Task 05-049
+- [ ] Task 05-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-051
+- [ ] Task 05-052
+- [ ] Task 05-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-054
+- [ ] Task 05-055
+- [ ] Task 05-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-057
+- [ ] Task 05-058
+- [ ] Task 05-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 05-060
+
+## Lane 06
+
+- [ ] Task 06-001
+- [ ] Task 06-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-003
+- [ ] Task 06-004
+- [ ] Task 06-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-006
+- [ ] Task 06-007
+- [ ] Task 06-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-009
+- [ ] Task 06-010
+- [ ] Task 06-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-012
+- [ ] Task 06-013
+- [ ] Task 06-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-015
+- [ ] Task 06-016
+- [ ] Task 06-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-018
+- [ ] Task 06-019
+- [ ] Task 06-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-021
+- [ ] Task 06-022
+- [ ] Task 06-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-024
+- [ ] Task 06-025
+- [ ] Task 06-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-027
+- [ ] Task 06-028
+- [ ] Task 06-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-030
+- [ ] Task 06-031
+- [ ] Task 06-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-033
+- [ ] Task 06-034
+- [ ] Task 06-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-036
+- [ ] Task 06-037
+- [ ] Task 06-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-039
+- [ ] Task 06-040
+- [ ] Task 06-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-042
+- [ ] Task 06-043
+- [ ] Task 06-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-045
+- [ ] Task 06-046
+- [ ] Task 06-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-048
+- [ ] Task 06-049
+- [ ] Task 06-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-051
+- [ ] Task 06-052
+- [ ] Task 06-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-054
+- [ ] Task 06-055
+- [ ] Task 06-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-057
+- [ ] Task 06-058
+- [ ] Task 06-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 06-060
+
+## Lane 07
+
+- [ ] Task 07-001
+- [ ] Task 07-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-003
+- [ ] Task 07-004
+- [ ] Task 07-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-006
+- [ ] Task 07-007
+- [ ] Task 07-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-009
+- [ ] Task 07-010
+- [ ] Task 07-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-012
+- [ ] Task 07-013
+- [ ] Task 07-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-015
+- [ ] Task 07-016
+- [ ] Task 07-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-018
+- [ ] Task 07-019
+- [ ] Task 07-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-021
+- [ ] Task 07-022
+- [ ] Task 07-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-024
+- [ ] Task 07-025
+- [ ] Task 07-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-027
+- [ ] Task 07-028
+- [ ] Task 07-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-030
+- [ ] Task 07-031
+- [ ] Task 07-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-033
+- [ ] Task 07-034
+- [ ] Task 07-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-036
+- [ ] Task 07-037
+- [ ] Task 07-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-039
+- [ ] Task 07-040
+- [ ] Task 07-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-042
+- [ ] Task 07-043
+- [ ] Task 07-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-045
+- [ ] Task 07-046
+- [ ] Task 07-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-048
+- [ ] Task 07-049
+- [ ] Task 07-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-051
+- [ ] Task 07-052
+- [ ] Task 07-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-054
+- [ ] Task 07-055
+- [ ] Task 07-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-057
+- [ ] Task 07-058
+- [ ] Task 07-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 07-060
+
+## Lane 08
+
+- [ ] Task 08-001
+- [ ] Task 08-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-003
+- [ ] Task 08-004
+- [ ] Task 08-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-006
+- [ ] Task 08-007
+- [ ] Task 08-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-009
+- [ ] Task 08-010
+- [ ] Task 08-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-012
+- [ ] Task 08-013
+- [ ] Task 08-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-015
+- [ ] Task 08-016
+- [ ] Task 08-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-018
+- [ ] Task 08-019
+- [ ] Task 08-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-021
+- [ ] Task 08-022
+- [ ] Task 08-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-024
+- [ ] Task 08-025
+- [ ] Task 08-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-027
+- [ ] Task 08-028
+- [ ] Task 08-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-030
+- [ ] Task 08-031
+- [ ] Task 08-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-033
+- [ ] Task 08-034
+- [ ] Task 08-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-036
+- [ ] Task 08-037
+- [ ] Task 08-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-039
+- [ ] Task 08-040
+- [ ] Task 08-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-042
+- [ ] Task 08-043
+- [ ] Task 08-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-045
+- [ ] Task 08-046
+- [ ] Task 08-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-048
+- [ ] Task 08-049
+- [ ] Task 08-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-051
+- [ ] Task 08-052
+- [ ] Task 08-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-054
+- [ ] Task 08-055
+- [ ] Task 08-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-057
+- [ ] Task 08-058
+- [ ] Task 08-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 08-060
+
+## Lane 09
+
+- [ ] Task 09-001
+- [ ] Task 09-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-003
+- [ ] Task 09-004
+- [ ] Task 09-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-006
+- [ ] Task 09-007
+- [ ] Task 09-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-009
+- [ ] Task 09-010
+- [ ] Task 09-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-012
+- [ ] Task 09-013
+- [ ] Task 09-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-015
+- [ ] Task 09-016
+- [ ] Task 09-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-018
+- [ ] Task 09-019
+- [ ] Task 09-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-021
+- [ ] Task 09-022
+- [ ] Task 09-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-024
+- [ ] Task 09-025
+- [ ] Task 09-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-027
+- [ ] Task 09-028
+- [ ] Task 09-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-030
+- [ ] Task 09-031
+- [ ] Task 09-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-033
+- [ ] Task 09-034
+- [ ] Task 09-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-036
+- [ ] Task 09-037
+- [ ] Task 09-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-039
+- [ ] Task 09-040
+- [ ] Task 09-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-042
+- [ ] Task 09-043
+- [ ] Task 09-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-045
+- [ ] Task 09-046
+- [ ] Task 09-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-048
+- [ ] Task 09-049
+- [ ] Task 09-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-051
+- [ ] Task 09-052
+- [ ] Task 09-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-054
+- [ ] Task 09-055
+- [ ] Task 09-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-057
+- [ ] Task 09-058
+- [ ] Task 09-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 09-060
+
+## Lane 10
+
+- [ ] Task 10-001
+- [ ] Task 10-002 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-003
+- [ ] Task 10-004
+- [ ] Task 10-005 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-006
+- [ ] Task 10-007
+- [ ] Task 10-008 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-009
+- [ ] Task 10-010
+- [ ] Task 10-011 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-012
+- [ ] Task 10-013
+- [ ] Task 10-014 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-015
+- [ ] Task 10-016
+- [ ] Task 10-017 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-018
+- [ ] Task 10-019
+- [ ] Task 10-020 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-021
+- [ ] Task 10-022
+- [ ] Task 10-023 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-024
+- [ ] Task 10-025
+- [ ] Task 10-026 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-027
+- [ ] Task 10-028
+- [ ] Task 10-029 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-030
+- [ ] Task 10-031
+- [ ] Task 10-032 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-033
+- [ ] Task 10-034
+- [ ] Task 10-035 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-036
+- [ ] Task 10-037
+- [ ] Task 10-038 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-039
+- [ ] Task 10-040
+- [ ] Task 10-041 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-042
+- [ ] Task 10-043
+- [ ] Task 10-044 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-045
+- [ ] Task 10-046
+- [ ] Task 10-047 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-048
+- [ ] Task 10-049
+- [ ] Task 10-050 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-051
+- [ ] Task 10-052
+- [ ] Task 10-053 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-054
+- [ ] Task 10-055
+- [ ] Task 10-056 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-057
+- [ ] Task 10-058
+- [ ] Task 10-059 [[Reference]] #work @{2026-12-01}
+- [ ] Task 10-060
+
+%% kanban:settings
+
+```
+{"kanban-plugin":"board"}
+```
+
+%%
