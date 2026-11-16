@@ -16,14 +16,7 @@ import {
 import { hydrateBoard, hydratePostOp } from './helpers/hydrateBoard';
 import { parseMarkdown } from './parseMarkdown';
 
-const generatedKeys: Array<string | number> = [
-  'id',
-  'date',
-  'time',
-  'titleSearch',
-  'titleSearchRaw',
-  'file',
-];
+const generatedKeys: Array<string | number> = ['id', 'date', 'time', 'titleSearch', 'file'];
 
 export class ListFormat implements BaseFormat {
   stateManager: StateManager;

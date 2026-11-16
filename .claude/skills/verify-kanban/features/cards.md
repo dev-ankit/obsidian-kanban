@@ -10,6 +10,8 @@ lane's `##` heading.
 - `card-add-blank` ignores a submission that is only whitespace.
 - `card-edit` edits a card in place by double-clicking it.
 - `card-duplicate-link` duplicates a card without sharing its block ID or copied link.
+- `card-html-roundtrip` preserves literal `<br>` in table cells, ordinary text and inline code when
+  creating, editing, saving and reopening a card (#1024).
 - `card-delete` removes a card from the card menu.
 - `card-archive` moves a card under `## Archive` from the card menu.
 - `card-archive-completed` archives every checked card from the board header.
@@ -64,6 +66,18 @@ Preconditions:
   `Kanban: Toggle between Kanban and markdown mode`. Copy both linked cards' links again;
   each still uses its own saved ID. Finish with `$K errors`.
 - **Proof.** `snap` before and after each step, then `$K errors`.
+
+- **HTML round trip.** Launch with `--fixture parser-roundtrip`. On `Board.md`, double-click the
+  `Table roundtrip` card's title, then inspect the editor's source: the cell still contains
+  `first<br>second` on one line. Append text to the card and submit with Enter. On disk the entire
+  row `| Alpha | first<br>second |` remains on one line. Repeat through the card menu's `Edit card`
+  entry. Ordinary text `Ordinary first<br>second` and inline code `` Literal `<br>` `` also survive
+  an unrelated card edit unchanged.
+- **Create a table.** Add a card with `$K type $'New table\n\n| Name | Detail |\n| --- | --- |\n| Alpha | first<br>second |'`,
+  Enter, Escape. `$K file --expect '| Alpha | first<br>second |'` succeeds; inspect both table rows
+  in the file, then double-click the new card and verify its editor still contains the literal tag.
+  Submit, switch to markdown with the header button and back with the Kanban palette command.
+  Both tables still render with two cells in their data row, and a line break inside the second cell.
 
 ## Gotchas
 
