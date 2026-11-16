@@ -49,4 +49,6 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [New note from card](./new-note-from-card.md): turn a card into a linked note in the right folder,
   keeping dates and times on the card.
 - [Lanes](./lanes.md): add a list, collapse it, and keep CJK titles upright when collapsed.
+- [Board integrity](./board-integrity.md): refuse to save over content the board can't represent,
+  explain which lines, and recover once they're fixed.
 - [View modes](./view-modes.md): board, table and list layouts, and switching between markdown and Kanban.

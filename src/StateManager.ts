@@ -23,6 +23,7 @@ export class StateManager {
 
   app: App;
   state: Board;
+  private boardGeneration = 0;
   file: TFile;
 
   parser: BaseFormat;
@@ -65,7 +66,8 @@ export class StateManager {
       await view.prerender(this.state);
     }
 
-    view.populateViewState(this.state.data.settings);
+    // Unset if this view's parse was superseded before any board was installed.
+    if (this.state) view.populateViewState(this.state.data.settings);
   }
 
   unregisterView(view: KanbanView) {
@@ -87,9 +89,13 @@ export class StateManager {
   }
 
   async newBoard(view: KanbanView, md: string) {
+    const generation = ++this.boardGeneration;
     try {
       const board = this.getParsedBoard(md);
-      await view.prerender(board);
+      // An errored board renders nothing, so it's installed without waiting and is never stale.
+      if (!board.data.errors.length) await view.prerender(board);
+      // A newer parse started while this one was rendering; keep the newer one.
+      if (generation !== this.boardGeneration) return;
       this.setState(board, false);
     } catch (e) {
       this.setError(e);
@@ -129,7 +135,6 @@ export class StateManager {
         });
         this.viewSet.forEach((view) => view.initHeaderButtons());
       } catch (e) {
-        console.error(e);
         this.setError(e);
       }
     }
@@ -141,19 +146,12 @@ export class StateManager {
       const newState = typeof state === 'function' ? state(this.state) : state;
       const newSettings = newState?.data.settings;
 
+      this.state = newState;
+      this.compileSettings();
+
+      // Settings that change how cards render: re-parse the new board's cards with them.
       if (oldSettings && newSettings && shouldRefreshBoard(oldSettings, newSettings)) {
-        this.state = update(this.state, {
-          data: {
-            settings: {
-              $set: newSettings,
-            },
-          },
-        });
-        this.compileSettings();
         this.state = this.parser.reparseBoard();
-      } else {
-        this.state = newState;
-        this.compileSettings();
       }
 
       this.viewSet.forEach((view) => {
@@ -175,7 +173,6 @@ export class StateManager {
         });
       }
     } catch (e) {
-      console.error(e);
       this.setError(e);
     }
   }
@@ -327,7 +324,7 @@ export class StateManager {
       board = update(board, {
         data: {
           errors: {
-            $push: [{ description: e.toString(), stack: e.stack }],
+            $push: [{ description: e.message ?? String(e) }],
           },
         },
       });
@@ -337,11 +334,12 @@ export class StateManager {
   }
 
   setError(e: Error) {
+    console.error(e);
     this.setState(
       update(this.state, {
         data: {
           errors: {
-            $push: [{ description: e.toString(), stack: e.stack }],
+            $push: [{ description: e.message ?? String(e) }],
           },
         },
       }),
@@ -357,7 +355,6 @@ export class StateManager {
     try {
       this.setState(this.getParsedBoard(this.getAView().data), false);
     } catch (e) {
-      console.error(e);
       this.setError(e);
     }
   }

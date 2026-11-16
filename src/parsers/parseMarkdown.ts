@@ -36,30 +36,25 @@ function extractFrontmatter(md: string) {
   }
 }
 
-function extractSettingsFooter(md: string) {
-  let hasEntered = false;
-  let openTickCount = 0;
-  let settingsEnd = -1;
+// The settings footer settingsToCodeblock writes, at the very end of the file (blank lines inside
+// it and a missing closing %% are tolerated: saving rewrites it anyway). Returns where it starts.
+function extractSettingsFooter(md: string): { settings: Record<string, any>; start: number } {
+  // Only a marker at the start of a line counts (a setting value may contain the text). The body
+  // ends at its first closing fence, and the footer must reach the end of the file.
+  const marker = '%% kanban:settings';
+  const lineStart = md.lastIndexOf('\n' + marker);
+  const start = lineStart >= 0 ? lineStart + 1 : md.startsWith(marker) ? 0 : -1;
+  const match =
+    start >= 0 &&
+    md
+      .slice(start)
+      .match(
+        /^%% kanban:settings[ \t]*\r?\n\s*```[^\r\n]*\r?\n((?:(?!\r?\n```)[\s\S])*)\r?\n```(?:\s*\n%%)?\s*$/
+      );
 
-  for (let i = md.length - 1; i >= 0; i--) {
-    if (!hasEntered && /[`%\n\r]/.test(md[i])) {
-      if (md[i] === '`') {
-        openTickCount++;
-
-        if (openTickCount === 3) {
-          hasEntered = true;
-          settingsEnd = i - 1;
-        }
-      }
-      continue;
-    } else if (!hasEntered) {
-      return {};
-    }
-
-    if (md[i] === '`' && md[i - 1] === '`' && md[i - 2] === '`' && /[\r\n]/.test(md[i - 3])) {
-      return JSON.parse(md.slice(i + 1, settingsEnd).trim());
-    }
-  }
+  return match
+    ? { settings: JSON.parse(match[1].trim()), start }
+    : { settings: {}, start: md.length };
 }
 
 function getExtensions(stateManager: StateManager) {
@@ -166,7 +161,7 @@ function getMdastExtensions(stateManager: StateManager) {
 
 export function parseMarkdown(stateManager: StateManager, md: string) {
   const mdFrontmatter = extractFrontmatter(md);
-  const mdSettings = extractSettingsFooter(md);
+  const { settings: mdSettings, start: footerStart } = extractSettingsFooter(md);
   const settings = { ...mdSettings };
   const fileFrontmatter: Record<string, any> = {};
 
@@ -187,7 +182,8 @@ export function parseMarkdown(stateManager: StateManager, md: string) {
   return {
     settings,
     frontmatter: fileFrontmatter,
-    ast: fromMarkdown(md, {
+    // Only the board part: the footer isn't board content. Offsets stay valid for the full text.
+    ast: fromMarkdown(md.slice(0, footerStart), {
       extensions: [frontmatter(['yaml']), ...getExtensions(stateManager)],
       mdastExtensions: [frontmatterFromMarkdown(['yaml']), ...getMdastExtensions(stateManager)],
     }),

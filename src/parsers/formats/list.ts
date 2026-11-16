@@ -1,7 +1,6 @@
 import update from 'immutability-helper';
 import { Content, List, Parent, Root } from 'mdast';
 import { ListItem } from 'mdast-util-from-markdown/lib';
-import { toString } from 'mdast-util-to-string';
 import { stringifyYaml } from 'obsidian';
 import { KanbanSettings } from 'src/Settings';
 import { StateManager } from 'src/StateManager';
@@ -17,18 +16,12 @@ import {
 } from 'src/components/types';
 import { laneTitleWithMaxItems } from 'src/helpers';
 import { defaultSort } from 'src/helpers/util';
-import { t } from 'src/lang/helpers';
+import { t, tAll } from 'src/lang/helpers';
 import { visit } from 'unist-util-visit';
 
 import { archiveString, completeString, settingsToCodeblock } from '../common';
 import { DateNode, FileNode, TimeNode, ValueNode } from '../extensions/types';
-import {
-  ContentBoundary,
-  getNextOfType,
-  getNodeContentBoundary,
-  getPrevSibling,
-  getStringFromBoundary,
-} from '../helpers/ast';
+import { ContentBoundary, getNodeContentBoundary, getStringFromBoundary } from '../helpers/ast';
 import { hydrateItem, preprocessTitle } from '../helpers/hydrateBoard';
 import { extractInlineFields, taskFields } from '../helpers/inlineMetadata';
 import {
@@ -227,14 +220,43 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   return itemData;
 }
 
-function isArchiveLane(child: Content, children: Content[], currentIndex: number) {
-  if (child.type !== 'heading' || toString(child, { includeImageAlt: false }) !== t('Archive')) {
-    return false;
-  }
+// Markers are matched in every language so a board saved under another language still opens.
+const completeMarkers = tAll('Complete').map((s) => `**${s}**`);
+const archiveTitles = tAll('Archive');
 
-  const prev = getPrevSibling(children, currentIndex);
+// Every edit rewrites the whole file from board state, so a block the board doesn't represent
+// would be deleted on the first edit. List up to five of them for the error message.
+function describeUnmodeledContent(md: string, nodes: Content[]) {
+  const lines = nodes.slice(0, 5).map((node) => {
+    const text = md
+      .slice(node.position.start.offset, node.position.end.offset)
+      .split(/\r?\n/)[0]
+      .trim();
+    return `  line ${node.position.start.line}: ${text.length > 80 ? text.slice(0, 79) + '…' : text}`;
+  });
+  if (nodes.length > 5) lines.push(`  …and ${nodes.length - 5} more`);
 
-  return prev && prev.type === 'thematicBreak';
+  // A settings block that isn't the last thing in the file shows up here too. It needs moving,
+  // not deleting: deleting it would lose the board's settings.
+  const hasMisplacedFooter = nodes.some((node) =>
+    md.startsWith('%% kanban:settings', node.position.start.offset)
+  );
+
+  return [
+    t(
+      "This file has content Kanban can't show as part of the board, so Kanban won't edit it: saving would delete that content. Your file hasn't been changed."
+    ),
+    '',
+    ...lines,
+    '',
+    hasMisplacedFooter
+      ? t(
+          'Kanban\'s settings block (from "%% kanban:settings" to "%%") must be the last thing in the file. Open the file as markdown and move it to the end.'
+        )
+      : t(
+          'To fix it, open the file as markdown and turn these lines into "## " lane headings or "- " cards, move them to another note, or delete them.'
+        ),
+  ].join('\n');
 }
 
 export function astToUnhydratedBoard(
@@ -246,77 +268,75 @@ export function astToUnhydratedBoard(
 ): Board {
   const lanes: Lane[] = [];
   const archive: Item[] = [];
+  // Root nodes the board represents; anything else would be lost when the board is saved.
+  const represented = new Set<Content>();
+  const source = (node: Content) =>
+    md.slice(node.position.start.offset, node.position.end.offset).trim();
+
   root.children.forEach((child, index) => {
-    if (child.type === 'heading') {
-      const isArchive = isArchiveLane(child, root.children, index);
-      const headingBoundary = getNodeContentBoundary(child as Parent);
-      const title = getStringFromBoundary(md, headingBoundary);
+    if (child.type === 'yaml') {
+      represented.add(child);
+      return;
+    }
+    if (child.type !== 'heading') return;
 
-      let shouldMarkItemsComplete = false;
+    represented.add(child);
+    const title = getStringFromBoundary(md, getNodeContentBoundary(child as Parent));
 
-      const list = getNextOfType(root.children, index, 'list', (child) => {
-        if (child.type === 'heading') return false;
-
-        if (child.type === 'paragraph') {
-          const childStr = toString(child);
-
-          if (childStr.startsWith('%% kanban:settings')) {
-            return false;
-          }
-
-          if (childStr === t('Complete')) {
-            shouldMarkItemsComplete = true;
-            return true;
-          }
-        }
-
-        return true;
-      });
-
-      if (isArchive && list) {
-        archive.push(
-          ...(list as List).children.map((listItem) => {
-            return {
-              ...ItemTemplate,
-              id: generateInstanceId(),
-              data: listItemToItemData(stateManager, md, listItem),
-            };
-          })
-        );
-
-        return;
+    // The lane's cards are the first list before the next heading; a Complete marker may precede it.
+    let list: List | null = null;
+    let completeMarker: Content | null = null;
+    for (let i = index + 1; i < root.children.length; i++) {
+      const next = root.children[i];
+      if (next.type === 'heading') break;
+      if (next.type === 'list') {
+        list = next as List;
+        break;
       }
-
-      if (!list) {
-        lanes.push({
-          ...LaneTemplate,
-          children: [],
-          id: generateInstanceId(),
-          data: {
-            ...parseLaneTitle(title),
-            shouldMarkItemsComplete,
-          },
-        });
-      } else {
-        lanes.push({
-          ...LaneTemplate,
-          children: (list as List).children.map((listItem) => {
-            const data = listItemToItemData(stateManager, md, listItem);
-            return {
-              ...ItemTemplate,
-              id: generateInstanceId(),
-              data,
-            };
-          }),
-          id: generateInstanceId(),
-          data: {
-            ...parseLaneTitle(title),
-            shouldMarkItemsComplete,
-          },
-        });
+      if (next.type === 'paragraph' && !completeMarker && completeMarkers.includes(source(next))) {
+        completeMarker = next;
       }
     }
+
+    // The archive is `***` then a heading that is exactly the Archive title (plain text: a link or
+    // image in it would be lost, since the archive heading is rewritten on save). It may be empty.
+    const prev = index > 0 ? root.children[index - 1] : null;
+    const heading = (child as Parent).children;
+    const isArchive =
+      prev?.type === 'thematicBreak' &&
+      heading.length === 1 &&
+      heading[0].type === 'text' &&
+      archiveTitles.includes(heading[0].value.trim());
+
+    if (list) represented.add(list);
+    const items = (list?.children ?? []).map((listItem) => ({
+      ...ItemTemplate,
+      id: generateInstanceId(),
+      data: listItemToItemData(stateManager, md, listItem),
+    }));
+
+    if (isArchive) {
+      represented.add(prev);
+      archive.push(...items);
+      return;
+    }
+
+    if (completeMarker) represented.add(completeMarker);
+    lanes.push({
+      ...LaneTemplate,
+      children: items,
+      id: generateInstanceId(),
+      data: {
+        ...parseLaneTitle(title),
+        shouldMarkItemsComplete: !!completeMarker,
+      },
+    });
   });
+
+  const unmodeled = root.children.filter((node) => !represented.has(node));
+  if (unmodeled.length) {
+    throw new Error(describeUnmodeledContent(md, unmodeled));
+  }
 
   return {
     ...BoardTemplate,

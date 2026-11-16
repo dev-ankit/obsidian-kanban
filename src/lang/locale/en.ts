@@ -30,6 +30,12 @@ const en = {
 
   // parser.ts
   Complete: 'Complete',
+  "This file has content Kanban can't show as part of the board, so Kanban won't edit it: saving would delete that content. Your file hasn't been changed.":
+    "This file has content Kanban can't show as part of the board, so Kanban won't edit it: saving would delete that content. Your file hasn't been changed.",
+  'To fix it, open the file as markdown and turn these lines into "## " lane headings or "- " cards, move them to another note, or delete them.':
+    'To fix it, open the file as markdown and turn these lines into "## " lane headings or "- " cards, move them to another note, or delete them.',
+  'Kanban\'s settings block (from "%% kanban:settings" to "%%") must be the last thing in the file. Open the file as markdown and move it to the end.':
+    'Kanban\'s settings block (from "%% kanban:settings" to "%%") must be the last thing in the file. Open the file as markdown and move it to the end.',
   Archive: 'Archive',
   'Invalid Kanban file: problems parsing frontmatter':
     'Invalid Kanban file: problems parsing frontmatter',
