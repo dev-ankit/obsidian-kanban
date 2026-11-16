@@ -39,21 +39,22 @@ function extractFrontmatter(md: string) {
 // The settings footer settingsToCodeblock writes, at the very end of the file (blank lines inside
 // it and a missing closing %% are tolerated: saving rewrites it anyway). Returns where it starts.
 function extractSettingsFooter(md: string): { settings: Record<string, any>; start: number } {
-  const footerRegEx =
-    /^%% kanban:settings[ \t]*\r?\n\s*```[^\r\n]*\r?\n([\s\S]*?)\r?\n```[ \t]*(?:\s*\r?\n%%)?\s*$/;
-  // Only a marker at the start of a line counts (a setting value may contain the text), and the
-  // last one that forms a footer reaching the end of the file wins.
-  const markerRegEx = /(?:^|\n)%% kanban:settings/g;
-  const starts: number[] = [];
-  for (let m = markerRegEx.exec(md); m; m = markerRegEx.exec(md)) {
-    starts.push(m[0].startsWith('\n') ? m.index + 1 : m.index);
-  }
-  for (const start of starts.reverse()) {
-    const match = md.slice(start).match(footerRegEx);
-    if (match) return { settings: JSON.parse(match[1].trim()), start };
-  }
+  // Only a marker at the start of a line counts (a setting value may contain the text). The body
+  // ends at its first closing fence, and the footer must reach the end of the file.
+  const marker = '%% kanban:settings';
+  const lineStart = md.lastIndexOf('\n' + marker);
+  const start = lineStart >= 0 ? lineStart + 1 : md.startsWith(marker) ? 0 : -1;
+  const match =
+    start >= 0 &&
+    md
+      .slice(start)
+      .match(
+        /^%% kanban:settings[ \t]*\r?\n\s*```[^\r\n]*\r?\n((?:(?!\r?\n```)[\s\S])*)\r?\n```(?:\s*\n%%)?\s*$/
+      );
 
-  return { settings: {}, start: md.length };
+  return match
+    ? { settings: JSON.parse(match[1].trim()), start }
+    : { settings: {}, start: md.length };
 }
 
 function getExtensions(stateManager: StateManager) {

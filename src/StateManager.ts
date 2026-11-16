@@ -135,7 +135,6 @@ export class StateManager {
         });
         this.viewSet.forEach((view) => view.initHeaderButtons());
       } catch (e) {
-        console.error(e);
         this.setError(e);
       }
     }
@@ -174,7 +173,6 @@ export class StateManager {
         });
       }
     } catch (e) {
-      console.error(e);
       this.setError(e);
     }
   }
@@ -357,7 +355,6 @@ export class StateManager {
     try {
       this.setState(this.getParsedBoard(this.getAView().data), false);
     } catch (e) {
-      console.error(e);
       this.setError(e);
     }
   }

@@ -296,6 +296,9 @@ export class KanbanView extends TextFileView implements HoverParent {
 
   getBoardSettings() {
     const stateManager = this.plugin.stateManagers.get(this.file);
+    // A blocked board has only default settings; editing them could overwrite the real ones once
+    // the file is fixed.
+    if (stateManager.hasError()) return;
     const board = stateManager.state;
 
     new SettingsModal(

@@ -239,7 +239,7 @@ function describeUnmodeledContent(md: string, nodes: Content[]) {
   // A settings block that isn't the last thing in the file shows up here too. It needs moving,
   // not deleting: deleting it would lose the board's settings.
   const hasMisplacedFooter = nodes.some((node) =>
-    md.slice(node.position.start.offset).startsWith('%% kanban:settings')
+    md.startsWith('%% kanban:settings', node.position.start.offset)
   );
 
   return [
@@ -308,29 +308,23 @@ export function astToUnhydratedBoard(
       heading[0].type === 'text' &&
       archiveTitles.includes(heading[0].value.trim());
 
+    if (list) represented.add(list);
+    const items = (list?.children ?? []).map((listItem) => ({
+      ...ItemTemplate,
+      id: generateInstanceId(),
+      data: listItemToItemData(stateManager, md, listItem),
+    }));
+
     if (isArchive) {
       represented.add(prev);
-      if (list) represented.add(list);
-      archive.push(
-        ...(list?.children ?? []).map((listItem) => ({
-          ...ItemTemplate,
-          id: generateInstanceId(),
-          data: listItemToItemData(stateManager, md, listItem),
-        }))
-      );
+      archive.push(...items);
       return;
     }
 
-    if (list) represented.add(list);
     if (completeMarker) represented.add(completeMarker);
-
     lanes.push({
       ...LaneTemplate,
-      children: (list?.children ?? []).map((listItem) => ({
-        ...ItemTemplate,
-        id: generateInstanceId(),
-        data: listItemToItemData(stateManager, md, listItem),
-      })),
+      children: items,
       id: generateInstanceId(),
       data: {
         ...parseLaneTitle(title),
