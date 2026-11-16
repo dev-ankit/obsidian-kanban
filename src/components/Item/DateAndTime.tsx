@@ -47,19 +47,9 @@ export function RelativeDate({ item, stateManager }: DateProps) {
 
   if (relativeDate === null) return null;
 
+  // A label, not a chip: it takes the rule's text color and nothing else.
   return (
-    <span
-      className={classcat([
-        c('item-metadata-date-relative'),
-        { [c('date')]: !!dateColor, 'has-background': !!dateColor?.backgroundColor },
-      ])}
-      style={
-        dateColor && {
-          '--date-color': dateColor.color,
-          '--date-background-color': dateColor.backgroundColor,
-        }
-      }
-    >
+    <span className={c('item-metadata-date-relative')} style={{ color: dateColor?.color }}>
       {relativeDate}
     </span>
   );
