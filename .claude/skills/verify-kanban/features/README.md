@@ -52,3 +52,5 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 - [Board integrity](./board-integrity.md): refuse to save over content the board can't represent,
   explain which lines, and recover once they're fixed.
 - [View modes](./view-modes.md): board, table and list layouts, and switching between markdown and Kanban.
+
+- [Settings](./settings.md): searchable folder/template selection, inherited defaults, and large-vault opening time.
