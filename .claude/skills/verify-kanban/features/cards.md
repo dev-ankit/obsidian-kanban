@@ -48,6 +48,22 @@ Preconditions:
   Every `[x]` card moves under `## Archive`.
 - **Proof.** `snap` before and after each step, then `$K errors`.
 
+### Archive limit regression (#695)
+
+With a fresh basic fixture, open Obsidian settings (`key Mod+,`), click
+`.vertical-tab-nav-item::Kanban`, and enter `1` in
+`.setting-item::Maximum number of archived cards >> input`. Wait for the global
+settings file to contain `"max-archive-size": 1`, then close settings with Escape.
+Open board settings from `.mod-root .view-action[aria-label="Open board settings"]`,
+enter `-1` in the same field, and check that the input has no `error` class. Wait
+for `file --expect '"max-archive-size":-1'`, then close the modal. Archive
+`Write release notes` and `Plan sprint` through their card menus. Both must remain
+under `## Archive` on disk despite the global limit of one. Reopen board settings:
+`-1` is still displayed. Repeat with a local limit of `1` and a global limit of
+`-1`: after archiving two cards only the newest remains. Capture the input and
+saved archive with `snap`; finish with `errors`. To replace an existing number, use
+`Home`, `Shift+End`, `Backspace`, then `type`.
+
 ## Gotchas
 
 - The fixture hides checkboxes (default setting), so `outline` marks cards with `-` and you can't
