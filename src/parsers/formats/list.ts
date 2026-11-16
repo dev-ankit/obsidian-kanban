@@ -32,7 +32,6 @@ import {
   markRangeForDeletion,
   parseLaneTitle,
   removeBlockId,
-  replaceBrs,
   replaceNewLines,
 } from '../helpers/parser';
 import { parseFragment } from '../parseMarkdown';
@@ -83,7 +82,7 @@ export function listItemToItemData(stateManager: StateManager, md: string, item:
   );
 
   const itemData: ItemData = {
-    titleRaw: removeBlockId(dedentNewLines(replaceBrs(itemContent))),
+    titleRaw: removeBlockId(dedentNewLines(itemContent)),
     blockId: undefined,
     title: '',
     titleSearch,
