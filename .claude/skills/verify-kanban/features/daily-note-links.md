@@ -5,6 +5,7 @@ folders with spaces produce usable Markdown destinations (#516).
 
 ## Sub-features
 
+- `daily-link-create` creates missing daily notes with the configured folder, filename and template (#1066).
 - `daily-link-menu` inserts a Markdown link through Add date.
 - `daily-link-editor` inserts the same path through the editor's `@` picker.
 - `daily-link-date-folders` keeps the separators of a date format that has folders in it
@@ -40,10 +41,18 @@ Preconditions:
   link ended in `2026%2F01%2F15.md`.
 - **Proof.** Finish with `$K errors`.
 
+- **Missing daily notes** (`daily-link-create`). Launch `--fixture batch3-dates-links`.
+  Click Linked.md's November 16 date, Markdown.md's November 18 date, and Linked-footer.md's
+  November 17 date. Each opens `Daily/YYYY-MM-DD.md` containing the rendered daily template
+  exactly once. Reopen each link and confirm it opens the same file without appending content.
+  Change Daily Notes' date format in settings to `YYYY/[day-]MM-DD`, then click an unresolved
+  date. The file must be `Daily/2026/day-MM-DD.md` even though the board uses `YYYY-MM-DD`.
+  Reopen the link to check that the custom filename is reused. Existing Markdown destinations
+  must still open the explicitly linked note, including encoded spaces and nested date folders.
+  Capture the note path, content and `snap`; finish with clean `errors`.
+
 ## Gotchas
 
 - Linked dates navigate; they do not open the inline date picker.
-- Kanban currently renders linked dates by resolving their label. A missing note can therefore
-  be created at the vault root even with a correct saved destination. Markdown dates also do not
-  populate the card's date metadata, so its menu still offers Add date. That separate behavior is
-  outside #516's path-encoding fix; use the existing fixture note for navigation verification.
+- Markdown dates do not populate the card's date metadata, so its menu still offers Add date.
+  That parsing limitation is separate from daily-note navigation.

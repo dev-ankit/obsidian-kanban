@@ -198,7 +198,7 @@ export function TableView({
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
+              <tr key={row.id} data-block-id={row.original.item.data.blockId}>
                 {row.getVisibleCells().map((cell) => {
                   return (
                     <td

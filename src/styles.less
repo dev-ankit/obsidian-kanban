@@ -1705,6 +1705,18 @@ body:not(.native-scrollbars) .kanban-plugin__scroll-container::-webkit-scrollbar
     --link-unresolved-decoration-style: unset;
   }
 
+  a.internal-link {
+    color: var(--date-color, var(--link-color));
+
+    &.is-unresolved {
+      color: var(--date-color, var(--link-unresolved-color));
+    }
+
+    &:hover {
+      color: var(--date-color, var(--link-color-hover));
+    }
+  }
+
   > span,
   > a {
     padding-inline: var(--size-2-1);

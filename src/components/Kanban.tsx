@@ -1,7 +1,7 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
@@ -65,6 +65,28 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const dateColors = stateManager.useSetting('date-colors');
   const tagColors = stateManager.useSetting('tag-colors');
   const boardView = view.useViewState(frontmatterKey);
+
+  useLayoutEffect(() => {
+    const navigate = () => {
+      const subpath = view.getEphemeralState().subpath;
+      if (!subpath?.startsWith('#^')) return;
+      const target = rootRef.current?.querySelector<HTMLElement>(
+        `[data-block-id="${CSS.escape(subpath.slice(2))}"]`
+      );
+      if (!target) return;
+      target.scrollIntoView({ block: 'center', inline: 'center' });
+      target.animate(
+        { outline: ['2px solid var(--text-accent)', '2px solid transparent'] },
+        { duration: 1500 }
+      );
+    };
+
+    navigate();
+    view.emitter.on('navigateToBlock', navigate);
+    return () => {
+      view.emitter.off('navigateToBlock', navigate);
+    };
+  }, [view, boardData?.id, boardView]);
 
   const closeLaneForm = useCallback(() => {
     if (boardData?.children.length > 0) {

@@ -1,4 +1,5 @@
-import { Keymap, Menu } from 'obsidian';
+import { Keymap, Menu, TFile, getLinkpath, moment, normalizePath } from 'obsidian';
+import { createDailyNote, getDailyNoteSettings } from 'obsidian-daily-notes-interface';
 import { KanbanView } from 'src/KanbanView';
 
 const noBreakSpace = /\u00A0/g;
@@ -50,13 +51,27 @@ export function bindMarkdownEvents(view: KanbanView) {
     };
   };
 
-  const onLinkClick = (evt: MouseEvent, targetEl: HTMLElement) => {
+  const onLinkClick = async (evt: MouseEvent, targetEl: HTMLElement) => {
     if (evt.button !== 0 && evt.button !== 1) return;
 
     const link = parseLink(targetEl);
     if (!link) return;
 
     evt.preventDefault();
+    const dateStr = targetEl.closest<HTMLElement>('.kanban-plugin__date')?.dataset.date;
+    if (
+      dateStr &&
+      !app.metadataCache.getFirstLinkpathDest(getLinkpath(link.href), view.file.path)
+    ) {
+      const date = moment(dateStr);
+      const { folder, format } = getDailyNoteSettings();
+      const path = normalizePath(`${folder ?? ''}/${date.format(format)}.md`);
+      const file = app.vault.getAbstractFileByPath(path) ?? (await createDailyNote(date));
+      if (file instanceof TFile) {
+        await app.workspace.getLeaf(Keymap.isModEvent(evt)).openFile(file);
+      }
+      return;
+    }
     app.workspace.openLinkText(link.href, view.file.path, Keymap.isModEvent(evt));
   };
 
