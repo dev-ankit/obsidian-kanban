@@ -16,6 +16,8 @@ lane's `##` heading.
 - `card-delete` removes a card from the card menu.
 - `card-archive` moves a card under `## Archive` from the card menu.
 - `card-archive-completed` archives every checked card from the board header.
+- `card-archive-order` adds cards to the end of the archive from every archive action, so
+  "Maximum number of archived cards" trims the oldest (#1243).
 
 ## How to get to it (user POV)
 
@@ -50,6 +52,17 @@ Preconditions:
   (`$K file --expect '## Archive'`, then read the section).
 - **Archive completed.** `$K click '.workspace-leaf.mod-active .view-action[aria-label="Archive completed cards"]'`.
   Every `[x]` card moves under `## Archive`.
+- **Archive order** (`card-archive-order`, `--fixture archive-order`). On `Board.md`: `card a1`'s
+  menu → `Archive card`; Beta's lane `More options` → `Archive cards` →
+  `.kanban-plugin__confirm-action-button`; the header's `Archive completed cards`; Delta's lane
+  menu → `Archive list` → confirm. The archive must read `card a1`, `card b1`, `card b2`,
+  `card c1`, `card d1`, top to bottom. Open `Limit.md` (`max-archive-size` 2) with
+  `app.workspace.openLinkText("Limit","",false)`, archive `card a1`, then archive list Beta:
+  the archive keeps `card b1` and `card b2`. Before the fix the list actions added to the top,
+  so the limit kept `card b2` and `card a1` and dropped a card that had just been archived.
+  `Dated.md` has `archive-with-date` on: repeat the first three actions and every archived card
+  starts with today's date. Read the file with `app.vault.adapter.read`: `app.vault.read` can
+  return a cached copy.
 - **Duplicate a linked card (#830).** Start a fresh `$K launch --fixture duplicate-card` run and
   `$K doctor`. `$K snap duplicate-before`. Open `Original linked card`'s `More options` menu,
   then choose `Duplicate card`. The copy is inserted before the original. `$K file` must show

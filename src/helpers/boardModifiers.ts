@@ -1,5 +1,4 @@
 import update from 'immutability-helper';
-import { moment } from 'obsidian';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { Path } from 'src/dnd/types';
@@ -37,23 +36,6 @@ export interface BoardModifiers {
 }
 
 export function getBoardModifiers(view: KanbanView, stateManager: StateManager): BoardModifiers {
-  const appendArchiveDate = (item: Item) => {
-    const archiveDateFormat = stateManager.getSetting('archive-date-format');
-    const archiveDateSeparator = stateManager.getSetting('archive-date-separator');
-    const archiveDateAfterTitle = stateManager.getSetting('append-archive-date');
-
-    const newTitle = [moment().format(archiveDateFormat)];
-
-    if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
-
-    newTitle.push(item.data.titleRaw);
-
-    if (archiveDateAfterTitle) newTitle.reverse();
-
-    const titleRaw = newTitle.join(' ');
-    return stateManager.updateItemContent(item, titleRaw);
-  };
-
   return {
     appendItems: (path: Path, items: Item[]) => {
       stateManager.setState((boardData) => appendEntities(boardData, path, items));
@@ -150,16 +132,12 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
           };
           view.setViewState('list-collapse', undefined, op);
 
-          return update<Board>(removeEntity(boardData, path), {
-            data: {
-              settings: { 'list-collapse': { $set: op(collapseState) } },
-              archive: {
-                $unshift: stateManager.getSetting('archive-with-date')
-                  ? items.map(appendArchiveDate)
-                  : items,
-              },
-            },
-          });
+          return stateManager.archive(
+            update<Board>(removeEntity(boardData, path), {
+              data: { settings: { 'list-collapse': { $set: op(collapseState) } } },
+            }),
+            items
+          );
         } catch (e) {
           stateManager.setError(e);
           return boardData;
@@ -173,21 +151,9 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
         const items = lane.children;
 
         try {
-          return update(
-            updateEntity(boardData, path, {
-              children: {
-                $set: [],
-              },
-            }),
-            {
-              data: {
-                archive: {
-                  $unshift: stateManager.getSetting('archive-with-date')
-                    ? items.map(appendArchiveDate)
-                    : items,
-                },
-              },
-            }
+          return stateManager.archive(
+            updateEntity(boardData, path, { children: { $set: [] } }),
+            items
           );
         } catch (e) {
           stateManager.setError(e);
@@ -234,15 +200,7 @@ export function getBoardModifiers(view: KanbanView, stateManager: StateManager):
       stateManager.setState((boardData) => {
         const item = getEntityFromPath(boardData, path);
         try {
-          return update(removeEntity(boardData, path), {
-            data: {
-              archive: {
-                $push: [
-                  stateManager.getSetting('archive-with-date') ? appendArchiveDate(item) : item,
-                ],
-              },
-            },
-          });
+          return stateManager.archive(removeEntity(boardData, path), [item]);
         } catch (e) {
           stateManager.setError(e);
           return boardData;

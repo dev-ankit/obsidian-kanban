@@ -362,28 +362,30 @@ export class StateManager {
     }
   }
 
-  async archiveCompletedCards() {
-    const board = this.state;
+  // Every archive action adds its cards to the end, so the archive runs oldest to newest and
+  // "Maximum number of archived cards" trims the oldest.
+  archive(board: Board, items: Item[]): Board {
+    const withDate = !!this.getSetting('archive-with-date');
+    const format = this.getSetting('archive-date-format');
+    const separator = this.getSetting('archive-date-separator');
+    const dateAfterTitle = this.getSetting('append-archive-date');
 
-    const archived: Item[] = [];
-    const shouldAppendArchiveDate = !!this.getSetting('archive-with-date');
-    const archiveDateSeparator = this.getSetting('archive-date-separator');
-    const archiveDateFormat = this.getSetting('archive-date-format');
-    const archiveDateAfterTitle = this.getSetting('append-archive-date');
-
-    const appendArchiveDate = (item: Item) => {
-      const newTitle = [moment().format(archiveDateFormat)];
-
-      if (archiveDateSeparator) newTitle.push(archiveDateSeparator);
-
-      newTitle.push(item.data.titleRaw);
-
-      if (archiveDateAfterTitle) newTitle.reverse();
-
-      const titleRaw = newTitle.join(' ');
-
-      return this.parser.updateItemContent(item, titleRaw);
+    const addDate = (item: Item) => {
+      const title = [moment().format(format)];
+      if (separator) title.push(separator);
+      title.push(item.data.titleRaw);
+      if (dateAfterTitle) title.reverse();
+      return this.parser.updateItemContent(item, title.join(' '));
     };
+
+    return update(board, {
+      data: { archive: { $push: withDate ? items.map(addDate) : items } },
+    });
+  }
+
+  archiveCompletedCards() {
+    const board = this.state;
+    const archived: Item[] = [];
 
     const lanes = board.children.map((lane) => {
       return update(lane, {
@@ -401,20 +403,7 @@ export class StateManager {
     });
 
     try {
-      this.setState(
-        update(board, {
-          children: {
-            $set: lanes,
-          },
-          data: {
-            archive: {
-              $push: shouldAppendArchiveDate
-                ? await Promise.all(archived.map((item) => appendArchiveDate(item)))
-                : archived,
-            },
-          },
-        })
-      );
+      this.setState(this.archive(update(board, { children: { $set: lanes } }), archived));
     } catch (e) {
       this.setError(e);
     }
