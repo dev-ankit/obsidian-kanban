@@ -43,7 +43,7 @@ order: `Sub-features`, `How to get to it (user POV)`, `Driving it with kv.mjs` (
 
 ## Features
 
-- [Cards](./cards.md): add, edit in place, delete and archive cards.
+- [Cards](./cards.md): add, edit in place, duplicate, delete and archive cards.
 - [Inline dates](./inline-dates.md): edit the clicked date when a card contains multiple dates.
 - [Drag and drop](./drag-and-drop.md): move cards within and between lanes (including empty and
   off-screen lanes), autoscroll at the board edge, and reorder lanes.
