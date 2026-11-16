@@ -167,10 +167,11 @@ function Item({ tagColorKey, deleteKey, updateKey, defaultColors }: ItemProps) {
 interface TagSettingsProps {
   dataKeys: TagColorSetting[];
   onChange: (settings: TagColorSetting[]) => void;
+  onReset?: () => void;
   portalContainer: HTMLElement;
 }
 
-function TagSettings({ dataKeys, onChange }: TagSettingsProps) {
+function TagSettings({ dataKeys, onChange, onReset }: TagSettingsProps) {
   const [keys, setKeys] = useState(dataKeys);
   const defaultColors = useMemo(() => {
     const wrapper = createDiv(c('item-tags'));
@@ -252,6 +253,18 @@ function TagSettings({ dataKeys, onChange }: TagSettingsProps) {
         <div className="setting-item-description">
           {t('Set colors for tags displayed in cards.')}
         </div>
+        {onReset && (
+          <button
+            aria-label={t('Reset to default')}
+            className="clickable-icon"
+            onClick={() => {
+              setKeys([]);
+              onReset();
+            }}
+          >
+            <Icon name="lucide-rotate-ccw" />
+          </button>
+        )}
       </div>
       <div>
         {keys.map((key, index) => (
@@ -279,12 +292,14 @@ function TagSettings({ dataKeys, onChange }: TagSettingsProps) {
 export function renderTagSettings(
   containerEl: HTMLElement,
   keys: TagColorSetting[],
-  onChange: (key: TagColorSetting[]) => void
+  onChange: (key: TagColorSetting[]) => void,
+  onReset?: () => void
 ) {
   render(
     <TagSettings
       dataKeys={keys}
       onChange={onChange}
+      onReset={onReset}
       portalContainer={getParentBodyElement(containerEl)}
     />,
     containerEl

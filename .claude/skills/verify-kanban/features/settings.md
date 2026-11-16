@@ -5,6 +5,7 @@ set of eligible vault paths, including in large vaults, without freezing the set
 
 ## Sub-features
 
+- `settings-tag-reset` restores inherited tag colors, including from an empty local override (#1094).
 - `settings-large-open` opens board and global settings in a large vault without building a DOM
   element for every file and folder.
 - `settings-large-select` finds and saves paths near the end of the complete candidate list.
@@ -73,6 +74,18 @@ Preconditions:
   `[[Write release notes]]`. Capture a snap and check the file contents.
 - **Basic regression.** Run `card-add`, then `dnd-cross-lane` and `dnd-empty-lane` from the existing
   cards and drag feature maps. Assert the saved board order after each.
+
+- **Tag color inheritance.** In global Kanban settings add a tag color for `#work`, set its
+  background to `#ff0000`, blur the field, and wait until plugin `data.json` contains the color.
+  Close settings: `Plan sprint #work` has a red tag. Open board settings and add a local color;
+  delete it with `.kanban-plugin__tag-color-input-wrapper [aria-label="Delete"]`.
+  Assert the board saves `"tag-colors":[]`: this remains an explicit choice to suppress global
+  colors. Click `.kanban-plugin__tag-color-input-wrapper [aria-label="Reset to default"]` and
+  assert `file --absent 'tag-colors'`. Close settings and verify the tag background is red again.
+  Repeat after reopening the board with an empty override, and with a nonempty override. The
+  reset clears the local editor rows, removes the key on disk and restores inheritance. Cancel
+  the modal and reopen it to confirm the result survives. Global settings retain their color.
+  Capture the local controls and the restored tag; finish with `errors`.
 
 ## Gotchas
 

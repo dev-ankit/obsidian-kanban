@@ -574,12 +574,16 @@ export class SettingsManager {
         };
       });
 
-      renderTagSettings(setting.settingEl, keys, (keys: TagColorSetting[]) =>
-        this.applySettingsUpdate({
-          'tag-colors': {
-            $set: keys.map((k) => k.data),
-          },
-        })
+      renderTagSettings(
+        setting.settingEl,
+        keys,
+        (keys: TagColorSetting[]) =>
+          this.applySettingsUpdate({
+            'tag-colors': {
+              $set: keys.map((k) => k.data),
+            },
+          }),
+        local ? () => this.applySettingsUpdate({ $unset: ['tag-colors'] }) : undefined
       );
 
       this.cleanupFns.push(() => {
