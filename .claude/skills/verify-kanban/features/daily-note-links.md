@@ -68,6 +68,8 @@ Preconditions:
   written into HTML unescaped, and any unresolved date link was taken for a daily note.
   `Parens existing` → More options → New note from card creates `Parens existing.md` (it was
   `Parens existing .md).md`).
+  `Both forms` → More options → Remove date leaves `- [ ] Both forms @[[2026-11-16]]` on disk
+  (it was `Both forms.md) @[[2026-11-16]]`).
 - **Daily Notes off.** Launch `--fixture daily-notes-off` (the core plugin is disabled, its
   settings file is still there). `Wiki missing` opens a new `2026-11-26.md` in the vault's
   default location and `Daily missing` a new, empty `Daily/2026-11-25.md`: what Obsidian does

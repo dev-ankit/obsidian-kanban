@@ -115,6 +115,9 @@ scrollLeft 1237/1237)`), then drops the card. `outline` shows Shipped with Hotel
   board must stay at zero. Repeat from the right board, verifying the left board stays put.
   After scrolling the right board, hold its card just inside that board's left edge at the split.
   Only the right board may scroll back: the card overlapping the left board must not activate it.
+  With the right board still scrolled and the left one at zero, hold a left-board card 150 px
+  into the file explorer (`--point 190,400`): nothing scrolls. Outside every board the pointer
+  still belongs to the board it left, so it cannot push the other board's edge.
   In a fresh run with the same split, drag `Left 1 card 01` after `Right 1 card 02`.
   Assert the adjacent cards in `Other.md` and the source card's absence from `Board.md`.
   Also hold a card at the bottom edge of its lane using real pointer input. Record every lane's

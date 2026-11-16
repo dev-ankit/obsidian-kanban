@@ -14,6 +14,7 @@ kanban-plugin: board
 - [ ] @[[2026-11-28]] leading wiki
 - [ ] @[2026-11-29](Daily/2026-11-29.md)
 - [ ] Alias wiki @[[2026-11-30|my day]]
+- [ ] Both forms @[2026-11-24](Other%20Notes/Day%20(2026-11-24).md) @[[2026-11-16]]
 
 ## Done
 
