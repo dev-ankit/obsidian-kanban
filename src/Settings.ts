@@ -171,11 +171,12 @@ export class SettingsManager {
     this.settings = settings;
   }
 
+  // Every change is kept as it is made; only passing the result on waits for a pause.
   applySettingsUpdate(spec: Spec<KanbanSettings>) {
+    this.settings = update(this.settings, spec);
     this.win.clearTimeout(this.applyDebounceTimer);
 
     this.applyDebounceTimer = this.win.setTimeout(() => {
-      this.settings = update(this.settings, spec);
       this.config.onSettingsChange(this.settings);
     }, 1000);
   }
