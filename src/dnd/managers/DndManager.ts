@@ -31,28 +31,11 @@ export class DndManager {
     this.resizeObserver.disconnect();
   }
 
-  scrollResizeDebounce = 0;
   handleResize: ResizeObserverCallback = (entries) => {
-    let thisDidResize = false;
-    entries.forEach((e) => {
-      const win = getParentWindow(e.target);
+    if (!entries.some((entry) => getParentWindow(entry.target) === this.win)) return;
 
-      if (this.win !== win) return;
-
-      thisDidResize = true;
-
-      if ((e.target as HTMLElement).dataset.scrollid) {
-        this.win.clearTimeout(this.scrollResizeDebounce);
-
-        this.scrollResizeDebounce = this.win.setTimeout(() => {
-          if (this.emitter.listenerCount('scrollResize')) {
-            this.emitter.emit('scrollResize', null);
-          }
-        }, 50);
-      }
-    });
-
-    if (!thisDidResize) return;
+    // A resized card or placeholder changes the scroll range even if its container stays fixed.
+    this.emitter.emit('scrollResize', null);
 
     this.hitboxEntities.forEach((entity) => {
       entity.recalcInitial();

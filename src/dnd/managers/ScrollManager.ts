@@ -236,13 +236,14 @@ export class ScrollManager {
   };
 
   isDoneScrolling(side: Side) {
+    // Scroll offsets can be fractional, while scroll and offset dimensions are rounded.
     switch (side) {
       case 'top':
         return this.scrollState.y === 0;
       case 'right':
-        return this.scrollState.x === this.scrollState.maxX;
+        return Math.ceil(this.scrollState.x) >= this.scrollState.maxX;
       case 'bottom':
-        return this.scrollState.y === this.scrollState.maxY;
+        return Math.ceil(this.scrollState.y) >= this.scrollState.maxY;
       case 'left':
         return this.scrollState.x === 0;
     }
