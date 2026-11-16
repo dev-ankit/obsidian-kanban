@@ -57,9 +57,9 @@ export class BasicMarkdownRenderer extends Component {
   containerEl: HTMLElement;
   wrapperEl: HTMLElement;
   renderCapability: PromiseCapability;
-  observer: ResizeObserver;
   isVisible: boolean = false;
   mark: Mark;
+  onRendered?: () => void;
 
   lastWidth = -1;
   lastHeight = -1;
@@ -101,8 +101,26 @@ export class BasicMarkdownRenderer extends Component {
 
     this.resolveLinks();
     applyCheckboxIndexes(containerEl);
+    this.onRendered?.();
 
-    this.observer = new ResizeObserver((entries) => {
+    const embeds = containerEl.findAll('.internal-embed[src]');
+    if (embeds.length) {
+      this.registerEvent(
+        this.view.app.metadataCache.on('changed', (file) => {
+          const { app, file: source } = this.view;
+          if (
+            embeds.some((embed) => {
+              const path = getLinkpath(embed.getAttr('src'));
+              return app.metadataCache.getFirstLinkpathDest(path, source.path) === file;
+            })
+          ) {
+            this.set(this.markdown);
+          }
+        })
+      );
+    }
+
+    const observer = new ResizeObserver((entries) => {
       if (!entries.length) return;
 
       const entry = entries.first().contentBoxSize[0];
@@ -120,11 +138,16 @@ export class BasicMarkdownRenderer extends Component {
       this.lastHeight = entry.blockSize;
     });
 
-    containerEl.win.setTimeout(() => {
-      this.observer.observe(containerEl, { box: 'border-box' });
+    const timeout = containerEl.win.setTimeout(() => {
+      observer.observe(containerEl, { box: 'border-box' });
+    });
+    this.register(() => {
+      containerEl.win.clearTimeout(timeout);
+      observer.disconnect();
     });
 
-    containerEl.addEventListener(
+    this.registerDomEvent(
+      containerEl,
       'click',
       (evt) => {
         const { targetNode } = evt;
@@ -140,7 +163,8 @@ export class BasicMarkdownRenderer extends Component {
       { capture: true }
     );
 
-    containerEl.addEventListener(
+    this.registerDomEvent(
+      containerEl,
       'contextmenu',
       (evt) => {
         const { targetNode } = evt;
@@ -314,31 +338,27 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
     preview.set(markdownString);
   }, [markdownString]);
 
-  // Colors go on the content the renderer keeps, which is in this wrapper only while the card is
-  // on screen, each time that content is rendered and each time the colors change.
-  useEffect(() => {
-    const preview = renderer.current;
-    preview.renderCapability.promise.then(() => colorizeTags(preview.containerEl, getTagColor));
-  }, [entityId, markdownString, getTagColor]);
-
-  // Rules make date colors change with the clock too. The chips aren't rendered by Preact, so a
-  // tick recolors them where they are.
+  // Embeds can rerender without changing the card text. Decorate every completed render.
   useEffect(() => {
     const preview = renderer.current;
     const colorize = () => colorizeDates(preview.containerEl, dateColors, clock.now);
+    const decorate = () => {
+      colorizeTags(preview.containerEl, getTagColor);
+      colorize();
+      preview.mark.unmark();
+      if (searchQuery && searchQuery.trim()) {
+        preview.mark.mark(searchQuery);
+      }
+    };
 
-    preview.renderCapability.promise.then(colorize);
-    if (dateColors.length) return clock.subscribe(colorize);
-  }, [entityId, markdownString, dateColors, clock]);
-
-  useEffect(() => {
-    const preview = renderer.current;
-    if (!preview) return;
-    preview.mark.unmark();
-    if (searchQuery && searchQuery.trim()) {
-      preview.mark.mark(searchQuery);
-    }
-  }, [searchQuery]);
+    preview.onRendered = decorate;
+    preview.renderCapability.promise.then(decorate);
+    const unsubscribe = dateColors.length ? clock.subscribe(colorize) : undefined;
+    return () => {
+      preview.onRendered = undefined;
+      unsubscribe?.();
+    };
+  }, [entityId, markdownString, getTagColor, dateColors, clock, searchQuery]);
 
   useEffect(() => {
     const preview = renderer.current;
