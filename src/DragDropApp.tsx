@@ -3,6 +3,7 @@ import update from 'immutability-helper';
 import { JSX, createPortal, memo, useCallback, useMemo } from 'preact/compat';
 
 import { KanbanView } from './KanbanView';
+import { CurrentTimeProvider } from './components/CurrentTime';
 import { DraggableItem } from './components/Item/Item';
 import { DraggableLane } from './components/Lane/Lane';
 import { KanbanContext } from './components/context';
@@ -262,75 +263,77 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
   if (portals.length)
     return (
       <DndContext win={win} onDrop={handleDrop}>
-        {...portals}
-        <DragOverlay>
-          {(entity, styles) => {
-            const [data, context] = useMemo(() => {
-              if (entity.scopeId === 'htmldnd') {
-                return [null, null];
+        <CurrentTimeProvider win={win}>
+          {...portals}
+          <DragOverlay>
+            {(entity, styles) => {
+              const [data, context] = useMemo(() => {
+                if (entity.scopeId === 'htmldnd') {
+                  return [null, null];
+                }
+
+                const overlayData = entity.getData();
+
+                const view = plugin.getKanbanView(entity.scopeId, overlayData.win);
+                const stateManager = plugin.stateManagers.get(view.file);
+                const data = getEntityFromPath(stateManager.state, entity.getPath());
+                const boardModifiers = getBoardModifiers(view, stateManager);
+                const filePath = view.file.path;
+
+                return [
+                  data,
+                  {
+                    view,
+                    stateManager,
+                    boardModifiers,
+                    filePath,
+                  },
+                ];
+              }, [entity]);
+
+              if (data?.type === DataTypes.Lane) {
+                const boardView = context.view.getViewState(frontmatterKey);
+                const collapseState = context.view.getViewState('list-collapse');
+                const laneIndex = entity.getPath().last();
+
+                return (
+                  <KanbanContext.Provider value={context}>
+                    <div
+                      className={classcat([
+                        c('drag-container'),
+                        {
+                          [c('horizontal')]: boardView !== 'list',
+                          [c('vertical')]: boardView === 'list',
+                        },
+                      ])}
+                      style={styles}
+                    >
+                      <DraggableLane
+                        lane={data as Lane}
+                        laneIndex={laneIndex}
+                        isStatic={true}
+                        isCollapsed={!!collapseState[laneIndex]}
+                        collapseDir={boardView === 'list' ? 'vertical' : 'horizontal'}
+                      />
+                    </div>
+                  </KanbanContext.Provider>
+                );
               }
 
-              const overlayData = entity.getData();
+              if (data?.type === DataTypes.Item) {
+                return (
+                  <KanbanContext.Provider value={context}>
+                    <div className={c('drag-container')} style={styles}>
+                      <DraggableItem item={data as Item} itemIndex={0} isStatic={true} />
+                    </div>
+                  </KanbanContext.Provider>
+                );
+              }
 
-              const view = plugin.getKanbanView(entity.scopeId, overlayData.win);
-              const stateManager = plugin.stateManagers.get(view.file);
-              const data = getEntityFromPath(stateManager.state, entity.getPath());
-              const boardModifiers = getBoardModifiers(view, stateManager);
-              const filePath = view.file.path;
-
-              return [
-                data,
-                {
-                  view,
-                  stateManager,
-                  boardModifiers,
-                  filePath,
-                },
-              ];
-            }, [entity]);
-
-            if (data?.type === DataTypes.Lane) {
-              const boardView = context.view.getViewState(frontmatterKey);
-              const collapseState = context.view.getViewState('list-collapse');
-              const laneIndex = entity.getPath().last();
-
-              return (
-                <KanbanContext.Provider value={context}>
-                  <div
-                    className={classcat([
-                      c('drag-container'),
-                      {
-                        [c('horizontal')]: boardView !== 'list',
-                        [c('vertical')]: boardView === 'list',
-                      },
-                    ])}
-                    style={styles}
-                  >
-                    <DraggableLane
-                      lane={data as Lane}
-                      laneIndex={laneIndex}
-                      isStatic={true}
-                      isCollapsed={!!collapseState[laneIndex]}
-                      collapseDir={boardView === 'list' ? 'vertical' : 'horizontal'}
-                    />
-                  </div>
-                </KanbanContext.Provider>
-              );
-            }
-
-            if (data?.type === DataTypes.Item) {
-              return (
-                <KanbanContext.Provider value={context}>
-                  <div className={c('drag-container')} style={styles}>
-                    <DraggableItem item={data as Item} itemIndex={0} isStatic={true} />
-                  </div>
-                </KanbanContext.Provider>
-              );
-            }
-
-            return <div />;
-          }}
-        </DragOverlay>
+              return <div />;
+            }}
+          </DragOverlay>
+        </CurrentTimeProvider>
       </DndContext>
     );
 }

@@ -1,12 +1,12 @@
 import classcat from 'classcat';
 import { getLinkpath, moment } from 'obsidian';
-import { JSX, useMemo } from 'preact/compat';
+import { JSX } from 'preact/compat';
 import { StateManager } from 'src/StateManager';
 import { t } from 'src/lang/helpers';
 
 import { useCurrentTime } from '../CurrentTime';
-import { c } from '../helpers';
-import { DateColor, Item } from '../types';
+import { c, useDateColor } from '../helpers';
+import { Item } from '../types';
 
 export function getRelativeDate(date: moment.Moment, time: moment.Moment, now: moment.Moment) {
   if (time) {
@@ -38,18 +38,13 @@ interface DateProps {
 }
 
 export function RelativeDate({ item, stateManager }: DateProps) {
-  const now = useCurrentTime();
   const shouldShowRelativeDate = stateManager.useSetting('show-relative-date');
-
-  if (!shouldShowRelativeDate || !item.data.metadata.date) {
-    return null;
-  }
-
-  const relativeDate = getRelativeDate(
-    item.data.metadata.date,
-    item.data.metadata.time,
-    moment(now)
+  const { date, time } = item.data.metadata;
+  const relativeDate = useCurrentTime((now) =>
+    shouldShowRelativeDate && date ? getRelativeDate(date, time, moment(now)) : null
   );
+
+  if (relativeDate === null) return null;
 
   return <span className={c('item-metadata-date-relative')}>{relativeDate}</span>;
 }
@@ -58,7 +53,6 @@ interface DateAndTimeProps {
   onEditDate?: JSX.MouseEventHandler<HTMLSpanElement>;
   onEditTime?: JSX.MouseEventHandler<HTMLSpanElement>;
   filePath: string;
-  getDateColor: (date: moment.Moment) => DateColor;
 }
 
 export function DateAndTime({
@@ -67,7 +61,6 @@ export function DateAndTime({
   filePath,
   onEditDate,
   onEditTime,
-  getDateColor,
 }: DateProps & DateAndTimeProps) {
   const moveDates = stateManager.useSetting('move-dates');
   const dateFormat = stateManager.useSetting('date-format');
@@ -75,13 +68,10 @@ export function DateAndTime({
   const dateDisplayFormat = stateManager.useSetting('date-display-format');
   const shouldLinkDate = stateManager.useSetting('link-date-to-daily-note');
 
-  const targetDate = item.data.metadata.time ?? item.data.metadata.date;
-  const dateColor = useMemo(() => {
-    if (!targetDate) return null;
-    return getDateColor(targetDate);
-  }, [targetDate, getDateColor]);
+  const targetDate = moveDates ? item.data.metadata.time ?? item.data.metadata.date : undefined;
+  const dateColor = useDateColor(stateManager, targetDate);
 
-  if (!moveDates || !targetDate) return null;
+  if (!targetDate) return null;
 
   const dateStr = targetDate.format(dateFormat);
 

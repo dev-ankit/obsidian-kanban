@@ -243,7 +243,7 @@ export function useGetTagColorFn(stateManager: StateManager): (tag: string) => T
   return useMemo(() => getTagColorFn(tagColors), [tagColors]);
 }
 
-export function getDateColorFn(dateColors: DateColor[], now = moment()) {
+export function getDateColorFn(dateColors: DateColor[], now: moment.Moment) {
   const orders = (dateColors || []).map<[moment.Moment | 'today' | 'before' | 'after', DateColor]>(
     (c) => {
       if (c.isToday) {
@@ -315,12 +315,9 @@ export function getDateColorFn(dateColors: DateColor[], now = moment()) {
   };
 }
 
-export function useGetDateColorFn(
-  stateManager: StateManager
-): (date: moment.Moment) => DateColor | null {
+export function useDateColor(stateManager: StateManager, date?: moment.Moment): DateColor | null {
   const dateColors = stateManager.useSetting('date-colors');
-  const now = useCurrentTime();
-  return useMemo(() => getDateColorFn(dateColors, moment(now)), [dateColors, now]);
+  return useCurrentTime((now) => (date ? getDateColorFn(dateColors, moment(now))(date) : null));
 }
 
 export function parseMetadataWithOptions(data: InlineField, metadataKeys: DataKey[]): PageData {

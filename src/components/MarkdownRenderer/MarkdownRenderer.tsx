@@ -10,8 +10,9 @@ import { DndManagerContext, EntityManagerContext } from 'src/dnd/components/cont
 import { PromiseCapability } from 'src/helpers/util';
 
 import { applyCheckboxIndexes } from '../../helpers/renderMarkdown';
+import { useClock } from '../CurrentTime';
 import { IntersectionObserverContext, KanbanContext, SortContext } from '../context';
-import { c, useGetDateColorFn, useGetTagColorFn } from '../helpers';
+import { c, getDateColorFn, useGetTagColorFn } from '../helpers';
 import { DateColor, TagColor } from '../types';
 
 interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
@@ -21,12 +22,8 @@ interface MarkdownRendererProps extends HTMLAttributes<HTMLDivElement> {
   entityId?: string;
 }
 
-function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagColor) {
-  if (!wrapperEl) return;
-  const tagEls = wrapperEl.querySelectorAll<HTMLAnchorElement>('a.tag');
-  if (!tagEls?.length) return;
-
-  tagEls.forEach((a) => {
+function colorizeTags(containerEl: HTMLElement, getTagColor: (tag: string) => TagColor) {
+  containerEl.querySelectorAll<HTMLAnchorElement>('a.tag').forEach((a) => {
     const color = getTagColor(a.getAttr('href'));
     if (!color) return;
     a.setCssProps({
@@ -36,10 +33,12 @@ function colorizeTags(wrapperEl: HTMLElement, getTagColor: (tag: string) => TagC
   });
 }
 
-function colorizeDates(wrapperEl: HTMLElement, getDateColor: (date: moment.Moment) => DateColor) {
-  if (!wrapperEl) return;
-  const dateEls = wrapperEl.querySelectorAll<HTMLElement>('.' + c('date'));
-  if (!dateEls?.length) return;
+function colorizeDates(containerEl: HTMLElement, dateColors: DateColor[], now: number) {
+  const dateEls = containerEl.querySelectorAll<HTMLElement>('.' + c('date'));
+  if (!dateEls.length) return;
+
+  const getDateColor = getDateColorFn(dateColors, moment(now));
+
   dateEls.forEach((el) => {
     const dateStr = el.dataset.date;
     if (!dateStr) return;
@@ -230,7 +229,8 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
   const sortContext = useContext(SortContext);
   const intersectionContext = useContext(IntersectionObserverContext);
   const getTagColor = useGetTagColorFn(stateManager);
-  const getDateColor = useGetDateColorFn(stateManager);
+  const dateColors = stateManager.useSetting('date-colors');
+  const clock = useClock();
 
   const renderer = useRef<BasicMarkdownRenderer>();
   const elRef = useRef<HTMLDivElement>();
@@ -296,8 +296,6 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
 
     elRef.current.empty();
     elRef.current.append(preview.containerEl);
-    colorizeTags(elRef.current, getTagColor);
-    colorizeDates(elRef.current, getDateColor);
 
     entityManager?.emitter.on('visibility-change', onVisibilityChange);
 
@@ -313,19 +311,25 @@ export const MarkdownRenderer = memo(function MarkdownPreviewRenderer({
     if (!preview || markdownString === preview.markdown) return;
 
     preview.renderCapability.resolve();
-
     preview.set(markdownString);
-    preview.renderCapability.promise.then(() => {
-      colorizeTags(elRef.current, getTagColor);
-      colorizeDates(elRef.current, getDateColor);
-    });
   }, [markdownString]);
 
+  // Colors go on the content the renderer keeps, which is in this wrapper only while the card is
+  // on screen, each time that content is rendered and each time the colors change.
   useEffect(() => {
-    if (!renderer.current) return;
-    colorizeTags(elRef.current, getTagColor);
-    colorizeDates(elRef.current, getDateColor);
-  }, [getTagColor, getDateColor]);
+    const preview = renderer.current;
+    preview.renderCapability.promise.then(() => colorizeTags(preview.containerEl, getTagColor));
+  }, [entityId, markdownString, getTagColor]);
+
+  // Rules make date colors change with the clock too. The chips aren't rendered by Preact, so a
+  // tick recolors them where they are.
+  useEffect(() => {
+    const preview = renderer.current;
+    const colorize = () => colorizeDates(preview.containerEl, dateColors, clock.now);
+
+    preview.renderCapability.promise.then(colorize);
+    if (dateColors.length) return clock.subscribe(colorize);
+  }, [entityId, markdownString, dateColors, clock]);
 
   useEffect(() => {
     const preview = renderer.current;

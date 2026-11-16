@@ -12,7 +12,7 @@ import { ItemContent, useDatePickers } from '../Item/ItemContent';
 import { useItemMenu } from '../Item/ItemMenu';
 import { MarkdownRenderer } from '../MarkdownRenderer/MarkdownRenderer';
 import { KanbanContext, SearchContext } from '../context';
-import { c, useGetDateColorFn } from '../helpers';
+import { c } from '../helpers';
 import { EditState, Item, Lane, isEditing } from '../types';
 import { TableItem } from './types';
 
@@ -27,7 +27,6 @@ export const DateCell = memo(function DateCell({
 }) {
   const { stateManager, filePath } = useContext(KanbanContext);
   const { onEditDate, onEditTime } = useDatePickers(item.item, item.path);
-  const getDateColor = useGetDateColorFn(stateManager);
 
   return (
     <>
@@ -41,7 +40,6 @@ export const DateCell = memo(function DateCell({
           filePath={filePath ?? ''}
           onEditDate={onEditDate}
           onEditTime={onEditTime}
-          getDateColor={getDateColor}
         />
       ) : null}
     </>
