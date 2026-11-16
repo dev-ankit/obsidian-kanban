@@ -10,6 +10,8 @@ frontmatter (`kanban-plugin: board|table|list`).
 - `view-list` switches to the list layout. Not yet driven.
 - `view-board` switches back to the board layout.
 - `view-markdown` opens the board as markdown.
+- `view-mode-memory` returns a note to the mode (editing or reading) it had before it was shown as a
+  board; a board opened in a pane that showed another note uses Obsidian's default.
 - `view-kanban-again` returns from markdown to Kanban. This is where upstream reports of a black or
   blank board live (#662, PR #1221).
 
@@ -35,6 +37,11 @@ Preconditions:
 - **Back to Kanban.** `$K key Mod+p`, `$K type 'Kanban: Toggle between'`, `$K key Enter`.
   The view type is `kanban` again and `outline` lists every lane with its cards (a blank board here
   is the #662 bug).
+- **Reading mode survives a round trip.** In markdown view run
+  `$K eval '(() => { app.commands.executeCommandById("markdown:toggle-preview"); return 1 })()'`, toggle to
+  Kanban and back with the palette command; `$K eval 'app.workspace.activeLeaf.view.getMode()'` is `preview`
+  (2.0.54 and earlier: `source`). Same through the pane menu's `Open as kanban board` and the header's
+  `Open as markdown`.
 - **Proof.** `snap` after each switch, then `$K errors`.
 
 ## Gotchas
