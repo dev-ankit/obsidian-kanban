@@ -1,5 +1,4 @@
-import { RefObject, useContext, useMemo, useRef } from 'preact/compat';
-import { useOnMount } from 'src/components/helpers';
+import { RefObject, useContext, useLayoutEffect, useMemo } from 'preact/compat';
 
 import { ScrollManager } from '../managers/ScrollManager';
 import { WithChildren } from '../types';
@@ -15,34 +14,16 @@ export function Scrollable({ scrollRef, triggerTypes, children }: ScrollContextP
   const scopeId = useContext(ScopeIdContext);
   const parentScrollManager = useContext(ScrollManagerContext);
 
-  const managerRef = useRef<ScrollManager>();
-
   const scrollManager = useMemo(() => {
-    if (dndManager) {
-      if (managerRef.current) {
-        managerRef.current.destroy();
-      }
+    if (!dndManager) return null;
 
-      const manager = new ScrollManager(
-        dndManager,
-        scopeId,
-        triggerTypes || ([] as string[]),
-        parentScrollManager
-      );
+    return new ScrollManager(dndManager, scopeId, triggerTypes || [], parentScrollManager);
+  }, [dndManager, scopeId, triggerTypes, parentScrollManager]);
 
-      managerRef.current = manager;
-
-      return manager;
-    }
-
-    return null;
-  }, [dndManager, scopeId, scrollRef, triggerTypes, parentScrollManager]);
-
-  useOnMount(
-    [scrollRef],
-    () => managerRef.current?.initNodes(scrollRef.current),
-    () => managerRef.current?.destroy()
-  );
+  useLayoutEffect(() => {
+    scrollManager?.initNodes(scrollRef.current);
+    return () => scrollManager?.destroy();
+  }, [scrollManager, scrollRef]);
 
   if (!scrollManager) {
     return null;
