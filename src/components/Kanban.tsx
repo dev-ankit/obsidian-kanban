@@ -1,7 +1,7 @@
 import animateScrollTo from 'animated-scroll-to';
 import classcat from 'classcat';
 import update from 'immutability-helper';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/compat';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/compat';
 import { KanbanView } from 'src/KanbanView';
 import { StateManager } from 'src/StateManager';
 import { useIsAnythingDragging } from 'src/dnd/components/DragOverlay';
@@ -66,14 +66,20 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
   const tagColors = stateManager.useSetting('tag-colors');
   const boardView = view.useViewState(frontmatterKey);
 
-  useLayoutEffect(() => {
-    const navigate = () => {
-      const subpath = view.getEphemeralState().subpath;
-      if (!subpath?.startsWith('#^')) return;
+  // A link to a card is followed once, by the board it points at, when that board is on screen:
+  // right away if it already is, otherwise after it has rendered and its cards have their
+  // heights. A collapsed list stands in for the cards inside it.
+  useEffect(() => {
+    const reveal = () => {
+      if (!boardData || !view.blockToReveal) return;
+
       const target = rootRef.current?.querySelector<HTMLElement>(
-        `[data-block-id="${CSS.escape(subpath.slice(2))}"]`
+        `[data-block-id~="${CSS.escape(view.blockToReveal)}"]`
       );
+
+      view.blockToReveal = undefined;
       if (!target) return;
+
       target.scrollIntoView({ block: 'center', inline: 'center' });
       target.animate(
         { outline: ['2px solid var(--text-accent)', '2px solid transparent'] },
@@ -81,12 +87,12 @@ export const Kanban = ({ view, stateManager }: KanbanProps) => {
       );
     };
 
-    navigate();
-    view.emitter.on('navigateToBlock', navigate);
+    reveal();
+    view.emitter.on('revealBlock', reveal);
     return () => {
-      view.emitter.off('navigateToBlock', navigate);
+      view.emitter.off('revealBlock', reveal);
     };
-  }, [view, boardData?.id, boardView]);
+  }, [view, boardData?.id]);
 
   const closeLaneForm = useCallback(() => {
     if (boardData?.children.length > 0) {
