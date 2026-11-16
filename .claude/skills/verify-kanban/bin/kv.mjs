@@ -543,6 +543,9 @@ const HELP = `kv.mjs - drive an isolated Obsidian running this repo's Kanban bui
                       scrolled; then drop on <toLoc> (now on screen), or where the pointer is
                       --hold stops before releasing so you can snap mid-drag
   release             release the mouse button (ends a drag --hold)
+  record <name> [--seconds N] [--label T]
+                      record the window to evidence/<name>.mp4 with real timing (run it in the
+                      background, drive the UI meanwhile); needs ffmpeg and ImageMagick
   type <text>         insert text at the focused element (like typing / IME commit)
   key <combo>         e.g. Enter, Escape, Home, End, Mod+P, Shift+Enter, Mod+Enter, a
   wait <loc> [--gone] [--timeout ms]
@@ -727,6 +730,52 @@ async function main() {
       await sleep(400);
       console.log(`dragged ${pos[0]} ${where}${report}`);
       return cdp.close();
+    }
+    case 'record': {
+      // Records the window for --seconds (default 20) to evidence/<name>.mp4 with real timing, so a
+      // freeze shows at its true length. Run it in the background, then drive the UI as usual.
+      const name = pos[0] || 'recording';
+      const seconds = Number(flags.seconds || 20);
+      const { dir, cdp } = await attach();
+      const framesDir = path.join(dir, 'evidence', `${name}-frames`);
+      fs.rmSync(framesDir, { recursive: true, force: true });
+      fs.mkdirSync(framesDir, { recursive: true });
+      const frames = [];
+      cdp.ws.addEventListener('message', (e) => {
+        const m = JSON.parse(e.data);
+        if (m.method !== 'Page.screencastFrame') return;
+        const file = path.join(framesDir, `${String(frames.length).padStart(6, '0')}.jpg`);
+        fs.writeFileSync(file, Buffer.from(m.params.data, 'base64'));
+        frames.push({ file, t: Date.now() });
+        cdp.send('Page.screencastFrameAck', { sessionId: m.params.sessionId }).catch(() => {});
+      });
+      await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 80, everyNthFrame: 1 });
+      const started = Date.now();
+      // A frozen page sends no frames; keep the last frame on screen until the next one arrives.
+      while (Date.now() - started < seconds * 1000) await sleep(200);
+      await cdp.send('Page.stopScreencast').catch(() => {});
+      cdp.close();
+      if (frames.length === 0) die('no frames captured');
+      frames.push({ file: frames[frames.length - 1].file, t: started + seconds * 1000 });
+      // Stamp each frame with the label and the time it was captured (a freeze shows as the clock
+      // jumping), then encode with each frame held until the next one arrived.
+      const label = typeof flags.label === 'string' ? flags.label : '';
+      const font = '/System/Library/Fonts/Supplemental/Arial.ttf';
+      frames.slice(0, -1).forEach((f) => {
+        const secs = ((f.t - started) / 1000).toFixed(1);
+        execFileSync('magick', [f.file, '-gravity', 'SouthWest', '-font', font, '-pointsize', '34', '-undercolor', '#000000b0', '-fill', 'white', '-annotate', '+20+20', ` ${label}   t = ${secs} s `, f.file]);
+      });
+      const list = frames
+        .slice(0, -1)
+        .map((f, i) => `file '${f.file}'\nduration ${Math.max((frames[i + 1].t - f.t) / 1000, 0.001)}`)
+        .join('\n');
+      const listFile = path.join(framesDir, 'frames.txt');
+      fs.writeFileSync(listFile, `${list}\nfile '${frames[frames.length - 1].file}'\n`);
+      const out = path.join(dir, 'evidence', `${name}.mp4`);
+      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', listFile, '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', '-r', '30', '-pix_fmt', 'yuv420p', out]);
+      fs.rmSync(framesDir, { recursive: true, force: true });
+      console.log(`${out} (${frames.length - 1} frames, ${seconds}s)`);
+      return;
     }
     case 'release': {
       const { cdp } = await attach();

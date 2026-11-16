@@ -121,6 +121,11 @@ $K snap <step-name>                 # NN-<step>.png, NN-<step>.outline.txt, NN-<
 $K snap <step-name> --clip '<loc>'  # screenshot of just that element (for visual checks)
 ```
 
+To show a change to a person, record it: start `$K record <name> --seconds N --label 'BEFORE 2.0.55'`
+in the background, drive the UI, and it writes `evidence/<name>.mp4` (needs ffmpeg and ImageMagick).
+Frames carry the time they were captured, and each is held until the next arrives, so a freeze shows at
+its true length as the clock jumping. Compare builds with `launch --build-dir`.
+
 Fixtures live in `fixtures/<name>/` and are copied into each run's vault: `basic` (default),
 `wide` (8 lanes incl. CJK titles, wider than the window) and `note-folder` (boards with a
 configured and a missing `new-note-folder`). Add a fixture rather than editing state through `eval`.
