@@ -290,12 +290,8 @@ export function DragDropApp({ win, plugin }: { win: Window; plugin: KanbanPlugin
             }, [entity]);
 
             if (data?.type === DataTypes.Lane) {
-              const boardView =
-                context?.view.viewSettings[frontmatterKey] ||
-                context?.stateManager.getSetting(frontmatterKey);
-              const collapseState =
-                context?.view.viewSettings['list-collapse'] ||
-                context?.stateManager.getSetting('list-collapse');
+              const boardView = context.view.getViewState(frontmatterKey);
+              const collapseState = context.view.getViewState('list-collapse');
               const laneIndex = entity.getPath().last();
 
               return (

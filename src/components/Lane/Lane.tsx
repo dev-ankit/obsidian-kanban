@@ -226,8 +226,8 @@ export interface LanesProps {
 function LanesRaw({ lanes, collapseDir }: LanesProps) {
   const search = useContext(SearchContext);
   const { view } = useContext(KanbanContext);
-  const boardView = view.useViewState(frontmatterKey) || 'board';
-  const collapseState = view.useViewState('list-collapse') || [];
+  const boardView = view.useViewState(frontmatterKey);
+  const collapseState = view.useViewState('list-collapse');
 
   return (
     <>

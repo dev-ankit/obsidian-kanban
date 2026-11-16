@@ -408,7 +408,7 @@ export class KanbanView extends TextFileView implements HoverParent {
         'lucide-view',
         t('Board view'),
         (evt) => {
-          const view = this.viewSettings[frontmatterKey] || stateManager.getSetting(frontmatterKey);
+          const view = this.getViewState(frontmatterKey);
           new Menu()
             .addItem((item) =>
               item
