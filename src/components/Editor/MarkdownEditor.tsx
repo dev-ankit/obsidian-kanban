@@ -238,8 +238,11 @@ export function MarkdownEditor({
       });
     }
 
+    // When the keyboard opens, bring the whole input into view: the editor and, below it, the
+    // mobile Submit button (scrolling only the editor left Submit just out of sight).
     const onShow = () => {
-      elRef.current.scrollIntoView({ block: 'end' });
+      const input = elRef.current.closest(`.${c('item-input-wrapper')}`) ?? elRef.current;
+      input.scrollIntoView({ block: 'end' });
     };
 
     if (Platform.isMobile) {
