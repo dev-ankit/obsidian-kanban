@@ -180,8 +180,10 @@ export function TableView({
                         <div
                           {...{
                             onDoubleClick: () => header.column.resetSize(),
-                            onMouseDown: header.getResizeHandler(),
-                            onTouchStart: header.getResizeHandler(),
+                            onMouseDown: (event) =>
+                              header.getResizeHandler(event.currentTarget.ownerDocument)(event),
+                            onTouchStart: (event) =>
+                              header.getResizeHandler(event.currentTarget.ownerDocument)(event),
                             className: `resizer ${table.options.columnResizeDirection} ${
                               header.column.getIsResizing() ? 'isResizing' : ''
                             }`,
