@@ -9,6 +9,7 @@ set of eligible vault paths, including in large vaults, without freezing the set
   element for every file and folder.
 - `settings-large-select` finds and saves paths near the end of the complete candidate list.
 - `settings-path-default` resets a local selection to its inherited global default.
+- `settings-template-path` matches the template's complete folder/name path, including inherited choices.
 - `settings-template-scope` searches the configured template folder recursively.
 - `settings-path-use` creates a note using the selected folder and template.
 - `settings-path-cancel` cancels the picker without changing settings.
@@ -28,7 +29,9 @@ Preconditions:
   The generator creates 36,000 notes in 36,361 folders, in addition to the baseline contents.
   Observe `app.vault.getFiles().length` and
   `app.vault.getAllLoadedFiles().filter(f => f.children).length` with `eval` until indexing finishes.
-  Expect 36,002 files and 36,363 folders, including the vault root. Do not time indexing.
+  Expect 36,002 files and 36,363 folders, including the vault root. Also wait for Obsidian's
+  `Indexing vault...` notice to disappear (`$K wait '.notice progress' --gone --timeout 60000`).
+  Loaded-file counts alone do not prove metadata indexing has finished. Do not time indexing.
 - For template scope and defaults, launch `--fixture settings`. Core Templates is enabled with
   folder `Templates`; its nested `Card.md` contains a unique marker. `Notes/Spec.md` is outside it.
 - Run `doctor` before each journey and `errors` afterward. Stop every run.
@@ -50,6 +53,11 @@ Preconditions:
   Reopen settings and verify both selected labels. These paths must remain searchable regardless
   of the number of initially visible suggestions. Close settings and use a card's New note from
   card action; verify its folder and the `Settings fixture 35999` template content on disk.
+- **Template path.** With the `settings` fixture, open Note template and search
+  `Templates/Nested`. The result is `Templates/Nested/Card.md`. Search the complete path too,
+  select it, and assert `"new-note-template":"Templates/Nested/Card.md"` on disk. Reopen the
+  picker and verify searching `Card` still finds it. Before the follow-up fix, only the basename
+  matched and the folder query showed `No results found`. Snap each query.
 - **Template scope.** With the `settings` fixture, open the template picker. `Card` is present;
   search `Spec` and verify no results. Press Escape and reopen the picker to clear the query, then type `Card`
   and select it. The board saves `"new-note-template":"Templates/Nested/Card.md"`.
@@ -59,7 +67,7 @@ Preconditions:
   Wait until `.obsidian/plugins/obsidian-kanban/data.json` contains both paths. In board settings,
   choose folder `Templates/Nested` and verify the local path on disk, then reopen the picker and
   choose `Notes (default)`. The local folder key disappears and the button shows `Notes (default)`.
-  For the template, select `Card (default)` and verify the local template key disappears too.
+  For the template, select `Templates/Nested/Card.md (default)` and verify the local template key disappears too.
 - **Use defaults.** Close settings. From `Write release notes` choose New note from card. The new
   file is `Notes/Write release notes.md`, contains the template marker, and the board saves
   `[[Write release notes]]`. Capture a snap and check the file contents.

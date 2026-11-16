@@ -38,7 +38,7 @@ export function getTemplateChoices(app: App, folderStr?: string) {
     if (f instanceof TFile) {
       fileList.push({
         value: f.path,
-        label: f.basename,
+        label: f.path,
       });
     }
   });
