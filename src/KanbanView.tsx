@@ -149,7 +149,10 @@ export class KanbanView extends TextFileView implements HoverParent {
   }
 
   async loadFile(file: TFile) {
-    this.plugin.removeView(this);
+    // Unregister from the old file's board only when switching files. Re-opening the open file
+    // (a link to it, the quick switcher) makes Obsidian skip the reload, so nothing would
+    // register the view again and the board would stay blank.
+    if (file !== this.file) this.plugin.removeView(this);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return super.loadFile(file);
