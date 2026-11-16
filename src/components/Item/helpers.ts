@@ -98,7 +98,7 @@ export function constructMenuDatePickerOnChange({
   item,
   hasDate,
   path,
-  dateIndex = 0,
+  dateIndex,
 }: ConstructMenuDatePickerOnChangeParams) {
   const dateFormat = stateManager.getSetting('date-format');
   const shouldLinkDates = stateManager.getSetting('link-date-to-daily-note');
@@ -110,6 +110,8 @@ export function constructMenuDatePickerOnChange({
     `(^|\\s)${escapeRegExpStr(dateTrigger as string)}${contentMatch}`,
     'g'
   );
+  // Footer, table and menu pickers display the metadata date, the last token on the card.
+  const targetIndex = dateIndex ?? (item.data.titleRaw.match(dateRegEx)?.length ?? 1) - 1;
 
   return (dates: Date[]) => {
     const date = dates[0];
@@ -123,7 +125,7 @@ export function constructMenuDatePickerOnChange({
     if (hasDate) {
       let index = 0;
       titleRaw = item.data.titleRaw.replace(dateRegEx, (match, space) =>
-        index++ === dateIndex ? `${space}${dateTrigger}${wrappedDate}` : match
+        index++ === targetIndex ? `${space}${dateTrigger}${wrappedDate}` : match
       );
     } else {
       titleRaw = `${item.data.titleRaw} ${dateTrigger}${wrappedDate}`;

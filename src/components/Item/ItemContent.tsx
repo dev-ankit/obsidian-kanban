@@ -52,7 +52,7 @@ export function useDatePickers(item: Item, explicitPath?: Path) {
           item,
           hasDate: true,
           path,
-          dateIndex: Number(dateEl?.dataset.dateIndex ?? 0),
+          dateIndex: dateEl ? Number(dateEl.dataset.dateIndex) : undefined,
         }),
         dateEl ? moment(dateEl.dataset.date).toDate() : item.data.metadata.date?.toDate()
       );
