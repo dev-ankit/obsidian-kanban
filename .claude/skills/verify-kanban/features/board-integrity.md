@@ -65,6 +65,21 @@ Preconditions:
 - **Proof.** `snap` the error view (`--clip '.workspace-leaf.mod-active .view-content'`), plus the
   `cmp` results.
 
+## Upgrading from the official 2.0.51
+
+`--fixture upgrade-large` is a 10-list, 100-card board with dates, times, tags, links, a
+collapsed list, a completed list, an archive and board settings. Download the official build
+(`gh release download 2.0.51 --repo community-archive/obsidian-kanban --dir <old>`) and launch
+with `--no-build --build-dir <old>`. Add a card so 2.0.51 saves the file, and keep a copy of
+it. To act like BRAT, copy this repo's `main.js`, `manifest.json` and `styles.css` into the
+run's `vault/.obsidian/plugins/obsidian-kanban/`, then `eval`
+`app.plugins.loadManifests()`, `disablePlugin("obsidian-kanban")`, `enablePlugin(...)`.
+Obsidian leaves the open board in markdown view after any plugin reload (2.0.51 does the
+same); `Kanban: Toggle between Kanban and markdown mode` brings back all 10 lists, and an
+edit changes only the edited line in the file. Repeat with `app:reload` and in phone
+emulation. Re-opening the open board with `app.workspace.openLinkText("Board","",false)`
+blanks it on 2.0.51 (#662, black in dark mode) and keeps all 10 lists on this build.
+
 ## Gotchas
 
 - `$K errors` shows the logged parse error for each blocked file. That's the error being reported,
