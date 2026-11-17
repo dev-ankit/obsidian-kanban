@@ -7,7 +7,9 @@
 >
 > 1. Install and enable [BRAT](https://obsidian.md/plugins?id=obsidian42-brat) from Community plugins.
 > 2. Run **BRAT: Add a beta plugin for testing**, enter `dev-ankit/obsidian-kanban`, and choose the latest version.
-> 3. BRAT replaces your installed Kanban with this build. Your boards don't change.
+> 3. Restart Obsidian. BRAT replaces your installed Kanban with this build, and your boards don't change.
+>
+> Until you restart, the old version can keep running even though the plugin list already shows the new version number. In the official 2.0.51, opening a board that's already open (for example from the quick switcher) shows a blank board, which looks black in dark mode. This fork fixes that bug, and restarting gets you onto the fork.
 >
 > **Go back to the official version:** remove `dev-ankit/obsidian-kanban` from BRAT's plugin list, then uninstall Kanban and install it again from Community plugins. Uninstalling deletes Kanban's global settings, so copy `.obsidian/plugins/obsidian-kanban/data.json` first and put it back afterwards. Settings saved in a board stay in that board's file.
 >
